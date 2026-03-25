@@ -264,7 +264,7 @@ export interface Database {
         Row: {
           id: string;
           student_id: string;
-          session_id: string;
+          session_id: string | null;
           subject: string | null;
           topic: string | null;
           note: string;
@@ -273,12 +273,15 @@ export interface Database {
         Insert: {
           id?: string;
           student_id: string;
-          session_id: string;
+          session_id?: string | null;
           subject?: string | null;
           topic?: string | null;
           note: string;
         };
-        Update: Record<string, never>;
+        Update: {
+          note?: string;
+          topic?: string | null;
+        };
         Relationships: [];
       };
     };

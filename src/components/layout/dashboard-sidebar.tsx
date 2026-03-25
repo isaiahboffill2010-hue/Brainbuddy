@@ -3,7 +3,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import {
-  LayoutDashboard, Brain, GraduationCap,
+  LayoutDashboard, Brain, GraduationCap, BookMarked,
   Settings, LogOut, ChevronRight, Zap,
 } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
@@ -13,6 +13,7 @@ const navItems = [
   { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard", badge: null },
   { href: "/tutor", icon: Brain, label: "AI Tutor", badge: null },
   { href: "/subjects", icon: GraduationCap, label: "Subjects", badge: null },
+  { href: "/notes", icon: BookMarked, label: "Notes", badge: null },
   { href: "/settings", icon: Settings, label: "Settings", badge: null },
 ];
 

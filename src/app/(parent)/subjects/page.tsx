@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
-import { ChevronRight, BookOpen, Calculator, FlaskConical, Pencil, Sparkles, PlusCircle } from "lucide-react";
+import { ChevronRight, Sparkles, PlusCircle } from "lucide-react";
 
 const subjectMeta: Record<string, { emoji: string; color: string; bg: string; border: string; desc: string }> = {
   Math:        { emoji: "🔢", color: "#4F7CFF", bg: "#EEF3FF", border: "#C7D7FF", desc: "Numbers, operations, fractions, geometry, and problem-solving" },
@@ -120,10 +120,10 @@ export default async function SubjectsPage() {
                       Start Session
                     </button>
                   </Link>
-                  <Link href="/progress">
+                  <Link href="/notes">
                     <button className="flex items-center gap-1 rounded-2xl px-4 py-2.5 text-sm font-semibold border transition-all hover:shadow-sm"
                       style={{ backgroundColor: meta.bg, color: meta.color, borderColor: meta.border }}>
-                      Progress <ChevronRight className="h-4 w-4" />
+                      Notes <ChevronRight className="h-4 w-4" />
                     </button>
                   </Link>
                 </div>
