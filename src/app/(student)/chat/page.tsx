@@ -15,11 +15,12 @@ export default async function ChatPickerPage() {
   // Get profile and first linked student safely
   let firstStudent: { id: string } | null = null;
   try {
-    const { data: profile } = await supabase
+    const { data: profileData } = await supabase
       .from("profiles")
       .select("id")
       .eq("user_id", user.id)
       .maybeSingle();
+    const profile = profileData as { id: string } | null;
 
     if (profile) {
       const { data: links } = await supabase

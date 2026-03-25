@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { LayoutDashboard, Users, Settings, LogOut, Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -29,7 +30,7 @@ export function ParentTopbar() {
   return (
     <header className="md:hidden sticky top-0 z-40 flex items-center justify-between border-b border-white/5 bg-background/80 backdrop-blur px-4 h-14">
       <Link href="/dashboard" className="flex items-center gap-2">
-        <div className="h-7 w-7 rounded-lg bg-gradient-brand flex items-center justify-center text-base">🧠</div>
+        <Image src="/brainbuddy-logo.png" alt="BrainBuddy" width={28} height={28} className="rounded-lg" />
         <span className="font-bold gradient-text">BrainBuddy</span>
       </Link>
       <Sheet open={open} onOpenChange={setOpen}>
@@ -40,7 +41,7 @@ export function ParentTopbar() {
         </SheetTrigger>
         <SheetContent side="right" className="w-64 bg-card border-white/5">
           <div className="flex items-center gap-2.5 mb-8 mt-2">
-            <div className="h-8 w-8 rounded-xl bg-gradient-brand flex items-center justify-center text-lg">🧠</div>
+            <Image src="/brainbuddy-logo.png" alt="BrainBuddy" width={32} height={32} className="rounded-xl" />
             <span className="font-bold gradient-text">BrainBuddy</span>
           </div>
           <nav className="flex flex-col gap-1">

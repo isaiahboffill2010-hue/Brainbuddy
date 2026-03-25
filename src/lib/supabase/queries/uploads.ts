@@ -1,7 +1,8 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/types/database";
 
-type Client = SupabaseClient<Database>;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type Client = SupabaseClient<Database, "public", any>;
 
 export async function getUploadsForStudent(client: Client, studentId: string) {
   const { data, error } = await client

@@ -7,11 +7,12 @@ export async function GET() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    const { data: profile } = await supabase
+    const { data: profileData } = await supabase
       .from("profiles")
       .select("id")
       .eq("user_id", user.id)
       .single();
+    const profile = profileData as { id: string } | null;
 
     if (!profile) return NextResponse.json([]);
 
@@ -21,7 +22,8 @@ export async function GET() {
       .eq("parent_id", profile.id);
 
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-    const students = data?.map((row) => row.students).filter(Boolean) ?? [];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const students = (data as unknown as { student_id: string; students: unknown }[])?.map((row) => row.students).filter(Boolean) ?? [];
     return NextResponse.json(students);
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : "Server error";
@@ -39,14 +41,19 @@ export async function POST(req: Request) {
     const body = await req.json();
 
     // Get or create the parent profile
-    let { data: profile } = await supabase
+    let parentProfileId: string | null = null;
+
+    const { data: existingProfileData } = await supabase
       .from("profiles")
       .select("id")
       .eq("user_id", user.id)
       .single();
+    const existingProfile = existingProfileData as { id: string } | null;
 
-    if (!profile) {
-      const { data: newProfile, error: profileError } = await service
+    if (existingProfile) {
+      parentProfileId = existingProfile.id;
+    } else {
+      const { data: newProfileData, error: profileError } = await service
         .from("profiles")
         .insert({
           user_id: user.id,
@@ -56,46 +63,112 @@ export async function POST(req: Request) {
         })
         .select("id")
         .single();
+      const newProfile = newProfileData as { id: string } | null;
 
       if (profileError) return NextResponse.json({ error: "Could not create profile. Make sure the database schema has been set up." }, { status: 500 });
-      profile = newProfile;
+      parentProfileId = newProfile?.id ?? null;
     }
 
-    // Create the student
+    if (!parentProfileId) return NextResponse.json({ error: "Could not resolve parent profile." }, { status: 500 });
+
+    // Create the student — only include extended fields when provided
+    // (interests/personality/struggles_with require the ALTER TABLE migration to be run first)
+    const studentPayload = {
+      name: body.name,
+      age: body.age,
+      grade: body.grade,
+      avatar_emoji: body.avatar_emoji ?? "🦊",
+      learning_style: body.learning_style ?? "visual",
+      confidence_level: body.confidence_level ?? 5,
+      profile_id: parentProfileId,
+      ...(body.interests     ? { interests:      body.interests }      : {}),
+      ...(body.personality   ? { personality:    body.personality }    : {}),
+      ...(body.struggles_with ? { struggles_with: body.struggles_with } : {}),
+    };
+
     const { data: student, error: studentError } = await service
       .from("students")
-      .insert({
-        name: body.name,
-        age: body.age,
-        grade: body.grade,
-        avatar_emoji: body.avatar_emoji ?? "🦊",
-        learning_style: body.learning_style ?? "visual",
-        confidence_level: body.confidence_level ?? 5,
-        profile_id: profile.id,
-      })
+      .insert(studentPayload)
       .select()
       .single();
 
-    if (studentError) return NextResponse.json({ error: studentError.message }, { status: 500 });
+    if (studentError) {
+      console.error("[students/POST] step=students_insert payload=", JSON.stringify(studentPayload), "error=", studentError);
+      return NextResponse.json({ error: `[students_insert] ${studentError.message}` }, { status: 500 });
+    }
 
     // Link to parent
-    await service.from("parents_students").insert({ parent_id: profile.id, student_id: student.id });
+    const { error: linkError } = await service
+      .from("parents_students")
+      .insert({ parent_id: parentProfileId, student_id: student.id });
+    if (linkError) {
+      console.error("[students/POST] step=parents_students_insert", linkError);
+      return NextResponse.json({ error: `[parents_students] ${linkError.message}` }, { status: 500 });
+    }
 
-    // Seed subject progress rows
-    const { data: subjects } = await service.from("subjects").select("id");
+    // Seed subject progress rows — explicitly provide empty arrays so PostgREST
+    // doesn't try to infer defaults for the TEXT[] columns
+    const { data: subjects, error: subjectsError } = await service.from("subjects").select("id, name");
+    if (subjectsError) console.error("[students/POST] step=subjects_query", subjectsError);
+    console.log("[students/POST] subjects fetched:", subjects);
+
     if (subjects && subjects.length > 0) {
-      await service.from("student_subject_progress").insert(
-        subjects.map((s) => ({ student_id: student.id, subject_id: s.id }))
+      const { error: progressError } = await service.from("student_subject_progress").insert(
+        subjects.map((s) => ({
+          student_id: student.id,
+          subject_id: s.id,
+          topics_mastered: [],
+          topics_struggling: [],
+        }))
       );
+      if (progressError) {
+        console.error("[students/POST] step=progress_insert", progressError);
+        return NextResponse.json({ error: `[progress_insert] ${progressError.message}` }, { status: 500 });
+      }
     }
 
     // Seed learning preferences
-    await service.from("learning_preferences").insert({
+    const { error: prefsError } = await service.from("learning_preferences").insert({
       student_id: student.id,
       preferred_style: body.learning_style ?? "visual",
     });
+    if (prefsError) {
+      console.error("[students/POST] step=learning_prefs_insert", prefsError);
+      return NextResponse.json({ error: `[learning_prefs] ${prefsError.message}` }, { status: 500 });
+    }
 
-    return NextResponse.json(student, { status: 201 });
+    // Create intro "Meet Cosmo" session (no subject)
+    const { data: introSession } = await service
+      .from("ai_sessions")
+      .insert({
+        student_id: student.id,
+        title: "Meet Cosmo 👋",
+        is_active: true,
+      })
+      .select("id")
+      .single();
+
+    // Save Cosmo's opening message so the kid sees it right away
+    if (introSession) {
+      const interestNote = body.interests
+        ? ` I heard you're into ${body.interests} — that's so cool!`
+        : "";
+      const opening =
+        `Hi ${student.name}! 👋 I'm Cosmo, your learning buddy!` +
+        `${interestNote} I'm here to make school fun and easy for you.` +
+        ` What's your favorite thing to do when you're NOT at school? 🌟`;
+
+      await service.from("ai_messages").insert({
+        session_id: introSession.id,
+        role: "assistant",
+        content: opening,
+      });
+    }
+
+    return NextResponse.json(
+      { ...student, introSessionId: introSession?.id ?? null },
+      { status: 201 }
+    );
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : "Server error";
     return NextResponse.json({ error: msg }, { status: 500 });

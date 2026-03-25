@@ -1,25 +1,33 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/types/database";
 
-type Client = SupabaseClient<Database>;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type Client = SupabaseClient<Database, "public", any>;
 
-export async function getStudentsForParent(client: Client, parentProfileId: string) {
+export async function getStudentsForParent(
+  client: Client,
+  parentProfileId: string
+): Promise<Database["public"]["Tables"]["students"]["Row"][]> {
   const { data, error } = await client
     .from("parents_students")
     .select("student_id, students(*)")
     .eq("parent_id", parentProfileId);
   if (error) throw error;
-  return data?.map((row) => row.students).filter(Boolean) ?? [];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return (data?.map((row) => (row as unknown as { student_id: string; students: Database["public"]["Tables"]["students"]["Row"] | null }).students).filter(Boolean) ?? []) as Database["public"]["Tables"]["students"]["Row"][];
 }
 
-export async function getStudent(client: Client, studentId: string) {
+export async function getStudent(
+  client: Client,
+  studentId: string
+): Promise<Database["public"]["Tables"]["students"]["Row"]> {
   const { data, error } = await client
     .from("students")
     .select("*")
     .eq("id", studentId)
     .single();
   if (error) throw error;
-  return data;
+  return data as Database["public"]["Tables"]["students"]["Row"];
 }
 
 export async function createStudent(

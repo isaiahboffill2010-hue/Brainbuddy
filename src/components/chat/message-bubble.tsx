@@ -50,6 +50,14 @@ function MessageContent({ content, isStreaming }: { content: string; isStreaming
     <div className="space-y-1">
       {lines.map((line, i) => {
         if (!line.trim()) return <br key={i} />;
+
+        // Headings
+        const h3 = line.match(/^###\s+(.+)/);
+        if (h3) return <p key={i} className="font-bold text-base mt-2">{renderInline(h3[1])}</p>;
+        const h2 = line.match(/^##\s+(.+)/);
+        if (h2) return <p key={i} className="font-bold text-base mt-2">{renderInline(h2[1])}</p>;
+
+        // Numbered list
         const numbered = line.match(/^(\d+)\.\s+(.+)/);
         if (numbered) {
           return (
@@ -59,14 +67,19 @@ function MessageContent({ content, isStreaming }: { content: string; isStreaming
             </div>
           );
         }
-        if (line.startsWith("- ") || line.startsWith("• ")) {
+
+        // Bullet list (indented or not)
+        const bullet = line.match(/^\s*[-•]\s+(.+)/);
+        if (bullet) {
+          const indent = line.match(/^(\s+)/)?.[1].length ?? 0;
           return (
-            <div key={i} className="flex gap-2">
+            <div key={i} className="flex gap-2" style={{ paddingLeft: indent > 0 ? "1.25rem" : 0 }}>
               <span className="flex-shrink-0 text-primary/60">•</span>
-              <span>{renderInline(line.slice(2))}</span>
+              <span>{renderInline(bullet[1])}</span>
             </div>
           );
         }
+
         return <p key={i}>{renderInline(line)}</p>;
       })}
       {isStreaming && <span className="inline-block w-0.5 h-4 bg-primary/80 animate-pulse ml-0.5" />}
@@ -75,10 +88,18 @@ function MessageContent({ content, isStreaming }: { content: string; isStreaming
 }
 
 function renderInline(text: string): React.ReactNode {
-  const parts = text.split(/(\*\*[^*]+\*\*)/g);
+  // Split on bold (**text**) and inline LaTeX (\(...\) or \[...\])
+  const parts = text.split(/(\*\*[^*]+\*\*|\\\([\s\S]+?\\\)|\\\[[\s\S]+?\\\])/g);
   return parts.map((part, i) => {
     if (part.startsWith("**") && part.endsWith("**")) {
       return <strong key={i} className="font-semibold">{part.slice(2, -2)}</strong>;
+    }
+    // Render inline LaTeX as styled code block (plain readable form)
+    if (part.startsWith("\\(") && part.endsWith("\\)")) {
+      return <code key={i} className="bg-primary/10 text-primary px-1 rounded text-xs font-mono">{part.slice(2, -2).trim()}</code>;
+    }
+    if (part.startsWith("\\[") && part.endsWith("\\]")) {
+      return <code key={i} className="block bg-primary/10 text-primary px-2 py-1 rounded text-xs font-mono my-1">{part.slice(2, -2).trim()}</code>;
     }
     return part;
   });

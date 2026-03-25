@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { LayoutDashboard, Users, Settings, LogOut, Brain } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
@@ -27,9 +28,7 @@ export function ParentSidebar() {
     <aside className="hidden md:flex flex-col w-64 border-r border-white/5 bg-card min-h-screen p-4">
       {/* Logo */}
       <Link href="/dashboard" className="flex items-center gap-2.5 px-3 mb-8 mt-2 group">
-        <div className="h-9 w-9 rounded-xl bg-gradient-brand flex items-center justify-center text-xl shadow-glow-sm group-hover:shadow-glow-md transition-all">
-          🧠
-        </div>
+        <Image src="/brainbuddy-logo.png" alt="BrainBuddy" width={36} height={36} className="rounded-xl" />
         <span className="font-bold text-lg gradient-text">BrainBuddy</span>
       </Link>
 

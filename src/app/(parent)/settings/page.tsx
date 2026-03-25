@@ -7,11 +7,12 @@ export default async function ParentSettingsPage() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const { data: profile } = await supabase
+  const { data: profileData } = await supabase
     .from("profiles")
     .select("full_name, email, role")
     .eq("user_id", user.id)
     .single();
+  const profile = profileData as { full_name: string | null; email: string | null; role: string } | null;
 
   const displayName = profile?.full_name ?? user.user_metadata?.full_name ?? user.email?.split("@")[0] ?? "—";
   const displayEmail = profile?.email ?? user.email ?? "—";

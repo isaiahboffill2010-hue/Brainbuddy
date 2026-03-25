@@ -45,6 +45,9 @@ export type TutorContext = {
   topicsMastered?: string[];
   topicsStruggling?: string[];
   learningNotes?: string | null;
+  interests?: string | null;
+  personality?: string | null;
+  strugglesWith?: string | null;
 };
 
 // Learning style options
@@ -62,8 +65,17 @@ export const GRADE_OPTIONS = [
   "8th Grade", "9th Grade", "10th Grade", "11th Grade", "12th Grade",
 ];
 
+// Personality options
+export const PERSONALITY_OPTIONS = [
+  { value: "curious",   label: "Curious",   emoji: "🔍", description: "Always asking 'why?'" },
+  { value: "energetic", label: "Energetic",  emoji: "⚡", description: "Full of energy, loves action" },
+  { value: "creative",  label: "Creative",   emoji: "🎨", description: "Loves to imagine and create" },
+  { value: "funny",     label: "Funny",      emoji: "😄", description: "Makes everyone laugh" },
+  { value: "shy",       label: "Quiet/Shy",  emoji: "🌸", description: "Thoughtful, prefers one-on-one" },
+] as const;
+
 // Avatar emoji options for students
 export const AVATAR_EMOJIS = [
   "🦊", "🐼", "🐨", "🦁", "🐯", "🐸", "🐧", "🦄",
-  "🐙", "🦋", "🐬", "🦊", "🐺", "🦝", "🐹", "🐰",
+  "🐙", "🦋", "🐬", "🐻", "🐺", "🦝", "🐹", "🐰",
 ];

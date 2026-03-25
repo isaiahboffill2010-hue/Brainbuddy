@@ -1,20 +1,18 @@
 "use client";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import {
-  LayoutDashboard, BookOpen, Brain, TrendingUp, GraduationCap,
-  Trophy, Settings, LogOut, ChevronRight, Zap,
+  LayoutDashboard, Brain, GraduationCap,
+  Settings, LogOut, ChevronRight, Zap,
 } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 import { createClient } from "@/lib/supabase/client";
 
 const navItems = [
   { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard", badge: null },
-  { href: "/homework", icon: BookOpen, label: "Homework Help", badge: null },
   { href: "/tutor", icon: Brain, label: "AI Tutor", badge: null },
-  { href: "/progress", icon: TrendingUp, label: "Progress", badge: null },
   { href: "/subjects", icon: GraduationCap, label: "Subjects", badge: null },
-  { href: "/rewards", icon: Trophy, label: "Rewards", badge: null },
   { href: "/settings", icon: Settings, label: "Settings", badge: null },
 ];
 
@@ -34,9 +32,7 @@ export function DashboardSidebar({ userName = "User" }: { userName?: string }) {
       {/* Logo */}
       <div className="px-6 py-5 border-b border-[#E8EDF8]">
         <Link href="/dashboard" className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-2xl bg-gradient-blue flex items-center justify-center text-xl shadow-blue">
-            🧠
-          </div>
+          <Image src="/brainbuddy-logo.png" alt="BrainBuddy" width={40} height={40} className="rounded-2xl" />
           <div>
             <span className="font-bold text-lg text-[#1F2A44]">BrainBuddy</span>
             <div className="flex items-center gap-1 mt-0.5">

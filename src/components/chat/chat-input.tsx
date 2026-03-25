@@ -16,27 +16,43 @@ export function ChatInput({ onSend, disabled, studentId, subjectId }: ChatInputP
   const [text, setText] = useState("");
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
   async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
     setUploading(true);
+    setUploadError(null);
     const form = new FormData();
     form.append("file", file);
     form.append("studentId", studentId);
     if (subjectId) form.append("subjectId", subjectId);
-    const res = await fetch("/api/upload", { method: "POST", body: form });
-    if (res.ok) {
-      const data = await res.json();
-      setImageUrl(data.image_url);
+    try {
+      const res = await fetch("/api/upload", { method: "POST", body: form });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.image_url) {
+          setImageUrl(data.image_url);
+        } else {
+          setUploadError("Upload succeeded but no image URL returned.");
+        }
+      } else {
+        const err = await res.json().catch(() => ({}));
+        setUploadError(err.error ?? `Upload failed (${res.status})`);
+      }
+    } catch {
+      setUploadError("Upload failed. Check your connection.");
+    } finally {
+      setUploading(false);
+      // Reset file input so the same file can be re-selected
+      if (fileRef.current) fileRef.current.value = "";
     }
-    setUploading(false);
   }
 
   function handleSend() {
     if (!text.trim() && !imageUrl) return;
-    onSend(text.trim() || "Please help me with this homework.", imageUrl ?? undefined);
+    onSend(text.trim() || "Please help me understand this.", imageUrl ?? undefined);
     setText("");
     setImageUrl(null);
   }
@@ -50,6 +66,9 @@ export function ChatInput({ onSend, disabled, studentId, subjectId }: ChatInputP
 
   return (
     <div className="border-t border-white/5 bg-background/80 backdrop-blur p-3 space-y-2">
+      {uploadError && (
+        <p className="text-xs text-destructive px-1">{uploadError}</p>
+      )}
       {imageUrl && (
         <div className="relative inline-block">
           <Image src={imageUrl} alt="Attached" width={80} height={60} className="rounded-xl object-cover border border-white/10" />

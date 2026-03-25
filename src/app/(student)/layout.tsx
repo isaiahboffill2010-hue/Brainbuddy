@@ -14,7 +14,7 @@ export default async function StudentLayout({ children }: { children: React.Reac
   let studentEmoji: string | undefined;
   try {
     const profile = await getProfile(supabase, user.id);
-    studentName = profile.full_name?.split(" ")[0] ?? undefined;
+    if (profile) studentName = profile.full_name?.split(" ")[0] ?? undefined;
   } catch {
     // ignore
   }

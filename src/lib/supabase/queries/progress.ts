@@ -1,7 +1,8 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/types/database";
 
-type Client = SupabaseClient<Database>;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type Client = SupabaseClient<Database, "public", any>;
 
 export async function getProgressForStudent(client: Client, studentId: string) {
   const { data, error } = await client
@@ -16,14 +17,14 @@ export async function getProgressForSubject(
   client: Client,
   studentId: string,
   subjectId: string
-) {
+): Promise<Database["public"]["Tables"]["student_subject_progress"]["Row"] | null> {
   const { data } = await client
     .from("student_subject_progress")
     .select("*")
     .eq("student_id", studentId)
     .eq("subject_id", subjectId)
     .single();
-  return data;
+  return (data ?? null) as Database["public"]["Tables"]["student_subject_progress"]["Row"] | null;
 }
 
 export async function upsertProgress(

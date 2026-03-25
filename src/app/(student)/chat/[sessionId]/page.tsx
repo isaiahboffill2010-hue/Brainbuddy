@@ -18,8 +18,9 @@ export default async function ChatSessionPage({
   if (!user) redirect("/login");
 
   const profile = await getProfile(supabase, user.id);
+  if (!profile) redirect("/login");
   const students = await getStudentsForParent(supabase, profile.id);
-  const firstStudent = (students as NonNullable<typeof students[number]>[])[0];
+  const firstStudent = students[0];
   if (!firstStudent) redirect("/chat");
 
   const session = await getSession(supabase, sessionId).catch(() => null);

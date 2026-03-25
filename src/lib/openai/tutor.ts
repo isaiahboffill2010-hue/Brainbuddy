@@ -8,7 +8,8 @@ import { getLastSessionSummary } from "@/lib/supabase/queries/sessions";
 import { getRecentMessages } from "@/lib/supabase/queries/messages";
 import type { TutorContext } from "@/types/app";
 
-type Client = SupabaseClient<Database>;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type Client = SupabaseClient<Database, "public", any>;
 
 export async function streamTutorResponse(params: {
   sessionId: string;
@@ -21,10 +22,15 @@ export async function streamTutorResponse(params: {
 }): Promise<ReadableStream<Uint8Array>> {
   const { sessionId, studentId, subjectId, subjectName, userMessage, imageUrl, supabase } = params;
 
-  // 1. Load student context
-  const student = await getStudent(supabase, studentId);
-  const progress = await getProgressForSubject(supabase, studentId, subjectId);
-  const learningNotes = await getLastSessionSummary(supabase, studentId, subjectId);
+  // Treat empty string as "no subject" (e.g. intro session)
+  const hasSubject = Boolean(subjectId);
+
+  // 1. Load student context — skip subject-specific queries when no subject
+  const [student, progress, learningNotes] = await Promise.all([
+    getStudent(supabase, studentId),
+    hasSubject ? getProgressForSubject(supabase, studentId, subjectId) : Promise.resolve(null),
+    hasSubject ? getLastSessionSummary(supabase, studentId, subjectId) : Promise.resolve(null),
+  ]);
 
   const context: TutorContext = {
     studentName: student.name,
@@ -36,6 +42,9 @@ export async function streamTutorResponse(params: {
     topicsMastered: progress?.topics_mastered ?? [],
     topicsStruggling: progress?.topics_struggling ?? [],
     learningNotes,
+    interests: student.interests,
+    personality: student.personality,
+    strugglesWith: student.struggles_with,
   };
 
   // 2. Build system prompt
@@ -72,37 +81,45 @@ export async function streamTutorResponse(params: {
     model: "gpt-4o",
     messages: messages as Parameters<typeof openai.chat.completions.create>[0]["messages"],
     stream: true,
-    max_tokens: 600,
+    max_tokens: 400,
     temperature: 0.7,
   });
 
-  // 6. Return a ReadableStream and collect full response for memory update
+  // 6. Return ReadableStream — properly handle errors so the client isn't left hanging
   let fullResponse = "";
-
   const encoder = new TextEncoder();
+
   const readable = new ReadableStream<Uint8Array>({
     async start(controller) {
-      for await (const chunk of stream) {
-        const text = chunk.choices[0]?.delta?.content ?? "";
-        if (text) {
-          fullResponse += text;
-          controller.enqueue(encoder.encode(text));
+      try {
+        for await (const chunk of stream) {
+          const text = chunk.choices[0]?.delta?.content ?? "";
+          if (text) {
+            fullResponse += text;
+            controller.enqueue(encoder.encode(text));
+          }
         }
+        controller.close();
+      } catch (e) {
+        // Signal the error to the client so it doesn't hang
+        controller.error(e);
+        return;
       }
-      controller.close();
 
-      // Background: update learning memory (non-blocking)
-      updateLearningMemory({
-        supabase,
-        sessionId,
-        studentId,
-        subjectId,
-        conversation: [
-          ...history.map((m) => `${m.role}: ${m.content}`),
-          `user: ${userMessage}`,
-          `assistant: ${fullResponse}`,
-        ],
-      }).catch(console.error);
+      // Background: update learning memory only when there is a real subject
+      if (hasSubject) {
+        updateLearningMemory({
+          supabase,
+          sessionId,
+          studentId,
+          subjectId,
+          conversation: [
+            ...history.map((m) => `${m.role}: ${m.content}`),
+            `user: ${userMessage}`,
+            `assistant: ${fullResponse}`,
+          ],
+        }).catch(console.error);
+      }
     },
   });
 
@@ -119,6 +136,14 @@ async function updateLearningMemory(params: {
   const { supabase, sessionId, studentId, subjectId, conversation } = params;
 
   if (conversation.length < 4) return; // Not enough data yet
+
+  // Cast to any for direct .from() calls — SupabaseClient<Database> inference
+  // breaks when passed as a parameter (known @supabase/supabase-js TS issue).
+  // The runtime behaviour is correct; this is purely a type workaround.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const db = supabase as any;
+
+  type ProgressRow = Database["public"]["Tables"]["student_subject_progress"]["Row"];
 
   try {
     const response = await openai.chat.completions.create({
@@ -140,7 +165,7 @@ async function updateLearningMemory(params: {
     };
 
     // Update session learning notes
-    await supabase
+    await db
       .from("ai_sessions")
       .update({
         learning_notes: extracted.note ?? null,
@@ -148,15 +173,15 @@ async function updateLearningMemory(params: {
       })
       .eq("id", sessionId);
 
-    // Update progress (merge arrays, deduplicate)
-    const existing = await supabase
+    // Update subject progress (merge arrays, deduplicate)
+    const { data: prevData } = await db
       .from("student_subject_progress")
       .select("topics_mastered, topics_struggling, session_count")
       .eq("student_id", studentId)
       .eq("subject_id", subjectId)
       .single();
 
-    const prev = existing.data;
+    const prev = prevData as Pick<ProgressRow, "topics_mastered" | "topics_struggling" | "session_count"> | null;
     const newMastered = Array.from(
       new Set([...(prev?.topics_mastered ?? []), ...(extracted.mastered ?? [])])
     );
@@ -165,7 +190,7 @@ async function updateLearningMemory(params: {
       new Set([...(prev?.topics_struggling ?? []), ...(extracted.struggling ?? [])])
     ).filter((t) => !newMastered.includes(t));
 
-    await supabase
+    await db
       .from("student_subject_progress")
       .upsert(
         {

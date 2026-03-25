@@ -276,7 +276,15 @@ CREATE POLICY "progress: service role only update" ON student_subject_progress F
   USING (false);
 
 -- ─────────────────────────────────────────────
+-- STUDENT PROFILE EXTENSIONS (run if upgrading)
+-- ─────────────────────────────────────────────
+ALTER TABLE students
+  ADD COLUMN IF NOT EXISTS interests     TEXT,
+  ADD COLUMN IF NOT EXISTS personality   TEXT CHECK (personality IN ('curious','energetic','shy','creative','funny')),
+  ADD COLUMN IF NOT EXISTS struggles_with TEXT;
+
+-- ─────────────────────────────────────────────
 -- STORAGE BUCKET (run after enabling storage)
 -- ─────────────────────────────────────────────
--- INSERT INTO storage.buckets (id, name, public) VALUES ('homework', 'homework', false)
--- ON CONFLICT DO NOTHING;
+INSERT INTO storage.buckets (id, name, public) VALUES ('homework', 'homework', true)
+ON CONFLICT (id) DO UPDATE SET public = true;

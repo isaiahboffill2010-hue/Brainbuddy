@@ -1,7 +1,8 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/types/database";
 
-type Client = SupabaseClient<Database>;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type Client = SupabaseClient<Database, "public", any>;
 
 export async function getMessagesForSession(client: Client, sessionId: string) {
   const { data, error } = await client
@@ -13,7 +14,11 @@ export async function getMessagesForSession(client: Client, sessionId: string) {
   return data ?? [];
 }
 
-export async function getRecentMessages(client: Client, sessionId: string, limit = 20) {
+export async function getRecentMessages(
+  client: Client,
+  sessionId: string,
+  limit = 20
+): Promise<Database["public"]["Tables"]["ai_messages"]["Row"][]> {
   const { data, error } = await client
     .from("ai_messages")
     .select("*")
@@ -21,7 +26,7 @@ export async function getRecentMessages(client: Client, sessionId: string, limit
     .order("created_at", { ascending: false })
     .limit(limit);
   if (error) throw error;
-  return (data ?? []).reverse();
+  return ((data ?? []) as Database["public"]["Tables"]["ai_messages"]["Row"][]).reverse();
 }
 
 export async function saveMessage(

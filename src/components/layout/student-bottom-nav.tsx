@@ -1,14 +1,12 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, MessageCircle, Upload, TrendingUp, User } from "lucide-react";
+import { Home, MessageCircle, User } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 
 const navItems = [
   { href: "/home", icon: Home, label: "Home" },
   { href: "/chat", icon: MessageCircle, label: "Chat" },
-  { href: "/upload", icon: Upload, label: "Upload" },
-  { href: "/progress", icon: TrendingUp, label: "Progress" },
   { href: "/profile", icon: User, label: "Me" },
 ];
 

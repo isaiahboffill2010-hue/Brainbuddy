@@ -4,10 +4,13 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { GRADE_OPTIONS, LEARNING_STYLES, AVATAR_EMOJIS, type Student } from "@/types/app";
+import {
+  GRADE_OPTIONS, LEARNING_STYLES, AVATAR_EMOJIS, PERSONALITY_OPTIONS, type Student,
+} from "@/types/app";
 import { cn } from "@/lib/utils/cn";
 
 interface StudentFormProps {
@@ -19,6 +22,9 @@ interface StudentFormProps {
     avatar_emoji: string;
     learning_style: "visual" | "auditory" | "kinesthetic" | "reading";
     confidence_level: number;
+    interests?: string;
+    personality?: string;
+    struggles_with?: string;
   }) => Promise<void>;
   submitLabel?: string;
 }
@@ -33,6 +39,9 @@ export function StudentForm({ initialData, onSubmit, submitLabel = "Save" }: Stu
     initialData?.learning_style ?? "visual"
   );
   const [confidence, setConfidence] = useState(initialData?.confidence_level ?? 5);
+  const [interests, setInterests] = useState(initialData?.interests ?? "");
+  const [personality, setPersonality] = useState<string>(initialData?.personality ?? "");
+  const [strugglesWith, setStrugglesWith] = useState(initialData?.struggles_with ?? "");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -48,6 +57,9 @@ export function StudentForm({ initialData, onSubmit, submitLabel = "Save" }: Stu
         avatar_emoji: avatar,
         learning_style: learningStyle,
         confidence_level: confidence,
+        interests: interests.trim() || undefined,
+        personality: personality || undefined,
+        struggles_with: strugglesWith.trim() || undefined,
       });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
@@ -149,6 +161,61 @@ export function StudentForm({ initialData, onSubmit, submitLabel = "Save" }: Stu
         </div>
       </div>
 
+      {/* Personality picker */}
+      <div className="space-y-3">
+        <Label>What best describes {name || "this student"}? <span className="text-muted-foreground text-xs">(optional)</span></Label>
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+          {PERSONALITY_OPTIONS.map((p) => (
+            <button
+              key={p.value}
+              type="button"
+              onClick={() => setPersonality(personality === p.value ? "" : p.value)}
+              className={cn(
+                "flex flex-col items-start gap-1 rounded-xl border-2 p-3 text-left transition-all",
+                personality === p.value
+                  ? "border-primary bg-primary/5"
+                  : "border-border hover:border-muted-foreground/30"
+              )}
+            >
+              <span className="text-2xl">{p.emoji}</span>
+              <span className="font-medium text-sm">{p.label}</span>
+              <span className="text-xs text-muted-foreground leading-tight">{p.description}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Interests */}
+      <div className="space-y-2">
+        <Label htmlFor="interests">
+          What does {name || "this student"} love? <span className="text-muted-foreground text-xs">(optional)</span>
+        </Label>
+        <Input
+          id="interests"
+          value={interests}
+          onChange={(e) => setInterests(e.target.value)}
+          placeholder="e.g. Minecraft, soccer, drawing, dinosaurs"
+        />
+        <p className="text-xs text-muted-foreground">
+          Cosmo will use these to make examples feel familiar and fun.
+        </p>
+      </div>
+
+      {/* Struggles with */}
+      <div className="space-y-2">
+        <Label htmlFor="struggles">
+          Anything {name || "this student"} finds tricky at school? <span className="text-muted-foreground text-xs">(optional)</span>
+        </Label>
+        <Textarea
+          id="struggles"
+          value={strugglesWith}
+          onChange={(e) => setStrugglesWith(e.target.value)}
+          placeholder="e.g. word problems, reading long texts, staying focused"
+          className="min-h-[60px] resize-none text-sm"
+          rows={2}
+        />
+      </div>
+
       {/* Confidence level */}
       <div className="space-y-2">
         <Label>Confidence level: {confidence}/10</Label>
@@ -174,7 +241,7 @@ export function StudentForm({ initialData, onSubmit, submitLabel = "Save" }: Stu
           Cancel
         </Button>
         <Button type="submit" disabled={loading} className="flex-1">
-          {loading ? "Saving..." : submitLabel}
+          {loading ? "Setting up Cosmo..." : submitLabel}
         </Button>
       </div>
     </form>

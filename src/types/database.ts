@@ -8,6 +8,7 @@ export type Json =
 
 export interface Database {
   public: {
+    PostgrestVersion: "12";
     Tables: {
       profiles: {
         Row: {
@@ -36,6 +37,7 @@ export interface Database {
           avatar_url?: string | null;
           updated_at?: string;
         };
+        Relationships: [];
       };
       subjects: {
         Row: {
@@ -56,6 +58,7 @@ export interface Database {
           icon?: string;
           color?: string;
         };
+        Relationships: [];
       };
       students: {
         Row: {
@@ -65,8 +68,12 @@ export interface Database {
           age: number | null;
           grade: string;
           avatar_emoji: string;
+          avatar_url: string | null;
           learning_style: "visual" | "auditory" | "kinesthetic" | "reading";
           confidence_level: number;
+          interests: string | null;
+          personality: "curious" | "energetic" | "shy" | "creative" | "funny" | null;
+          struggles_with: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -77,18 +84,27 @@ export interface Database {
           age?: number | null;
           grade: string;
           avatar_emoji?: string;
+          avatar_url?: string | null;
           learning_style?: "visual" | "auditory" | "kinesthetic" | "reading";
           confidence_level?: number;
+          interests?: string | null;
+          personality?: "curious" | "energetic" | "shy" | "creative" | "funny" | null;
+          struggles_with?: string | null;
         };
         Update: {
           name?: string;
           age?: number | null;
           grade?: string;
           avatar_emoji?: string;
+          avatar_url?: string | null;
           learning_style?: "visual" | "auditory" | "kinesthetic" | "reading";
           confidence_level?: number;
+          interests?: string | null;
+          personality?: "curious" | "energetic" | "shy" | "creative" | "funny" | null;
+          struggles_with?: string | null;
           updated_at?: string;
         };
+        Relationships: [];
       };
       parents_students: {
         Row: {
@@ -101,6 +117,7 @@ export interface Database {
           student_id: string;
         };
         Update: Record<string, never>;
+        Relationships: [];
       };
       learning_preferences: {
         Row: {
@@ -127,6 +144,7 @@ export interface Database {
           notes?: string | null;
           updated_at?: string;
         };
+        Relationships: [];
       };
       homework_uploads: {
         Row: {
@@ -150,6 +168,7 @@ export interface Database {
           question_text?: string | null;
           status?: "pending" | "processed" | "error";
         };
+        Relationships: [];
       };
       ai_sessions: {
         Row: {
@@ -179,6 +198,7 @@ export interface Database {
           is_active?: boolean;
           updated_at?: string;
         };
+        Relationships: [];
       };
       ai_messages: {
         Row: {
@@ -203,6 +223,7 @@ export interface Database {
         Update: {
           was_helpful?: boolean | null;
         };
+        Relationships: [];
       };
       student_subject_progress: {
         Row: {
@@ -237,6 +258,28 @@ export interface Database {
           streak_days?: number;
           updated_at?: string;
         };
+        Relationships: [];
+      };
+      student_notes: {
+        Row: {
+          id: string;
+          student_id: string;
+          session_id: string;
+          subject: string | null;
+          topic: string | null;
+          note: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          student_id: string;
+          session_id: string;
+          subject?: string | null;
+          topic?: string | null;
+          note: string;
+        };
+        Update: Record<string, never>;
+        Relationships: [];
       };
     };
     Views: Record<string, never>;

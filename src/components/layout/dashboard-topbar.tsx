@@ -1,5 +1,6 @@
 "use client";
 import { Bell, Search, Menu, ChevronDown } from "lucide-react";
+import Image from "next/image";
 import { useState } from "react";
 import Link from "next/link";
 import { cn } from "@/lib/utils/cn";
@@ -19,9 +20,7 @@ export function DashboardTopbar({ userName = "there" }: DashboardTopbarProps) {
     <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-xl border-b border-[#E8EDF8] px-4 md:px-6 h-16 flex items-center gap-4">
       {/* Mobile logo */}
       <Link href="/dashboard" className="lg:hidden flex items-center gap-2 flex-shrink-0">
-        <div className="h-8 w-8 rounded-xl bg-gradient-blue flex items-center justify-center text-base shadow-blue">
-          🧠
-        </div>
+        <Image src="/brainbuddy-logo.png" alt="BrainBuddy" width={32} height={32} className="rounded-xl" />
         <span className="font-bold text-[#1F2A44]">BrainBuddy</span>
       </Link>
 

@@ -9,11 +9,12 @@ export default async function ParentLayout({ children }: { children: React.React
   if (!user) redirect("/login");
 
   // Fetch profile for real name; fall back to auth metadata then email
-  const { data: profile } = await supabase
+  const { data: profileData } = await supabase
     .from("profiles")
     .select("full_name")
     .eq("user_id", user.id)
     .single();
+  const profile = profileData as { full_name: string | null } | null;
 
   const fullName =
     profile?.full_name ||

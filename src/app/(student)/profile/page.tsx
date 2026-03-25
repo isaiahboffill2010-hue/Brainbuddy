@@ -14,8 +14,9 @@ export default async function StudentProfilePage() {
   if (!user) redirect("/login");
 
   const profile = await getProfile(supabase, user.id);
+  if (!profile) redirect("/login");
   const students = await getStudentsForParent(supabase, profile.id);
-  const student = (students as NonNullable<typeof students[number]>[])[0];
+  const student = students[0];
 
   if (!student) {
     return (

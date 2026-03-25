@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import type { Student } from "@/types/app";
 import { formatRelativeTime } from "@/lib/utils/format";
 import { ArrowRight } from "lucide-react";
@@ -15,8 +16,12 @@ export function StudentCard({ student, lastActivity, subjectCount = 0 }: Student
       <div className="glass-bright rounded-2xl border border-white/5 p-5 hover:border-primary/30 hover:shadow-card-hover transition-all cursor-pointer group">
         <div className="flex items-start gap-4">
           {/* Avatar */}
-          <div className="flex-shrink-0 h-14 w-14 rounded-2xl bg-gradient-to-br from-primary/20 to-accent/20 border border-primary/20 flex items-center justify-center text-3xl shadow-glow-sm">
-            {student.avatar_emoji}
+          <div className="flex-shrink-0 h-14 w-14 rounded-2xl overflow-hidden bg-gradient-to-br from-primary/20 to-accent/20 border border-primary/20 flex items-center justify-center text-3xl shadow-glow-sm">
+            {student.avatar_url ? (
+              <Image src={student.avatar_url} alt={student.name} width={56} height={56} className="object-cover w-full h-full" />
+            ) : (
+              student.avatar_emoji
+            )}
           </div>
 
           <div className="flex-1 min-w-0">

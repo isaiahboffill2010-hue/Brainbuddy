@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback } from "react";
 import {
-  Send, Brain, FileText, PlusCircle, Loader2, ImagePlus, X,
+  Send, Brain, FileText, PlusCircle, Loader2, ImagePlus, X, BookOpen,
 } from "lucide-react";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -17,6 +17,7 @@ type Session = {
   created_at: string; subjects?: { name: string; icon: string; color: string } | null;
 };
 type Message = { id?: string; role: "user" | "assistant"; content: string; image_url?: string | null; created_at?: string };
+type StudyNote = { id: string; topic: string | null; subject: string | null; note: string; created_at: string };
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 const subjectMeta: Record<string, { emoji: string; color: string; bg: string; border: string }> = {
@@ -59,6 +60,8 @@ export function TutorClient({
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
+  const [notes, setNotes] = useState<StudyNote[]>([]);
+  const [loadingNotes, setLoadingNotes] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -82,14 +85,29 @@ export function TutorClient({
     }
   }, []);
 
+  // Load notes for a session
+  const loadNotes = useCallback(async (sessionId: string) => {
+    setLoadingNotes(true);
+    try {
+      const res = await fetch(`/api/notes?sessionId=${sessionId}`);
+      const data = await res.json();
+      setNotes(Array.isArray(data) ? data : []);
+    } catch {
+      setNotes([]);
+    } finally {
+      setLoadingNotes(false);
+    }
+  }, []);
+
   const selectSession = useCallback(async (session: Session) => {
     setActiveSession(session);
     setStreamText("");
+    setNotes([]);
     const subj = subjects.find((s) => s.id === session.subject_id) ?? null;
     if (subj) setActiveSubject(subj);
-    await loadMessages(session.id);
+    await Promise.all([loadMessages(session.id), loadNotes(session.id)]);
     setTimeout(() => inputRef.current?.focus(), 100);
-  }, [loadMessages, subjects]);
+  }, [loadMessages, loadNotes, subjects]);
 
   // Start a new session for the selected subject, then send the message
   async function getOrCreateSession(): Promise<Session | null> {
@@ -169,7 +187,11 @@ export function TutorClient({
       setMessages((prev) => [...prev, { role: "assistant", content: full }]);
       setStreamText("");
 
-      // Refresh sessions list after a delay (notes update in background)
+      // Refresh notes after a short delay (note generation is async on the server)
+      const sessionForNotes = session;
+      setTimeout(() => loadNotes(sessionForNotes.id), 2500);
+
+      // Refresh sessions list after a delay
       setTimeout(async () => {
         const sessRes = await fetch(`/api/sessions?studentId=${student.id}`).catch(() => null);
         if (sessRes?.ok) {
@@ -460,24 +482,90 @@ export function TutorClient({
 
         {/* Header */}
         <div className="px-4 py-4 border-b border-[#E8EDF8] flex-shrink-0">
-          <div className="flex items-center gap-2 mb-0.5">
-            <div className="h-7 w-7 rounded-xl bg-[#F3F0FF] flex items-center justify-center flex-shrink-0">
-              <FileText className="h-3.5 w-3.5 text-[#8B7FFF]" />
+          <div className="flex items-center justify-between mb-0.5">
+            <div className="flex items-center gap-2">
+              <div className="h-7 w-7 rounded-xl bg-[#F3F0FF] flex items-center justify-center flex-shrink-0">
+                <FileText className="h-3.5 w-3.5 text-[#8B7FFF]" />
+              </div>
+              <p className="font-bold text-[#1F2A44] text-sm">My Notes</p>
             </div>
-            <p className="font-bold text-[#1F2A44] text-sm">Note Taker</p>
+            {notes.length > 0 && (
+              <span className="text-[10px] font-bold bg-[#F3F0FF] text-[#8B7FFF] border border-[#D5D0FF] rounded-full px-2 py-0.5">
+                {notes.length}
+              </span>
+            )}
           </div>
-          <p className="text-[11px] text-[#9AA4BA]">AI writes notes as you learn</p>
+          <p className="text-[11px] text-[#9AA4BA]">Cosmo writes notes as you learn</p>
         </div>
 
         {/* Notes body */}
-        <div className="flex-1 overflow-y-auto px-4 py-4">
-          <div className="flex flex-col items-center justify-center h-full text-center space-y-3 py-8">
-            <div className="text-4xl">📝</div>
-            <p className="text-sm font-semibold text-[#1F2A44]">Note Taker</p>
-            <p className="text-xs text-[#9AA4BA] leading-relaxed max-w-[200px]">
-              Notes about what you&apos;re learning will appear here as you chat with BrainBuddy.
-            </p>
-          </div>
+        <div className="flex-1 overflow-y-auto px-3 py-3 space-y-2.5">
+
+          {loadingNotes && (
+            <div className="flex items-center justify-center py-6">
+              <Loader2 className="h-4 w-4 animate-spin text-[#8B7FFF]" />
+            </div>
+          )}
+
+          {/* Empty state */}
+          {!loadingNotes && notes.length === 0 && (
+            <div className="flex flex-col items-center justify-center h-full text-center space-y-3 py-10 min-h-[200px]">
+              <div className="h-12 w-12 rounded-2xl bg-[#F3F0FF] flex items-center justify-center text-2xl">
+                📝
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-[#1F2A44]">No notes yet</p>
+                <p className="text-[11px] text-[#9AA4BA] leading-relaxed mt-0.5 max-w-[180px]">
+                  {activeSession
+                    ? "Your study notes will appear here as you learn"
+                    : "Start a session to see your notes here"}
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* Note cards */}
+          {!loadingNotes && notes.map((note, i) => {
+            const meta = getMeta(note.subject);
+            const isNew = i === 0 && streaming === false;
+            return (
+              <div
+                key={note.id}
+                className={`rounded-2xl border p-3 transition-all ${
+                  isNew && notes.length === 1
+                    ? "border-[#D5D0FF] bg-[#F3F0FF] animate-fade-in"
+                    : "border-[#E8EDF8] bg-[#F7FAFF]"
+                }`}
+              >
+                {/* Topic pill */}
+                {note.topic && (
+                  <div className="flex items-center gap-1.5 mb-2">
+                    <BookOpen className="h-3 w-3 flex-shrink-0" style={{ color: meta.color }} />
+                    <span
+                      className="text-[10px] font-bold uppercase tracking-wide truncate"
+                      style={{ color: meta.color }}
+                    >
+                      {note.topic}
+                    </span>
+                  </div>
+                )}
+
+                {/* Note text */}
+                <p className="text-xs text-[#1F2A44] leading-relaxed">{note.note}</p>
+
+                {/* Timestamp */}
+                <p className="text-[10px] text-[#C4CDE0] mt-1.5">{timeAgo(note.created_at)}</p>
+              </div>
+            );
+          })}
+
+          {/* Generating indicator (shown while streaming so the user knows a note is coming) */}
+          {streaming && activeSession && (
+            <div className="rounded-2xl border border-dashed border-[#D5D0FF] bg-[#F3F0FF]/50 p-3 flex items-center gap-2">
+              <Loader2 className="h-3 w-3 animate-spin text-[#8B7FFF] flex-shrink-0" />
+              <span className="text-[11px] text-[#8B7FFF] font-medium">Writing note…</span>
+            </div>
+          )}
         </div>
       </div>
     </div>

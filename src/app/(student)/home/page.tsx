@@ -19,7 +19,7 @@ export default async function StudentHomePage() {
   let name = "friend";
   try {
     const profile = await getProfile(supabase, user.id);
-    name = profile.full_name?.split(" ")[0] ?? "friend";
+    if (profile) name = profile.full_name?.split(" ")[0] ?? "friend";
   } catch { /* ok */ }
 
   return (

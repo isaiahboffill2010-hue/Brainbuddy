@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ArrowRight, Sparkles, Brain, Camera, BookOpen, TrendingUp, Users, Star, Zap, Shield } from "lucide-react";
@@ -82,9 +83,7 @@ export default function LandingPage() {
       <nav className="fixed top-0 left-0 right-0 z-50 glass border-b border-white/5">
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2.5">
-            <div className="h-8 w-8 rounded-xl bg-gradient-brand flex items-center justify-center text-lg shadow-glow-sm">
-              🧠
-            </div>
+            <Image src="/brainbuddy-logo.png" alt="BrainBuddy" width={32} height={32} className="rounded-xl" />
             <span className="font-bold text-lg gradient-text">BrainBuddy</span>
           </Link>
           <div className="flex items-center gap-3">
@@ -146,8 +145,8 @@ export default function LandingPage() {
           {/* Floating mascot */}
           <div className="flex justify-center pt-8 animate-slide-up" style={{ animationDelay: "0.3s", opacity: 0 }}>
             <div className="relative">
-              <div className="h-36 w-36 rounded-3xl bg-gradient-to-br from-violet-500/20 to-blue-500/20 glass-bright flex items-center justify-center text-7xl animate-float shadow-glow-lg border border-primary/20">
-                🧠
+              <div className="h-36 w-36 rounded-3xl bg-gradient-to-br from-violet-500/20 to-blue-500/20 glass-bright overflow-hidden flex items-center justify-center animate-float shadow-glow-lg border border-primary/20">
+                <Image src="/brainbuddy-logo.png" alt="BrainBuddy" width={144} height={144} className="object-contain w-full h-full" />
               </div>
               <div className="absolute -top-3 -right-3 bg-gradient-brand rounded-full px-3 py-1 text-white text-xs font-bold shadow-glow-sm whitespace-nowrap">
                 Hi! I&apos;m BrainBuddy ✨

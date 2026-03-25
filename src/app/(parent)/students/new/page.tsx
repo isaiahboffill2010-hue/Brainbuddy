@@ -14,6 +14,9 @@ export default function NewStudentPage() {
     avatar_emoji: string;
     learning_style: "visual" | "auditory" | "kinesthetic" | "reading";
     confidence_level: number;
+    interests?: string;
+    personality?: string;
+    struggles_with?: string;
   }) {
     const res = await fetch("/api/students", {
       method: "POST",
@@ -25,7 +28,12 @@ export default function NewStudentPage() {
       throw new Error(err.error ?? "Failed to create student");
     }
     const student = await res.json();
-    router.push(`/students/${student.id}`);
+    // Go straight to the intro chat so the kid can meet Cosmo
+    if (student.introSessionId) {
+      router.push(`/chat/${student.introSessionId}`);
+    } else {
+      router.push(`/students/${student.id}`);
+    }
   }
 
   return (
@@ -40,7 +48,7 @@ export default function NewStudentPage() {
         <CardHeader>
           <CardTitle>Student Profile</CardTitle>
           <CardDescription>
-            This information helps the AI tutor adapt to your child&apos;s needs.
+            The more you share, the better Cosmo can connect with your child. After this, Cosmo will introduce itself!
           </CardDescription>
         </CardHeader>
         <CardContent>

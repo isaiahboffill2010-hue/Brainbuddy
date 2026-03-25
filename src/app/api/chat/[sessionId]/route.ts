@@ -1,8 +1,10 @@
 import { NextResponse } from "next/server";
 import { createClient, createServiceClient } from "@/lib/supabase/server";
 import { streamTutorResponse } from "@/lib/openai/tutor";
+import { generateNote } from "@/lib/openai/note-generator";
 import { getSession } from "@/lib/supabase/queries/sessions";
 import { saveMessage } from "@/lib/supabase/queries/messages";
+import { saveNote } from "@/lib/supabase/queries/notes";
 
 export const runtime = "nodejs";
 
@@ -69,14 +71,35 @@ export async function POST(
   // Collect full response and save AI message in parallel with streaming
   const [streamForClient, streamForSave] = teeStream(stream);
 
-  // Save AI message after streaming completes (non-blocking)
-  collectStream(streamForSave).then((fullText) =>
-    saveMessage(service, {
+  // Save AI message + generate study note after streaming completes (non-blocking)
+  collectStream(streamForSave).then(async (fullText) => {
+    await saveMessage(service, {
       session_id: sessionId,
       role: "assistant",
       content: fullText,
-    })
-  ).catch(console.error);
+    });
+
+    // Generate and save a short study note from this exchange
+    const subjectName = sessionWithSubject.subjects?.name ?? "General";
+    const student = await service
+      .from("students")
+      .select("grade")
+      .eq("id", session.student_id)
+      .single()
+      .then((r) => r.data as { grade: string } | null)
+      .catch(() => null);
+
+    const note = await generateNote(message, fullText, subjectName, student?.grade ?? "school");
+    if (note) {
+      await saveNote(service, {
+        student_id: session.student_id,
+        session_id: sessionId,
+        subject: subjectName,
+        topic: note.topic,
+        note: note.note,
+      }).catch(console.error);
+    }
+  }).catch(console.error);
 
   return new Response(streamForClient, {
     headers: {

@@ -12,11 +12,12 @@ export default async function StudentsPage() {
   // Safely fetch profile and students — tables may not exist yet
   let students: any[] = [];
   try {
-    const { data: profile } = await supabase
+    const { data: profileData } = await supabase
       .from("profiles")
       .select("id")
       .eq("user_id", user.id)
       .maybeSingle();
+    const profile = profileData as { id: string } | null;
 
     if (profile) {
       const { data } = await supabase
