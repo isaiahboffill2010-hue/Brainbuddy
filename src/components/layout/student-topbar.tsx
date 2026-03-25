@@ -24,7 +24,7 @@ export function StudentTopbar({ studentName, studentEmoji = "🧠" }: StudentTop
   return (
     <header className="sticky top-0 z-40 flex items-center justify-between border-b border-white/5 bg-background/80 backdrop-blur-xl px-4 h-14">
       <Link href="/home" className="flex items-center gap-2.5">
-        <Image src="/brainbuddy-logo.png" alt="BrainBuddy" width={32} height={32} className="rounded-xl" />
+        <Image src="/cosmo-logo.png" alt="BrainBuddy" width={32} height={32} className="rounded-xl" />
         {studentName && (
           <div>
             <span className="font-semibold text-sm">Hi, {studentName}!</span>

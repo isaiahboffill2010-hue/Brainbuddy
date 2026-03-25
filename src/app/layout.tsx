@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   description:
     "Personalized AI tutoring for kids. Step-by-step help with math, reading, science, and writing — adapted to every learning style.",
   icons: {
-    icon: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧠</text></svg>",
+    icon: "/cosmo-logo.png",
   },
 };
 

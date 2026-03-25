@@ -21,9 +21,11 @@ const navItems = [
 export function DashboardSidebar({
   userName = "Student",
   userEmoji = "🦊",
+  avatarUrl,
 }: {
   userName?: string;
   userEmoji?: string;
+  avatarUrl?: string | null;
 }) {
   const pathname = usePathname();
   const router = useRouter();
@@ -40,7 +42,7 @@ export function DashboardSidebar({
       {/* Logo */}
       <div className="px-6 py-5 border-b border-[#E8EDF8]">
         <Link href="/dashboard" className="flex items-center gap-3">
-          <Image src="/brainbuddy-logo.png" alt="BrainBuddy" width={40} height={40} className="rounded-2xl" />
+          <Image src="/cosmo-logo.png" alt="BrainBuddy" width={40} height={40} className="rounded-2xl" />
           <div>
             <span className="font-bold text-lg text-[#1F2A44]">BrainBuddy</span>
             <div className="flex items-center gap-1 mt-0.5">
@@ -92,8 +94,10 @@ export function DashboardSidebar({
       {/* Student card at bottom */}
       <div className="px-3 py-4 border-t border-[#E8EDF8]">
         <div className="rounded-2xl bg-gradient-soft-blue p-3 flex items-center gap-3">
-          <div className="h-10 w-10 rounded-xl bg-gradient-blue flex items-center justify-center text-xl shadow-blue flex-shrink-0">
-            {userEmoji}
+          <div className="h-10 w-10 rounded-xl bg-gradient-blue flex items-center justify-center text-xl shadow-blue flex-shrink-0 overflow-hidden">
+            {avatarUrl
+              ? <Image src={avatarUrl} alt={userName} width={40} height={40} className="w-full h-full object-cover" />
+              : userEmoji}
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-semibold text-[#1F2A44] truncate">{userName}</p>

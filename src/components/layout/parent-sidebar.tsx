@@ -28,7 +28,7 @@ export function ParentSidebar() {
     <aside className="hidden md:flex flex-col w-64 border-r border-white/5 bg-card min-h-screen p-4">
       {/* Logo */}
       <Link href="/dashboard" className="flex items-center gap-2.5 px-3 mb-8 mt-2 group">
-        <Image src="/brainbuddy-logo.png" alt="BrainBuddy" width={36} height={36} className="rounded-xl" />
+        <Image src="/cosmo-logo.png" alt="BrainBuddy" width={36} height={36} className="rounded-xl" />
         <span className="font-bold text-lg gradient-text">BrainBuddy</span>
       </Link>
 

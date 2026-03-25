@@ -1,99 +1,97 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { ArrowRight, Sparkles, Brain, Camera, BookOpen, TrendingUp, Users, Star, Zap, Shield } from "lucide-react";
+import {
+  ArrowRight, Sparkles, Brain, MessageSquare, Zap,
+  BookOpen, Shield, CheckCircle2, ImageIcon,
+} from "lucide-react";
 
 const features = [
   {
     icon: Brain,
-    title: "Adapts to Every Kid",
-    desc: "BrainBuddy learns your child's style — visual, hands-on, auditory, or reading — and explains things their way, every time.",
-    color: "from-violet-500/20 to-purple-500/10",
-    border: "border-violet-500/20",
-    iconColor: "text-violet-400",
-  },
-  {
-    icon: Camera,
-    title: "Homework Photo Help",
-    desc: "Snap a photo of any problem. BrainBuddy reads it and guides step by step — no typing required.",
-    color: "from-blue-500/20 to-cyan-500/10",
-    border: "border-blue-500/20",
-    iconColor: "text-blue-400",
-  },
-  {
-    icon: BookOpen,
-    title: "4 Core Subjects",
-    desc: "Math, Reading, Science, and Writing — fully covered with kid-friendly step-by-step explanations.",
-    color: "from-indigo-500/20 to-blue-500/10",
-    border: "border-indigo-500/20",
-    iconColor: "text-indigo-400",
+    title: "AI Tutor — Cosmo",
+    desc: "Ask anything and get step-by-step explanations tailored to your grade. Cosmo adapts to how YOU learn.",
+    iconBg: "#EEF3FF",
+    iconColor: "#4F7CFF",
+    border: "#C7D7FF",
   },
   {
     icon: Zap,
-    title: "Learns Over Time",
-    desc: "BrainBuddy remembers what worked and what didn't, getting smarter and more personal with every session.",
-    color: "from-purple-500/20 to-violet-500/10",
-    border: "border-purple-500/20",
-    iconColor: "text-purple-400",
+    title: "Worked Example Cards",
+    desc: "Cosmo auto-generates visual step-by-step worked example cards with hints and a similar practice problem.",
+    iconBg: "#F3F0FF",
+    iconColor: "#8B7FFF",
+    border: "#D5D0FF",
   },
   {
-    icon: Users,
-    title: "Parent Dashboard",
-    desc: "Track every subject, session, and breakthrough. Always know exactly how your child is growing.",
-    color: "from-blue-500/20 to-indigo-500/10",
-    border: "border-blue-500/20",
-    iconColor: "text-blue-400",
+    icon: BookOpen,
+    title: "Personalized Practice",
+    desc: "Practice mode targets your weak topics per subject with custom questions and on-demand hints from Cosmo.",
+    iconBg: "#EEF8F0",
+    iconColor: "#22C55E",
+    border: "#BBF7D0",
   },
   {
-    icon: TrendingUp,
-    title: "Progress Tracking",
-    desc: "Watch topics move from 'still learning' to 'mastered' with clear visual progress for every subject.",
-    color: "from-violet-500/20 to-blue-500/10",
-    border: "border-violet-500/20",
-    iconColor: "text-violet-400",
+    icon: MessageSquare,
+    title: "My Chats",
+    desc: "Every conversation is saved and organized by subject — Math, Reading, Science, Writing. Pick up right where you left off.",
+    iconBg: "#EEF3FF",
+    iconColor: "#4F7CFF",
+    border: "#C7D7FF",
+  },
+  {
+    icon: ImageIcon,
+    title: "Send Images in Chat",
+    desc: "Send a photo of any problem directly to Cosmo. The AI reads and explains it — no typing the whole question required.",
+    iconBg: "#FFF8EC",
+    iconColor: "#FFC857",
+    border: "#FFE5A0",
+  },
+  {
+    icon: Shield,
+    title: "Safe & Kid-Friendly",
+    desc: "Built-in profanity filter keeps every conversation clean. BrainBuddy is a safe space — no inappropriate content, ever.",
+    iconBg: "#EEF8F0",
+    iconColor: "#22C55E",
+    border: "#BBF7D0",
   },
 ];
 
 const subjects = [
-  { emoji: "🔢", name: "Math", glow: "shadow-[0_0_20px_rgba(99,102,241,0.3)]", border: "border-indigo-500/30" },
-  { emoji: "📚", name: "Reading", glow: "shadow-[0_0_20px_rgba(59,130,246,0.3)]", border: "border-blue-500/30" },
-  { emoji: "🔬", name: "Science", glow: "shadow-[0_0_20px_rgba(139,92,246,0.3)]", border: "border-violet-500/30" },
-  { emoji: "✏️", name: "Writing", glow: "shadow-[0_0_20px_rgba(99,102,241,0.3)]", border: "border-indigo-500/30" },
+  { emoji: "🔢", name: "Math",    bg: "#EEF3FF", border: "#C7D7FF", color: "#4F7CFF" },
+  { emoji: "📚", name: "Reading", bg: "#EEF8F0", border: "#BBF7D0", color: "#22C55E" },
+  { emoji: "🔬", name: "Science", bg: "#F3F0FF", border: "#D5D0FF", color: "#8B7FFF" },
+  { emoji: "✏️", name: "Writing", bg: "#FFF8EC", border: "#FFE5A0", color: "#FFC857" },
 ];
 
-const steps = [
-  { n: "01", title: "Create a profile", desc: "Tell us your child's grade and how they learn best. Takes 60 seconds." },
-  { n: "02", title: "Ask anything", desc: "Type a question or snap a photo of homework. BrainBuddy handles it." },
-  { n: "03", title: "Learn and grow", desc: "Step-by-step guidance that adapts and remembers what clicks." },
-];
-
-const stats = [
-  { value: "4", label: "Subjects covered", suffix: "" },
-  { value: "4", label: "Learning styles", suffix: "" },
-  { value: "24", label: "Availability", suffix: "/7" },
-  { value: "∞", label: "Patience", suffix: "" },
+const highlights = [
+  "Step-by-step explanations at your level",
+  "Visual worked example cards — auto-generated",
+  "Personalized practice targeting weak topics",
+  "Chat history saved by subject",
+  "Send photos of problems — Cosmo reads them",
+  "Safe, profanity-free environment for all ages",
 ];
 
 export default function LandingPage() {
   return (
-    <div className="dark-theme min-h-screen bg-[#06070D] overflow-x-hidden text-white">
+    <div className="min-h-screen bg-[#F7FAFF] text-[#1F2A44] overflow-x-hidden">
 
       {/* ── Nav ── */}
-      <nav className="fixed top-0 left-0 right-0 z-50 glass border-b border-white/5">
+      <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-[#E8EDF8] shadow-[0_2px_12px_rgba(79,124,255,0.06)]">
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2.5">
-            <Image src="/brainbuddy-logo.png" alt="BrainBuddy" width={32} height={32} className="rounded-xl" />
-            <span className="font-bold text-lg gradient-text">BrainBuddy</span>
+            <Image src="/cosmo-logo.png" alt="BrainBuddy" width={36} height={36} className="rounded-xl object-contain" />
+            <span className="font-bold text-lg text-[#1F2A44]">BrainBuddy</span>
           </Link>
           <div className="flex items-center gap-3">
             <Link href="/login">
-              <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
+              <Button variant="ghost" size="sm" className="text-[#6B7A9A] hover:text-[#1F2A44]">
                 Sign In
               </Button>
             </Link>
             <Link href="/register">
-              <Button size="sm" className="bg-gradient-brand text-white border-0 shadow-glow-sm hover:shadow-glow-md transition-all hover:opacity-90">
+              <Button size="sm" className="bg-[#4F7CFF] text-white hover:bg-[#3D6AE8] shadow-[0_4px_12px_rgba(79,124,255,0.3)] transition-all">
                 Get Started Free
               </Button>
             </Link>
@@ -102,124 +100,104 @@ export default function LandingPage() {
       </nav>
 
       {/* ── Hero ── */}
-      <section className="relative pt-32 pb-24 px-6 overflow-hidden">
-        {/* Background glows */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] glow-blob-purple pointer-events-none" />
-        <div className="absolute top-20 left-1/4 w-[400px] h-[400px] glow-blob-blue pointer-events-none opacity-50" />
-        <div className="absolute inset-0 bg-dots opacity-30 pointer-events-none" />
+      <section className="relative pt-20 pb-24 px-6 overflow-hidden">
+        {/* Subtle background blobs */}
+        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[#4F7CFF]/5 rounded-full -translate-y-1/2 translate-x-1/3 pointer-events-none" />
+        <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-[#8B7FFF]/5 rounded-full translate-y-1/2 -translate-x-1/3 pointer-events-none" />
 
-        <div className="max-w-4xl mx-auto text-center relative z-10 space-y-8">
-          <div className="animate-slide-up">
-            <Badge className="bg-primary/10 text-primary border border-primary/20 px-4 py-1.5 text-sm gap-2">
-              <Sparkles className="h-3.5 w-3.5" />
-              AI-powered learning for every child
-            </Badge>
-          </div>
-
-          <div className="animate-slide-up space-y-4" style={{ animationDelay: "0.1s", opacity: 0 }}>
-            <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight leading-[1.1]">
-              Every kid learns{" "}
-              <span className="gradient-text-bright">differently.</span>
-              <br />
-              <span className="gradient-text">BrainBuddy</span> adapts.
-            </h1>
-            <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-              A personalized AI tutor that explains schoolwork in the exact way your child understands best — with memory, patience, and always-on availability.
-            </p>
-          </div>
-
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-slide-up" style={{ animationDelay: "0.2s", opacity: 0 }}>
-            <Link href="/register">
-              <Button size="lg" className="bg-gradient-brand text-white border-0 shadow-glow-md hover:shadow-glow-lg transition-all hover:opacity-90 text-base px-8 gap-2 h-12">
-                Start Learning Free
-                <ArrowRight className="h-4 w-4" />
-              </Button>
-            </Link>
-            <Link href="/login">
-              <Button size="lg" variant="outline" className="border-white/10 text-foreground hover:bg-white/5 text-base px-8 h-12">
-                Sign In
-              </Button>
-            </Link>
-          </div>
-
-          {/* Floating mascot */}
-          <div className="flex justify-center pt-8 animate-slide-up" style={{ animationDelay: "0.3s", opacity: 0 }}>
-            <div className="relative">
-              <div className="h-36 w-36 rounded-3xl bg-gradient-to-br from-violet-500/20 to-blue-500/20 glass-bright overflow-hidden flex items-center justify-center animate-float shadow-glow-lg border border-primary/20">
-                <Image src="/brainbuddy-logo.png" alt="BrainBuddy" width={144} height={144} className="object-contain w-full h-full" />
+        <div className="max-w-5xl mx-auto relative z-10">
+          <div className="flex flex-col lg:flex-row items-center gap-12">
+            {/* Left — text */}
+            <div className="flex-1 space-y-6 text-center lg:text-left">
+              <div className="inline-flex items-center gap-2 bg-[#EEF3FF] border border-[#C7D7FF] rounded-full px-4 py-1.5">
+                <Sparkles className="h-3.5 w-3.5 text-[#4F7CFF]" />
+                <span className="text-xs font-semibold text-[#4F7CFF] uppercase tracking-wider">AI-powered learning</span>
               </div>
-              <div className="absolute -top-3 -right-3 bg-gradient-brand rounded-full px-3 py-1 text-white text-xs font-bold shadow-glow-sm whitespace-nowrap">
-                Hi! I&apos;m BrainBuddy ✨
+
+              <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight leading-[1.1] text-[#1F2A44]">
+                Your personal AI tutor,{" "}
+                <span className="text-[#4F7CFF]">always ready.</span>
+              </h1>
+
+              <p className="text-lg text-[#6B7A9A] max-w-xl leading-relaxed">
+                BrainBuddy explains schoolwork step by step, generates visual worked examples, and personalizes practice to exactly what you need.
+              </p>
+
+              <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3">
+                <Link href="/register">
+                  <Button size="lg" className="bg-[#4F7CFF] text-white hover:bg-[#3D6AE8] shadow-[0_8px_24px_rgba(79,124,255,0.35)] transition-all text-base px-8 gap-2 h-12 rounded-2xl">
+                    Start Learning Free
+                    <ArrowRight className="h-4 w-4" />
+                  </Button>
+                </Link>
+                <Link href="/login">
+                  <Button size="lg" variant="outline" className="border-[#E8EDF8] text-[#6B7A9A] hover:border-[#4F7CFF]/40 hover:text-[#1F2A44] text-base px-8 h-12 rounded-2xl">
+                    Sign In
+                  </Button>
+                </Link>
               </div>
-              <div className="absolute -bottom-2 -left-3 bg-emerald-500/90 rounded-full px-2.5 py-1 text-white text-xs font-bold">
-                Always learning 🔥
+
+              {/* Highlight checklist */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-2">
+                {highlights.map((h) => (
+                  <div key={h} className="flex items-center gap-2">
+                    <CheckCircle2 className="h-4 w-4 text-[#22C55E] flex-shrink-0" />
+                    <span className="text-sm text-[#6B7A9A]">{h}</span>
+                  </div>
+                ))}
               </div>
             </div>
-          </div>
-        </div>
-      </section>
 
-      {/* ── Stats ── */}
-      <section className="py-12 px-6 border-y border-white/5">
-        <div className="max-w-4xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-6">
-          {stats.map((s) => (
-            <div key={s.label} className="text-center space-y-1">
-              <div className="text-3xl font-extrabold gradient-text">
-                {s.value}{s.suffix}
+            {/* Right — Cosmo mascot card */}
+            <div className="flex-shrink-0 flex flex-col items-center gap-4">
+              <div className="relative">
+                <div className="h-48 w-48 rounded-3xl bg-white border border-[#E8EDF8] shadow-[0_12px_40px_rgba(79,124,255,0.15)] flex items-center justify-center overflow-hidden">
+                  <Image src="/cosmo-logo.png" alt="BrainBuddy" width={192} height={192} className="object-contain w-full h-full" />
+                </div>
+                <div className="absolute -top-3 -right-3 bg-[#4F7CFF] rounded-2xl px-3 py-1.5 text-white text-xs font-bold shadow-[0_4px_12px_rgba(79,124,255,0.4)] whitespace-nowrap">
+                  Hi! I&apos;m Cosmo ✨
+                </div>
+                <div className="absolute -bottom-3 -left-3 bg-[#22C55E] rounded-2xl px-3 py-1.5 text-white text-xs font-bold shadow-[0_4px_12px_rgba(34,197,94,0.35)]">
+                  Let&apos;s learn! 🚀
+                </div>
               </div>
-              <div className="text-sm text-muted-foreground">{s.label}</div>
+
+              {/* Mini subject pills */}
+              <div className="flex gap-2 flex-wrap justify-center mt-2">
+                {subjects.map((s) => (
+                  <span key={s.name} className="flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold border"
+                    style={{ background: s.bg, borderColor: s.border, color: s.color }}>
+                    <span>{s.emoji}</span> {s.name}
+                  </span>
+                ))}
+              </div>
             </div>
-          ))}
-        </div>
-      </section>
-
-      {/* ── Subjects ── */}
-      <section className="py-20 px-6">
-        <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-12 space-y-3">
-            <h2 className="text-3xl md:text-4xl font-bold">
-              Covers the subjects that <span className="gradient-text">matter most</span>
-            </h2>
-            <p className="text-muted-foreground">Full support across every core school subject</p>
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {subjects.map((s) => (
-              <div
-                key={s.name}
-                className={`glass-bright rounded-2xl p-6 text-center space-y-3 border ${s.border} hover:scale-105 transition-transform cursor-default ${s.glow}`}
-              >
-                <div className="text-5xl">{s.emoji}</div>
-                <div className="font-semibold">{s.name}</div>
-              </div>
-            ))}
           </div>
         </div>
       </section>
 
       {/* ── Features ── */}
-      <section className="py-20 px-6 relative">
-        <div className="absolute inset-0 bg-grid opacity-20 pointer-events-none" />
-        <div className="max-w-5xl mx-auto relative z-10">
+      <section className="py-20 px-6 bg-white border-y border-[#E8EDF8]">
+        <div className="max-w-5xl mx-auto">
           <div className="text-center mb-12 space-y-3">
-            <h2 className="text-3xl md:text-4xl font-bold">
-              Built for how kids <span className="gradient-text">actually learn</span>
+            <h2 className="text-3xl md:text-4xl font-bold text-[#1F2A44]">
+              Everything you need to{" "}
+              <span className="text-[#4F7CFF]">actually learn</span>
             </h2>
-            <p className="text-muted-foreground max-w-xl mx-auto">
-              No generic explanations. BrainBuddy adapts to each child&apos;s unique way of understanding the world.
+            <p className="text-[#6B7A9A] max-w-xl mx-auto">
+              Not just a chatbot — BrainBuddy is a full learning system built for students.
             </p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {features.map((f) => (
-              <div
-                key={f.title}
-                className={`rounded-2xl border ${f.border} bg-gradient-to-br ${f.color} p-6 space-y-4 hover:shadow-card-hover transition-all group`}
-              >
-                <div className={`h-10 w-10 rounded-xl glass flex items-center justify-center ${f.iconColor} border border-white/10`}>
-                  <f.icon className="h-5 w-5" />
+              <div key={f.title} className="bg-[#F7FAFF] rounded-2xl border border-[#E8EDF8] p-6 space-y-4 hover:shadow-[0_8px_24px_rgba(79,124,255,0.1)] hover:border-[#C7D7FF] transition-all group">
+                <div className="h-10 w-10 rounded-xl flex items-center justify-center flex-shrink-0 transition-transform group-hover:scale-110"
+                  style={{ background: f.iconBg }}>
+                  <f.icon className="h-5 w-5" style={{ color: f.iconColor }} />
                 </div>
-                <div className="space-y-2">
-                  <h3 className="font-semibold text-base text-foreground">{f.title}</h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed">{f.desc}</p>
+                <div className="space-y-1.5">
+                  <h3 className="font-semibold text-base text-[#1F2A44]">{f.title}</h3>
+                  <p className="text-sm text-[#6B7A9A] leading-relaxed">{f.desc}</p>
                 </div>
               </div>
             ))}
@@ -231,20 +209,25 @@ export default function LandingPage() {
       <section className="py-20 px-6">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-12 space-y-3">
-            <h2 className="text-3xl md:text-4xl font-bold">
-              Up and running in <span className="gradient-text">3 steps</span>
+            <h2 className="text-3xl md:text-4xl font-bold text-[#1F2A44]">
+              Up and running in{" "}
+              <span className="text-[#4F7CFF]">seconds</span>
             </h2>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {steps.map((step, i) => (
-              <div key={step.n} className="relative">
-                {i < steps.length - 1 && (
-                  <div className="hidden md:block absolute top-8 left-full w-full h-px bg-gradient-to-r from-primary/40 to-transparent -translate-x-6 z-0" />
+            {[
+              { n: "01", title: "Create your profile", desc: "Set up your student profile with your name, grade, and photo. BrainBuddy personalizes everything to you." },
+              { n: "02", title: "Ask Cosmo anything", desc: "Type a question or send a photo. Cosmo explains it step by step in a way that makes sense for your grade." },
+              { n: "03", title: "Practice and improve", desc: "Use Practice Mode to work on your weak topics. Cosmo targets exactly what needs work." },
+            ].map((step, i, arr) => (
+              <div key={step.n} className="relative flex items-start gap-4 md:flex-col md:gap-0">
+                {i < arr.length - 1 && (
+                  <div className="hidden md:block absolute top-6 left-[calc(50%+28px)] right-0 h-px bg-[#E8EDF8]" />
                 )}
-                <div className="glass-bright rounded-2xl p-6 space-y-4 border border-white/5 relative z-10">
-                  <div className="text-4xl font-extrabold gradient-text opacity-50">{step.n}</div>
-                  <h3 className="font-semibold text-base">{step.title}</h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed">{step.desc}</p>
+                <div className="bg-white rounded-2xl border border-[#E8EDF8] p-6 space-y-3 shadow-[0_2px_12px_rgba(79,124,255,0.06)] w-full hover:shadow-[0_8px_24px_rgba(79,124,255,0.1)] hover:border-[#C7D7FF] transition-all">
+                  <div className="text-3xl font-extrabold text-[#4F7CFF] opacity-40">{step.n}</div>
+                  <h3 className="font-semibold text-[#1F2A44]">{step.title}</h3>
+                  <p className="text-sm text-[#6B7A9A] leading-relaxed">{step.desc}</p>
                 </div>
               </div>
             ))}
@@ -252,42 +235,61 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* ── Stats strip ── */}
+      <section className="py-12 px-6 bg-white border-y border-[#E8EDF8]">
+        <div className="max-w-4xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+          {[
+            { value: "4", label: "Core subjects", suffix: "" },
+            { value: "4", label: "Learning styles", suffix: "" },
+            { value: "24", label: "Availability", suffix: "/7" },
+            { value: "∞", label: "Patience", suffix: "" },
+          ].map((s) => (
+            <div key={s.label} className="space-y-1">
+              <div className="text-3xl font-extrabold text-[#4F7CFF]">{s.value}{s.suffix}</div>
+              <div className="text-sm text-[#6B7A9A]">{s.label}</div>
+            </div>
+          ))}
+        </div>
+      </section>
+
       {/* ── CTA ── */}
-      <section className="py-24 px-6 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-accent/10 pointer-events-none" />
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] glow-blob-purple pointer-events-none" />
-        <div className="max-w-2xl mx-auto text-center relative z-10 space-y-6">
-          <div className="text-5xl">🚀</div>
-          <h2 className="text-4xl md:text-5xl font-extrabold">
-            Ready to help your child{" "}
-            <span className="gradient-text-bright">level up?</span>
+      <section className="py-24 px-6">
+        <div className="max-w-2xl mx-auto text-center space-y-6">
+          <div className="flex justify-center">
+            <div className="h-20 w-20 rounded-3xl bg-white border border-[#E8EDF8] shadow-[0_8px_24px_rgba(79,124,255,0.15)] overflow-hidden flex items-center justify-center">
+              <Image src="/cosmo-logo.png" alt="BrainBuddy" width={80} height={80} className="object-contain w-full h-full" />
+            </div>
+          </div>
+          <h2 className="text-4xl md:text-5xl font-extrabold text-[#1F2A44]">
+            Ready to{" "}
+            <span className="text-[#4F7CFF]">level up?</span>
           </h2>
-          <p className="text-muted-foreground text-lg">
-            Join thousands of parents helping their kids learn smarter, not harder.
+          <p className="text-[#6B7A9A] text-lg">
+            Create your free account and start learning with Cosmo today.
           </p>
           <Link href="/register">
-            <Button size="lg" className="bg-gradient-brand text-white border-0 shadow-glow-lg hover:opacity-90 transition-all text-base px-10 h-14 gap-2">
+            <Button size="lg" className="bg-[#4F7CFF] text-white hover:bg-[#3D6AE8] shadow-[0_8px_24px_rgba(79,124,255,0.35)] transition-all text-base px-10 h-14 gap-2 rounded-2xl">
               <Sparkles className="h-5 w-5" />
               Get Started — It&apos;s Free
             </Button>
           </Link>
-          <p className="text-xs text-muted-foreground">No credit card needed • Set up in 60 seconds</p>
+          <p className="text-xs text-[#9AA4BA]">No credit card needed • Set up in 60 seconds</p>
         </div>
       </section>
 
       {/* ── Footer ── */}
-      <footer className="border-t border-white/5 py-8 px-6">
+      <footer className="border-t border-[#E8EDF8] bg-white py-8 px-6">
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
-            <span className="text-xl">🧠</span>
-            <span className="font-bold gradient-text">BrainBuddy</span>
+            <Image src="/cosmo-logo.png" alt="BrainBuddy" width={28} height={28} className="rounded-xl object-contain" />
+            <span className="font-bold text-[#1F2A44]">BrainBuddy</span>
           </div>
-          <p className="text-xs text-muted-foreground">
-            © {new Date().getFullYear()} BrainBuddy. Built to help every child succeed.
+          <p className="text-xs text-[#9AA4BA]">
+            © {new Date().getFullYear()} BrainBuddy. Built to help every student succeed.
           </p>
-          <div className="flex items-center gap-1 text-xs text-muted-foreground">
+          <div className="flex items-center gap-1.5 text-xs text-[#9AA4BA]">
             <Shield className="h-3 w-3" />
-            Safe & secure for kids
+            Safe &amp; secure for kids
           </div>
         </div>
       </footer>

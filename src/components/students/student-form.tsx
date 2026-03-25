@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,9 +9,10 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import {
-  GRADE_OPTIONS, LEARNING_STYLES, AVATAR_EMOJIS, PERSONALITY_OPTIONS, type Student,
+  GRADE_OPTIONS, LEARNING_STYLES, PERSONALITY_OPTIONS, type Student,
 } from "@/types/app";
 import { cn } from "@/lib/utils/cn";
+import { Camera, User } from "lucide-react";
 
 interface StudentFormProps {
   initialData?: Partial<Student>;
@@ -26,6 +27,7 @@ interface StudentFormProps {
     personality?: string;
     struggles_with?: string;
     learning_description?: string;
+    avatarFile?: File;
   }) => Promise<void>;
   submitLabel?: string;
 }
@@ -35,7 +37,11 @@ export function StudentForm({ initialData, onSubmit, submitLabel = "Save" }: Stu
   const [name, setName] = useState(initialData?.name ?? "");
   const [age, setAge] = useState(String(initialData?.age ?? ""));
   const [grade, setGrade] = useState(initialData?.grade ?? "");
-  const [avatar, setAvatar] = useState(initialData?.avatar_emoji ?? "🦊");
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(
+    (initialData as any)?.avatar_url ?? null
+  );
+  const avatarInputRef = useRef<HTMLInputElement>(null);
   const [learningStyle, setLearningStyle] = useState<"visual" | "auditory" | "kinesthetic" | "reading">(
     initialData?.learning_style ?? "visual"
   );
@@ -56,13 +62,14 @@ export function StudentForm({ initialData, onSubmit, submitLabel = "Save" }: Stu
         name,
         age: parseInt(age),
         grade,
-        avatar_emoji: avatar,
+        avatar_emoji: "🦊",
         learning_style: learningStyle,
         confidence_level: confidence,
         interests: interests.trim() || undefined,
         personality: personality || undefined,
         struggles_with: strugglesWith.trim() || undefined,
         learning_description: learningDescription.trim() || undefined,
+        avatarFile: avatarFile ?? undefined,
       });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
@@ -78,26 +85,56 @@ export function StudentForm({ initialData, onSubmit, submitLabel = "Save" }: Stu
         </div>
       )}
 
-      {/* Avatar picker */}
+      {/* Avatar upload */}
       <div className="space-y-2">
-        <Label>Pick an avatar</Label>
-        <div className="flex flex-wrap gap-2">
-          {AVATAR_EMOJIS.map((emoji) => (
-            <button
-              key={emoji}
-              type="button"
-              onClick={() => setAvatar(emoji)}
-              className={cn(
-                "h-10 w-10 rounded-xl text-2xl flex items-center justify-center transition-all",
-                avatar === emoji
-                  ? "bg-primary/20 border-2 border-primary scale-110"
-                  : "bg-muted border-2 border-transparent hover:border-muted-foreground/30"
+        <Label>Profile Photo</Label>
+        <div className="flex items-center gap-5">
+          {/* Preview circle */}
+          <div className="relative flex-shrink-0">
+            <div className="h-24 w-24 rounded-full overflow-hidden bg-[#EEF3FF] border-2 border-[#C7D7FF] flex items-center justify-center">
+              {avatarPreview ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={avatarPreview} alt="Avatar preview" className="w-full h-full object-cover" />
+              ) : (
+                <User className="h-10 w-10 text-[#9AA4BA]" />
               )}
+            </div>
+            <button
+              type="button"
+              onClick={() => avatarInputRef.current?.click()}
+              className="absolute bottom-0 right-0 h-8 w-8 rounded-full bg-[#4F7CFF] border-2 border-white flex items-center justify-center shadow-md hover:bg-[#3d6be0] transition-colors"
             >
-              {emoji}
+              <Camera className="h-3.5 w-3.5 text-white" />
             </button>
-          ))}
+          </div>
+          {/* Upload info */}
+          <div className="space-y-1.5">
+            <p className="text-sm font-medium text-[#1F2A44]">
+              {avatarFile ? avatarFile.name : "No photo selected"}
+            </p>
+            <p className="text-xs text-[#9AA4BA]">JPG, PNG or GIF — max 5MB</p>
+            <button
+              type="button"
+              onClick={() => avatarInputRef.current?.click()}
+              className="flex items-center gap-1.5 text-xs font-semibold text-[#4F7CFF] bg-[#EEF3FF] border border-[#C7D7FF] rounded-xl px-3 py-1.5 hover:bg-[#C7D7FF] transition-colors"
+            >
+              <Camera className="h-3 w-3" /> Upload Photo
+            </button>
+          </div>
         </div>
+        <input
+          ref={avatarInputRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            if (!file) return;
+            setAvatarFile(file);
+            setAvatarPreview(URL.createObjectURL(file));
+            e.target.value = "";
+          }}
+        />
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

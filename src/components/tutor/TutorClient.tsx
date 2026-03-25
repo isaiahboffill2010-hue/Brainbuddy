@@ -7,6 +7,7 @@ import {
 import Image from "next/image";
 import { SnipCropModal } from "./SnipCropModal";
 import { captureScreenFrame } from "@/lib/screenCapture";
+import { WorkedExampleCard, type WorkedExample } from "@/components/chat/worked-example-card";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 type Subject = { id: string; name: string; icon: string; color: string };
@@ -22,7 +23,23 @@ type Session = {
 type Message = {
   id?: string; role: "user" | "assistant"; content: string;
   image_url?: string | null; created_at?: string;
+  workedExample?: WorkedExample | null;
 };
+
+// ── Worked-example trigger logic ──────────────────────────────────────────────
+const EXAMPLE_REQUEST_RE =
+  /\b(show me|example|worked?\s*(out|through|example)|walk\s*me\s*through|how\s*(do|does|did)|demonstrate|step\s*by\s*step|can\s*you\s*show)\b/i;
+
+function shouldGenerateWorkedExample(
+  text: string,
+  hasImage: boolean,
+  learningStyle: string,
+): boolean {
+  const isVisual = learningStyle === "visual";
+  const asksForExample = EXAMPLE_REQUEST_RE.test(text);
+  // Trigger when: visual learner uploads/snips an image  OR  anyone explicitly asks for an example
+  return (isVisual && hasImage) || asksForExample;
+}
 type StudyNote = { id: string; topic: string | null; subject: string | null; note: string; created_at: string };
 
 type SnipState =
@@ -87,6 +104,7 @@ export function TutorClient({
   const [uploadingImage, setUploadingImage] = useState(false);
   const [notes, setNotes] = useState<StudyNote[]>([]);
   const [loadingNotes, setLoadingNotes] = useState(false);
+  const [generatingExample, setGeneratingExample] = useState(false);
 
   // Snip state machine
   const [snip, setSnip] = useState<SnipState>({ status: "idle" });
@@ -236,6 +254,39 @@ export function TutorClient({
       }
       setMessages((prev) => [...prev, { role: "assistant", content: full }]);
       setStreamText("");
+
+      // ── Worked-example generation (non-blocking) ──────────────────────────
+      const hasImage = !!(file || imageDataUrl);
+      if (shouldGenerateWorkedExample(text, hasImage, student.learning_style)) {
+        setGeneratingExample(true);
+        fetch("/api/chat/worked-example", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            userMessage: text,
+            imageUrl: persistedImageUrl ?? undefined,
+            imageDataUrl: imageDataUrl ?? undefined,
+            subject: activeSubject?.name ?? "General",
+            studentName: student.name,
+            grade: student.grade,
+          }),
+        })
+          .then((r) => (r.ok ? r.json() : null))
+          .then((example) => {
+            if (!example) return;
+            setMessages((prev) => {
+              const copy = [...prev];
+              // Attach to the last assistant message
+              const lastIdx = copy.length - 1;
+              if (copy[lastIdx]?.role === "assistant") {
+                copy[lastIdx] = { ...copy[lastIdx], workedExample: example };
+              }
+              return copy;
+            });
+          })
+          .catch(() => null)
+          .finally(() => setGeneratingExample(false));
+      }
 
       const sessionForNotes = session;
       setTimeout(() => loadNotes(sessionForNotes.id), 2500);
@@ -394,7 +445,7 @@ export function TutorClient({
           <div className="flex items-center justify-between px-5 py-3.5 border-b border-[#E8EDF8] flex-shrink-0">
             <div className="flex items-center gap-3">
               <div className="h-9 w-9 rounded-2xl bg-gradient-blue flex items-center justify-center shadow-blue flex-shrink-0 overflow-hidden">
-                <Image src="/brainbuddy-logo.png" alt="Cosmo" width={28} height={28} className="rounded-xl" />
+                <Image src="/cosmo-logo.png" alt="Cosmo" width={28} height={28} className="rounded-xl" />
               </div>
               <div>
                 <p className="font-bold text-[#1F2A44] text-sm">BrainBuddy AI Tutor</p>
@@ -441,7 +492,7 @@ export function TutorClient({
             {messages.length === 0 && !loadingMessages && !streamText && (
               <div className="flex flex-col items-center justify-center h-full text-center space-y-4 py-8">
                 <div className="h-16 w-16 rounded-3xl bg-gradient-blue flex items-center justify-center shadow-blue animate-float overflow-hidden">
-                  <Image src="/brainbuddy-logo.png" alt="Cosmo" width={48} height={48} className="rounded-2xl" />
+                  <Image src="/cosmo-logo.png" alt="Cosmo" width={48} height={48} className="rounded-2xl" />
                 </div>
                 <div className="space-y-1">
                   <p className="font-bold text-[#1F2A44] text-lg">Hey {student.name}! 👋</p>
@@ -478,7 +529,7 @@ export function TutorClient({
               <div key={i} className={`flex gap-3 ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
                 {msg.role === "assistant" && (
                   <div className="h-8 w-8 rounded-xl bg-gradient-blue flex items-center justify-center flex-shrink-0 shadow-blue mt-0.5 overflow-hidden">
-                    <Image src="/brainbuddy-logo.png" alt="Cosmo" width={22} height={22} className="rounded-lg" />
+                    <Image src="/cosmo-logo.png" alt="Cosmo" width={22} height={22} className="rounded-lg" />
                   </div>
                 )}
                 <div className={`max-w-[78%] flex flex-col gap-1.5 ${msg.role === "user" ? "items-end" : "items-start"}`}>
@@ -499,6 +550,19 @@ export function TutorClient({
                   >
                     {msg.content}
                   </div>
+                  {/* Worked-example card */}
+                  {msg.role === "assistant" && msg.workedExample && (
+                    <div className="w-full max-w-[520px]">
+                      <WorkedExampleCard example={msg.workedExample} />
+                    </div>
+                  )}
+                  {/* "Building example…" indicator on the last assistant message */}
+                  {msg.role === "assistant" && i === messages.length - 1 && generatingExample && (
+                    <div className="flex items-center gap-2 rounded-2xl bg-[#F3F0FF] border border-[#D5D0FF] px-4 py-2.5 mt-1">
+                      <Loader2 className="h-3.5 w-3.5 text-[#8B7FFF] animate-spin flex-shrink-0" />
+                      <span className="text-xs text-[#8B7FFF] font-medium">Building your worked example…</span>
+                    </div>
+                  )}
                 </div>
                 {msg.role === "user" && (
                   <div className="h-8 w-8 rounded-xl bg-[#EEF3FF] flex items-center justify-center flex-shrink-0 text-base mt-0.5">
@@ -512,7 +576,7 @@ export function TutorClient({
             {streamText && (
               <div className="flex gap-3 justify-start">
                 <div className="h-8 w-8 rounded-xl bg-gradient-blue flex items-center justify-center flex-shrink-0 shadow-blue mt-0.5 overflow-hidden">
-                  <Image src="/brainbuddy-logo.png" alt="Cosmo" width={22} height={22} className="rounded-lg" />
+                  <Image src="/cosmo-logo.png" alt="Cosmo" width={22} height={22} className="rounded-lg" />
                 </div>
                 <div className="max-w-[78%] rounded-2xl rounded-bl-sm px-4 py-3 text-sm leading-relaxed bg-[#F7FAFF] border border-[#E8EDF8] text-[#1F2A44] streaming-cursor"
                   style={{ whiteSpace: "pre-wrap" }}>
@@ -525,7 +589,7 @@ export function TutorClient({
             {(streaming || starting) && !streamText && (
               <div className="flex gap-3 justify-start">
                 <div className="h-8 w-8 rounded-xl bg-gradient-blue flex items-center justify-center flex-shrink-0 shadow-blue overflow-hidden">
-                  <Image src="/brainbuddy-logo.png" alt="Cosmo" width={22} height={22} className="rounded-lg" />
+                  <Image src="/cosmo-logo.png" alt="Cosmo" width={22} height={22} className="rounded-lg" />
                 </div>
                 <div className="rounded-2xl rounded-bl-sm px-4 py-3 bg-[#F7FAFF] border border-[#E8EDF8] flex items-center gap-2">
                   {[0, 1, 2].map((i) => (

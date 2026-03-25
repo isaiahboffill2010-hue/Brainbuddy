@@ -235,10 +235,15 @@ export default async function StudentDashboard() {
               </Link>
             </div>
           ) : (
-            <div className="flex flex-col items-center justify-center py-8 text-center space-y-2">
+            <div className="flex flex-col items-center justify-center py-8 text-center space-y-3">
               <span className="text-5xl">🧒</span>
               <p className="text-sm font-semibold text-[#1F2A44]">No profile set up yet</p>
-              <p className="text-xs text-[#9AA4BA]">Your profile will appear here once created</p>
+              <p className="text-xs text-[#9AA4BA]">Create a student profile to get started</p>
+              <Link href="/students/new">
+                <button className="mt-1 flex items-center gap-2 bg-gradient-blue text-white rounded-2xl px-5 py-2.5 text-sm font-bold shadow-blue hover:opacity-90 hover:-translate-y-0.5 transition-all">
+                  Create a Student
+                </button>
+              </Link>
             </div>
           )}
         </div>
@@ -261,7 +266,7 @@ export default async function StudentDashboard() {
           <div className="rounded-2xl bg-[#F7FAFF] border border-[#E8EDF8] p-4 mb-5">
             <div className="flex gap-3">
               <div className="h-10 w-10 rounded-2xl bg-gradient-blue flex items-center justify-center flex-shrink-0 shadow-blue overflow-hidden">
-                  <Image src="/brainbuddy-logo.png" alt="Cosmo" width={40} height={40} className="rounded-2xl" />
+                  <Image src="/cosmo-logo.png" alt="Cosmo" width={40} height={40} className="rounded-2xl" />
                 </div>
               <div>
                 <p className="text-sm font-semibold text-[#1F2A44]">Hey {studentName}! 👋</p>

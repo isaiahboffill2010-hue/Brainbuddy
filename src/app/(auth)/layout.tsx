@@ -11,7 +11,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
 
       {/* Logo */}
       <Link href="/" className="relative z-10 flex items-center gap-2.5 mb-8 group">
-        <Image src="/brainbuddy-logo.png" alt="BrainBuddy" width={44} height={44} className="rounded-2xl" />
+        <Image src="/cosmo-logo.png" alt="BrainBuddy" width={44} height={44} className="rounded-2xl" />
       </Link>
 
       {/* Card */}

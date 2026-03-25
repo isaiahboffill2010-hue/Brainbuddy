@@ -8,9 +8,10 @@ import { cn } from "@/lib/utils/cn";
 interface DashboardTopbarProps {
   userName?: string;
   userEmoji?: string;
+  avatarUrl?: string | null;
 }
 
-export function DashboardTopbar({ userName = "there", userEmoji = "🦊" }: DashboardTopbarProps) {
+export function DashboardTopbar({ userName = "there", userEmoji = "🦊", avatarUrl }: DashboardTopbarProps) {
   const [searchFocused, setSearchFocused] = useState(false);
 
   const hour = new Date().getHours();
@@ -21,7 +22,7 @@ export function DashboardTopbar({ userName = "there", userEmoji = "🦊" }: Dash
     <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-xl border-b border-[#E8EDF8] px-4 md:px-6 h-16 flex items-center gap-4">
       {/* Mobile logo */}
       <Link href="/dashboard" className="lg:hidden flex items-center gap-2 flex-shrink-0">
-        <Image src="/brainbuddy-logo.png" alt="BrainBuddy" width={32} height={32} className="rounded-xl" />
+        <Image src="/cosmo-logo.png" alt="BrainBuddy" width={32} height={32} className="rounded-xl" />
         <span className="font-bold text-[#1F2A44]">BrainBuddy</span>
       </Link>
 
@@ -62,8 +63,10 @@ export function DashboardTopbar({ userName = "there", userEmoji = "🦊" }: Dash
 
       {/* Avatar — shows the student's emoji + name */}
       <button className="flex items-center gap-2 rounded-2xl bg-[#F7FAFF] border border-[#E8EDF8] px-2 py-1.5 hover:border-[#4F7CFF]/30 hover:bg-[#EEF3FF] transition-all">
-        <div className="h-7 w-7 rounded-xl bg-gradient-blue flex items-center justify-center text-base shadow-blue">
-          {userEmoji}
+        <div className="h-7 w-7 rounded-xl bg-gradient-blue flex items-center justify-center text-base shadow-blue overflow-hidden flex-shrink-0">
+          {avatarUrl
+            ? <Image src={avatarUrl} alt={userName} width={28} height={28} className="w-full h-full object-cover" />
+            : userEmoji}
         </div>
         <span className="hidden sm:block text-sm font-medium text-[#1F2A44]">{userName}</span>
         <ChevronDown className="hidden sm:block h-3.5 w-3.5 text-[#9AA4BA]" />
