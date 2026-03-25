@@ -82,8 +82,8 @@ export async function streamTutorResponse(params: {
     model: "gpt-4o",
     messages: messages as Parameters<typeof openai.chat.completions.create>[0]["messages"],
     stream: true,
-    max_tokens: 400,
-    temperature: 0.7,
+    max_tokens: 600,
+    temperature: 0.3,
   });
 
   // 6. Return ReadableStream — properly handle errors so the client isn't left hanging
