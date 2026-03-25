@@ -36,10 +36,15 @@ export async function POST(
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { message, imageUrl } = await req.json();
+  const { message, imageUrl, imageDataUrl } = await req.json();
   if (!message?.trim()) {
     return NextResponse.json({ error: "message required" }, { status: 400 });
   }
+
+  // imageDataUrl is a base64 data URL from the snip flow — sent directly to OpenAI,
+  // never persisted to storage. imageUrl is a persistent Supabase Storage URL.
+  // OpenAI's vision API accepts both formats natively.
+  const resolvedImageUrl: string | undefined = imageUrl ?? imageDataUrl ?? undefined;
 
   // Get session to find student + subject
   const session = await getSession(supabase, sessionId).catch(() => null);
@@ -49,7 +54,7 @@ export async function POST(
     subjects: { name: string; icon: string; color: string } | null;
   };
 
-  // Save user message
+  // Save user message — only persist a URL if it came from storage (not ephemeral base64)
   await saveMessage(service, {
     session_id: sessionId,
     role: "user",
@@ -64,7 +69,7 @@ export async function POST(
     subjectId: session.subject_id ?? "",
     subjectName: sessionWithSubject.subjects?.name ?? "General",
     userMessage: message,
-    imageUrl,
+    imageUrl: resolvedImageUrl,
     supabase: service,
   });
 
