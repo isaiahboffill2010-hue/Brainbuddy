@@ -48,6 +48,7 @@ export type TutorContext = {
   interests?: string | null;
   personality?: string | null;
   strugglesWith?: string | null;
+  learningDescription?: string | null;
 };
 
 // Learning style options

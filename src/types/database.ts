@@ -74,6 +74,7 @@ export interface Database {
           interests: string | null;
           personality: "curious" | "energetic" | "shy" | "creative" | "funny" | null;
           struggles_with: string | null;
+          learning_description: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -90,6 +91,7 @@ export interface Database {
           interests?: string | null;
           personality?: "curious" | "energetic" | "shy" | "creative" | "funny" | null;
           struggles_with?: string | null;
+          learning_description?: string | null;
         };
         Update: {
           name?: string;
@@ -102,6 +104,7 @@ export interface Database {
           interests?: string | null;
           personality?: "curious" | "energetic" | "shy" | "creative" | "funny" | null;
           struggles_with?: string | null;
+          learning_description?: string | null;
           updated_at?: string;
         };
         Relationships: [];

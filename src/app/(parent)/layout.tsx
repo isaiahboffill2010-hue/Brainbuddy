@@ -8,28 +8,44 @@ export default async function ParentLayout({ children }: { children: React.React
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  // Fetch profile for real name; fall back to auth metadata then email
+  // Get parent profile id
   const { data: profileData } = await supabase
     .from("profiles")
-    .select("full_name")
+    .select("id, full_name")
     .eq("user_id", user.id)
     .single();
-  const profile = profileData as { full_name: string | null } | null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const profile = profileData as { id: string; full_name: string | null } | null;
 
-  const fullName =
-    profile?.full_name ||
-    user.user_metadata?.full_name ||
-    user.email?.split("@")[0] ||
+  // Look up the linked student — use their name + emoji throughout the UI
+  let studentName: string | null = null;
+  let studentEmoji = "🦊";
+  if (profile?.id) {
+    const { data: links } = await supabase
+      .from("parents_students")
+      .select("students(name, avatar_emoji)")
+      .eq("parent_id", profile.id)
+      .limit(1);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const student = (links as any)?.[0]?.students as { name: string; avatar_emoji: string } | null;
+    if (student) {
+      studentName = student.name;
+      studentEmoji = student.avatar_emoji ?? "🦊";
+    }
+  }
+
+  // Prefer the student's name; fall back to parent profile name then email prefix
+  const displayName =
+    studentName ??
+    profile?.full_name?.split(" ")[0] ??
+    user.user_metadata?.full_name?.split(" ")[0] ??
     "there";
-
-  // Use first name only for greetings
-  const firstName = fullName.split(" ")[0];
 
   return (
     <div className="flex min-h-screen bg-[#F7FAFF]">
-      <DashboardSidebar userName={fullName} />
+      <DashboardSidebar userName={displayName} userEmoji={studentEmoji} />
       <div className="flex-1 flex flex-col min-w-0">
-        <DashboardTopbar userName={firstName} />
+        <DashboardTopbar userName={displayName} userEmoji={studentEmoji} />
         <main className="flex-1 p-4 md:p-6 xl:p-8 max-w-[1400px] w-full mx-auto">
           {children}
         </main>

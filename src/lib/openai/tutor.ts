@@ -45,6 +45,7 @@ export async function streamTutorResponse(params: {
     interests: student.interests,
     personality: student.personality,
     strugglesWith: student.struggles_with,
+    learningDescription: student.learning_description,
   };
 
   // 2. Build system prompt

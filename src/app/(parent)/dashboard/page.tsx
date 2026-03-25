@@ -4,7 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import {
   Flame, TrendingUp, BookOpen, FlaskConical, Pencil, Calculator,
   MessageSquare, Clock, Upload, ChevronRight, Sparkles, Play,
-  Camera, Star, Zap, Trophy, Award, Target,
+  Star, Zap, Trophy, Award, Target,
 } from "lucide-react";
 
 // ── badge definitions (computed from real data) ───────────────────────────
@@ -72,7 +72,7 @@ export default async function StudentDashboard() {
     if (raw && !Array.isArray(raw)) student = raw;
 
     if (student) {
-      const [progressRes, sessRes, hwRes] = await Promise.all([
+      const [progressRes, sessRes, allSessRes] = await Promise.all([
         supabase
           .from("student_subject_progress")
           .select("*, subjects(name, icon, color)")
@@ -84,13 +84,22 @@ export default async function StudentDashboard() {
           .order("created_at", { ascending: false })
           .limit(5),
         supabase
-          .from("homework_uploads")
-          .select("id", { count: "exact", head: true })
+          .from("ai_sessions")
+          .select("id")
           .eq("student_id", student.id),
       ]);
       subjectProgress  = (progressRes.data as unknown[]) ?? [];
       recentSessions   = (sessRes.data   as unknown[]) ?? [];
-      homeworkCount    = hwRes.count ?? 0;
+      // Count images sent across all sessions
+      const sessionIds = (allSessRes.data ?? []).map((s: { id: string }) => s.id);
+      if (sessionIds.length > 0) {
+        const { count } = await supabase
+          .from("ai_messages")
+          .select("id", { count: "exact", head: true })
+          .in("session_id", sessionIds)
+          .not("image_url", "is", null);
+        homeworkCount = count ?? 0;
+      }
     }
   }
 
@@ -129,16 +138,10 @@ export default async function StudentDashboard() {
               </span>
             </div>
             <div className="flex flex-wrap gap-2 pt-1">
-              <Link href="/chat">
+              <Link href="/sessions">
                 <button className="flex items-center gap-2 bg-white text-[#4F7CFF] rounded-2xl px-5 py-2.5 text-sm font-bold shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all">
                   <Play className="h-4 w-4 fill-current" />
-                  Start Learning
-                </button>
-              </Link>
-              <Link href="/homework">
-                <button className="flex items-center gap-2 bg-white/20 text-white border border-white/30 rounded-2xl px-5 py-2.5 text-sm font-semibold hover:bg-white/30 transition-all">
-                  <Camera className="h-4 w-4" />
-                  Upload Homework
+                  My Chats
                 </button>
               </Link>
             </div>
@@ -164,7 +167,7 @@ export default async function StudentDashboard() {
         {[
           { label: "Day Streak",   value: streakDays.toString(),    sub: streakDays > 0 ? "Keep going! 🔥" : "Start today",    icon: Flame,    iconBg: "bg-[#FFC857]", border: "border-[#FFE5A0]", bg: "bg-[#FFF8EC]", text: "text-[#F5AD2E]" },
           { label: "AI Sessions",  value: totalSessions.toString(), sub: totalSessions > 0 ? "Sessions done" : "None yet",     icon: Sparkles, iconBg: "bg-[#4F7CFF]", border: "border-[#C7D7FF]", bg: "bg-[#EEF3FF]", text: "text-[#4F7CFF]" },
-          { label: "Homework",     value: homeworkCount.toString(), sub: "Photos uploaded",                                    icon: Upload,   iconBg: "bg-[#22C55E]", border: "border-[#BBF7D0]", bg: "bg-[#EEF8F0]", text: "text-[#16A34A]" },
+          { label: "Images Sent",  value: homeworkCount.toString(), sub: "Sent in chat",                                       icon: Upload,   iconBg: "bg-[#22C55E]", border: "border-[#BBF7D0]", bg: "bg-[#EEF8F0]", text: "text-[#16A34A]" },
           { label: "Total Points", value: totalPoints.toString(),   sub: `${earnedBadges.length} badge${earnedBadges.length !== 1 ? "s" : ""} earned`, icon: Star, iconBg: "bg-[#8B7FFF]", border: "border-[#D5D0FF]", bg: "bg-[#F3F0FF]", text: "text-[#8B7FFF]" },
         ].map((s) => (
           <div key={s.label} className={`rounded-3xl border ${s.border} ${s.bg} p-5 shadow-card hover:shadow-card-hover hover:-translate-y-0.5 transition-all`}>
@@ -257,7 +260,9 @@ export default async function StudentDashboard() {
 
           <div className="rounded-2xl bg-[#F7FAFF] border border-[#E8EDF8] p-4 mb-5">
             <div className="flex gap-3">
-              <div className="h-10 w-10 rounded-2xl bg-gradient-blue flex items-center justify-center text-xl flex-shrink-0 shadow-blue">🧠</div>
+              <div className="h-10 w-10 rounded-2xl bg-gradient-blue flex items-center justify-center flex-shrink-0 shadow-blue overflow-hidden">
+                  <Image src="/brainbuddy-logo.png" alt="Cosmo" width={40} height={40} className="rounded-2xl" />
+                </div>
               <div>
                 <p className="text-sm font-semibold text-[#1F2A44]">Hey {studentName}! 👋</p>
                 <p className="text-sm text-[#6B7A9A] leading-relaxed mt-0.5">
@@ -286,7 +291,7 @@ export default async function StudentDashboard() {
             ))}
           </div>
 
-          <Link href="/chat">
+          <Link href="/sessions">
             <button className="w-full rounded-2xl bg-gradient-blue text-white py-3 font-bold text-sm flex items-center justify-center gap-2 shadow-blue hover:opacity-90 hover:-translate-y-0.5 transition-all">
               <Play className="h-4 w-4 fill-current" />
               {totalSessions > 0 ? "Continue Learning" : "Start First Session"}
@@ -301,7 +306,7 @@ export default async function StudentDashboard() {
           <h2 className="font-bold text-[#1F2A44] text-lg flex items-center gap-2">
             <TrendingUp className="h-5 w-5 text-[#4F7CFF]" /> Subject Progress
           </h2>
-          <Link href="/progress" className="flex items-center gap-1 text-sm text-[#4F7CFF] font-semibold hover:underline">
+          <Link href="/subjects" className="flex items-center gap-1 text-sm text-[#4F7CFF] font-semibold hover:underline">
             View all <ChevronRight className="h-4 w-4" />
           </Link>
         </div>

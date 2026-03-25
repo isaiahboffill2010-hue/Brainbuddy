@@ -2,8 +2,9 @@
 
 import { useState, useRef, useEffect, useCallback } from "react";
 import {
-  Send, Brain, FileText, PlusCircle, Loader2, ImagePlus, X, BookOpen, Scissors, AlertCircle,
+  Send, FileText, PlusCircle, Loader2, ImagePlus, X, BookOpen, Scissors, AlertCircle,
 } from "lucide-react";
+import Image from "next/image";
 import { SnipCropModal } from "./SnipCropModal";
 import { captureScreenFrame } from "@/lib/screenCapture";
 
@@ -65,10 +66,12 @@ export function TutorClient({
   student,
   subjects,
   initialSessions,
+  initialSessionId,
 }: {
   student: Student;
   subjects: Subject[];
   initialSessions: Session[];
+  initialSessionId?: string;
 }) {
   const [sessions, setSessions] = useState<Session[]>(initialSessions);
   const [activeSession, setActiveSession] = useState<Session | null>(null);
@@ -96,6 +99,14 @@ export function TutorClient({
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, streamText]);
+
+  // Auto-open a session passed via URL (?session=ID)
+  useEffect(() => {
+    if (!initialSessionId) return;
+    const target = initialSessions.find((s) => s.id === initialSessionId);
+    if (target) selectSession(target);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialSessionId]);
 
   // Auto-dismiss snip errors after 4 seconds
   useEffect(() => {
@@ -382,8 +393,8 @@ export function TutorClient({
           {/* Header */}
           <div className="flex items-center justify-between px-5 py-3.5 border-b border-[#E8EDF8] flex-shrink-0">
             <div className="flex items-center gap-3">
-              <div className="h-9 w-9 rounded-2xl bg-gradient-blue flex items-center justify-center shadow-blue flex-shrink-0">
-                <Brain className="h-4 w-4 text-white" />
+              <div className="h-9 w-9 rounded-2xl bg-gradient-blue flex items-center justify-center shadow-blue flex-shrink-0 overflow-hidden">
+                <Image src="/brainbuddy-logo.png" alt="Cosmo" width={28} height={28} className="rounded-xl" />
               </div>
               <div>
                 <p className="font-bold text-[#1F2A44] text-sm">BrainBuddy AI Tutor</p>
@@ -429,8 +440,8 @@ export function TutorClient({
 
             {messages.length === 0 && !loadingMessages && !streamText && (
               <div className="flex flex-col items-center justify-center h-full text-center space-y-4 py-8">
-                <div className="h-16 w-16 rounded-3xl bg-gradient-blue flex items-center justify-center text-3xl shadow-blue animate-float">
-                  🧠
+                <div className="h-16 w-16 rounded-3xl bg-gradient-blue flex items-center justify-center shadow-blue animate-float overflow-hidden">
+                  <Image src="/brainbuddy-logo.png" alt="Cosmo" width={48} height={48} className="rounded-2xl" />
                 </div>
                 <div className="space-y-1">
                   <p className="font-bold text-[#1F2A44] text-lg">Hey {student.name}! 👋</p>
@@ -466,8 +477,8 @@ export function TutorClient({
             {!loadingMessages && messages.map((msg, i) => (
               <div key={i} className={`flex gap-3 ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
                 {msg.role === "assistant" && (
-                  <div className="h-8 w-8 rounded-xl bg-gradient-blue flex items-center justify-center flex-shrink-0 shadow-blue mt-0.5 text-base">
-                    🧠
+                  <div className="h-8 w-8 rounded-xl bg-gradient-blue flex items-center justify-center flex-shrink-0 shadow-blue mt-0.5 overflow-hidden">
+                    <Image src="/brainbuddy-logo.png" alt="Cosmo" width={22} height={22} className="rounded-lg" />
                   </div>
                 )}
                 <div className={`max-w-[78%] flex flex-col gap-1.5 ${msg.role === "user" ? "items-end" : "items-start"}`}>
@@ -500,7 +511,9 @@ export function TutorClient({
             {/* Streaming text */}
             {streamText && (
               <div className="flex gap-3 justify-start">
-                <div className="h-8 w-8 rounded-xl bg-gradient-blue flex items-center justify-center flex-shrink-0 shadow-blue mt-0.5 text-base">🧠</div>
+                <div className="h-8 w-8 rounded-xl bg-gradient-blue flex items-center justify-center flex-shrink-0 shadow-blue mt-0.5 overflow-hidden">
+                  <Image src="/brainbuddy-logo.png" alt="Cosmo" width={22} height={22} className="rounded-lg" />
+                </div>
                 <div className="max-w-[78%] rounded-2xl rounded-bl-sm px-4 py-3 text-sm leading-relaxed bg-[#F7FAFF] border border-[#E8EDF8] text-[#1F2A44] streaming-cursor"
                   style={{ whiteSpace: "pre-wrap" }}>
                   {streamText}
@@ -511,7 +524,9 @@ export function TutorClient({
             {/* Typing / analyzing indicator */}
             {(streaming || starting) && !streamText && (
               <div className="flex gap-3 justify-start">
-                <div className="h-8 w-8 rounded-xl bg-gradient-blue flex items-center justify-center flex-shrink-0 shadow-blue text-base">🧠</div>
+                <div className="h-8 w-8 rounded-xl bg-gradient-blue flex items-center justify-center flex-shrink-0 shadow-blue overflow-hidden">
+                  <Image src="/brainbuddy-logo.png" alt="Cosmo" width={22} height={22} className="rounded-lg" />
+                </div>
                 <div className="rounded-2xl rounded-bl-sm px-4 py-3 bg-[#F7FAFF] border border-[#E8EDF8] flex items-center gap-2">
                   {[0, 1, 2].map((i) => (
                     <span key={i} className="h-2 w-2 rounded-full bg-[#4F7CFF] animate-bounce"

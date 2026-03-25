@@ -1,5 +1,5 @@
 "use client";
-import { Bell, Search, Menu, ChevronDown } from "lucide-react";
+import { Bell, Search, ChevronDown } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
 import Link from "next/link";
@@ -7,9 +7,10 @@ import { cn } from "@/lib/utils/cn";
 
 interface DashboardTopbarProps {
   userName?: string;
+  userEmoji?: string;
 }
 
-export function DashboardTopbar({ userName = "there" }: DashboardTopbarProps) {
+export function DashboardTopbar({ userName = "there", userEmoji = "🦊" }: DashboardTopbarProps) {
   const [searchFocused, setSearchFocused] = useState(false);
 
   const hour = new Date().getHours();
@@ -41,16 +42,14 @@ export function DashboardTopbar({ userName = "there" }: DashboardTopbarProps) {
         />
       </div>
 
-      {/* Spacer */}
       <div className="flex-1" />
 
-      {/* Greeting (desktop) */}
+      {/* Greeting */}
       <p className="hidden md:block text-sm font-medium text-[#6B7A9A]">
         {greeting},{" "}
         <span className="text-[#1F2A44] font-semibold">{userName} 👋</span>
       </p>
 
-      {/* Divider */}
       <div className="hidden md:block h-6 w-px bg-[#E8EDF8]" />
 
       {/* Notifications */}
@@ -61,10 +60,10 @@ export function DashboardTopbar({ userName = "there" }: DashboardTopbarProps) {
         </span>
       </button>
 
-      {/* Avatar */}
+      {/* Avatar — shows the student's emoji + name */}
       <button className="flex items-center gap-2 rounded-2xl bg-[#F7FAFF] border border-[#E8EDF8] px-2 py-1.5 hover:border-[#4F7CFF]/30 hover:bg-[#EEF3FF] transition-all">
         <div className="h-7 w-7 rounded-xl bg-gradient-blue flex items-center justify-center text-base shadow-blue">
-          🦊
+          {userEmoji}
         </div>
         <span className="hidden sm:block text-sm font-medium text-[#1F2A44]">{userName}</span>
         <ChevronDown className="hidden sm:block h-3.5 w-3.5 text-[#9AA4BA]" />

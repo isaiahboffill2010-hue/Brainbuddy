@@ -3,7 +3,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import {
-  LayoutDashboard, Brain, GraduationCap, BookMarked,
+  LayoutDashboard, Brain, MessageSquare, GraduationCap, BookMarked,
   Settings, LogOut, ChevronRight, Zap,
 } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
@@ -12,12 +12,19 @@ import { createClient } from "@/lib/supabase/client";
 const navItems = [
   { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard", badge: null },
   { href: "/tutor", icon: Brain, label: "AI Tutor", badge: null },
+  { href: "/sessions", icon: MessageSquare, label: "My Chats", badge: null },
   { href: "/subjects", icon: GraduationCap, label: "Subjects", badge: null },
   { href: "/notes", icon: BookMarked, label: "Notes", badge: null },
   { href: "/settings", icon: Settings, label: "Settings", badge: null },
 ];
 
-export function DashboardSidebar({ userName = "User" }: { userName?: string }) {
+export function DashboardSidebar({
+  userName = "Student",
+  userEmoji = "🦊",
+}: {
+  userName?: string;
+  userEmoji?: string;
+}) {
   const pathname = usePathname();
   const router = useRouter();
 
@@ -86,11 +93,11 @@ export function DashboardSidebar({ userName = "User" }: { userName?: string }) {
       <div className="px-3 py-4 border-t border-[#E8EDF8]">
         <div className="rounded-2xl bg-gradient-soft-blue p-3 flex items-center gap-3">
           <div className="h-10 w-10 rounded-xl bg-gradient-blue flex items-center justify-center text-xl shadow-blue flex-shrink-0">
-            🦊
+            {userEmoji}
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-semibold text-[#1F2A44] truncate">{userName}</p>
-            <p className="text-xs text-[#6B7A9A]">Parent Account</p>
+            <p className="text-xs text-[#6B7A9A]">Student</p>
           </div>
         </div>
         <button

@@ -54,6 +54,7 @@ export default function StudentSettingsPage() {
     interests?: string;
     personality?: string;
     struggles_with?: string;
+    learning_description?: string;
   }) {
     const res = await fetch(`/api/students/${studentId}`, {
       method: "PATCH",

@@ -25,6 +25,7 @@ interface StudentFormProps {
     interests?: string;
     personality?: string;
     struggles_with?: string;
+    learning_description?: string;
   }) => Promise<void>;
   submitLabel?: string;
 }
@@ -42,6 +43,7 @@ export function StudentForm({ initialData, onSubmit, submitLabel = "Save" }: Stu
   const [interests, setInterests] = useState(initialData?.interests ?? "");
   const [personality, setPersonality] = useState<string>(initialData?.personality ?? "");
   const [strugglesWith, setStrugglesWith] = useState(initialData?.struggles_with ?? "");
+  const [learningDescription, setLearningDescription] = useState(initialData?.learning_description ?? "");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -60,6 +62,7 @@ export function StudentForm({ initialData, onSubmit, submitLabel = "Save" }: Stu
         interests: interests.trim() || undefined,
         personality: personality || undefined,
         struggles_with: strugglesWith.trim() || undefined,
+        learning_description: learningDescription.trim() || undefined,
       });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
@@ -214,6 +217,31 @@ export function StudentForm({ initialData, onSubmit, submitLabel = "Save" }: Stu
           className="min-h-[60px] resize-none text-sm"
           rows={2}
         />
+      </div>
+
+      {/* Learning description — free-text note to Cosmo */}
+      <div className="space-y-2 rounded-2xl border-2 border-violet-200 bg-violet-50/60 p-4">
+        <div className="flex items-center gap-2 mb-1">
+          <span className="text-lg">✏️</span>
+          <Label htmlFor="learning_description" className="text-base font-semibold text-violet-900">
+            Write a note to Cosmo about how {name || "this student"} learns
+          </Label>
+        </div>
+        <p className="text-xs text-violet-700 leading-relaxed mb-2">
+          Describe in your own words how your child understands best, what they find hard, and how you&apos;d like Cosmo to explain things.
+          Cosmo reads this before every session and adjusts the way it teaches.
+        </p>
+        <Textarea
+          id="learning_description"
+          value={learningDescription}
+          onChange={(e) => setLearningDescription(e.target.value)}
+          placeholder={`e.g. "${name || "Emma"} needs everything explained in very simple steps — never skip steps. She gets frustrated quickly if she doesn't understand, so Cosmo should always check in. She struggles with reading long text so keep answers short. She learns best through examples from real life. She has dyslexia so avoid large blocks of text."`}
+          className="min-h-[100px] resize-none text-sm bg-white border-violet-200 focus:border-violet-400"
+          rows={4}
+        />
+        <p className="text-xs text-violet-600 font-medium">
+          💡 The more detail you add, the better Cosmo can adapt to {name || "your child"}&apos;s needs.
+        </p>
       </div>
 
       {/* Confidence level */}

@@ -55,7 +55,7 @@ export default async function ParentSettingsPage() {
               <span className="text-sm text-[#6B7A9A]">Account Type</span>
             </div>
             <span className="text-sm font-semibold text-[#4F7CFF] bg-[#EEF3FF] rounded-full px-3 py-0.5 capitalize">
-              {profile?.role ?? "Parent"}
+              Student
             </span>
           </div>
         </div>
@@ -72,9 +72,8 @@ export default async function ParentSettingsPage() {
 
         {[
           { label: "Weekly progress report", desc: "Get a summary every Sunday", enabled: true },
-          { label: "Session completed", desc: "When your child finishes a session", enabled: true },
+          { label: "Session completed", desc: "When a session is finished", enabled: true },
           { label: "Badge earned", desc: "When a new badge is unlocked", enabled: true },
-          { label: "Homework uploaded", desc: "When a photo is submitted", enabled: false },
         ].map((item) => (
           <div key={item.label} className="flex items-center justify-between py-3 border-b border-[#E8EDF8] last:border-0">
             <div>
@@ -96,7 +95,7 @@ export default async function ParentSettingsPage() {
           </div>
           <h2 className="font-bold text-[#1F2A44]">Account</h2>
         </div>
-        <p className="text-sm text-[#9AA4BA] mb-4">Sign out from your parent account on this device.</p>
+        <p className="text-sm text-[#9AA4BA] mb-4">Sign out of your account on this device.</p>
         <form action="/api/auth/signout" method="POST">
           <button type="submit"
             className="flex items-center gap-2 rounded-2xl border border-[#FFD5D5] bg-[#FFF0F0] text-[#F87171] px-5 py-2.5 text-sm font-semibold hover:bg-[#FFE4E4] transition-colors">

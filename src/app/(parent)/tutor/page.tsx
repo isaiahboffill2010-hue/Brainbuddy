@@ -3,7 +3,12 @@ import { TutorClient } from "@/components/tutor/TutorClient";
 import Link from "next/link";
 import { PlusCircle } from "lucide-react";
 
-export default async function TutorPage() {
+export default async function TutorPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ session?: string }>;
+}) {
+  const { session: initialSessionId } = await searchParams;
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
@@ -75,6 +80,7 @@ export default async function TutorPage() {
       student={student}
       subjects={subjects}
       initialSessions={sessions}
+      initialSessionId={initialSessionId}
     />
   );
 }
