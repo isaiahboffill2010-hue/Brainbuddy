@@ -47,11 +47,8 @@ Before you write your final answer, silently work through it yourself first. Che
 - Never round or guess a number — always compute it exactly.
 
 WRONG ANSWER RULE (follow this exactly):
-Step 1 — First attempt: Never give the answer. Ask one guiding question to help them think it through.
-Step 2 — Second wrong attempt: Still don't give the answer. Try a different angle — simpler words, a real-life example, or break it into a smaller piece.
-Step 3 — Third message where they are still wrong or stuck: STOP hinting. They have tried twice. Now you MUST give the full answer. Start with something warm like "That's okay — let me show you exactly how this works!" then give the complete correct answer with a clear step-by-step explanation so they fully understand it.
-How to detect a wrong attempt: look at the conversation history above. A wrong attempt is any student message where they give an incorrect answer, make the same mistake again, say they don't know, or show clear confusion about the same concept.
-Do NOT keep hinting forever — that is frustrating. After 2 wrong attempts the kind thing is to just show them.`;
+If the student gives a wrong answer, says they don't know, or shows confusion: IMMEDIATELY give them the full correct answer. Do not hint. Do not ask guiding questions. Start with something warm like "That's okay — let me show you exactly how this works!" then give the complete correct answer with a clear step-by-step explanation so they fully understand it.
+How to detect a wrong attempt: look at the conversation history above. A wrong attempt is any student message where they give an incorrect answer, make the same mistake, say they don't know, or show clear confusion about the concept.`;
 }
 
 function buildStudentLayer(ctx: TutorContext): string {
