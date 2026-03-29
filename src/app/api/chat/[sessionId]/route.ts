@@ -127,15 +127,12 @@ export async function POST(
     // Generate and save a short study note from this exchange
     const subjectName = sessionWithSubject.subjects?.name ?? "General";
     const [student, existingNotes] = await Promise.all([
-      Promise.resolve(
-        service
-          .from("students")
-          .select("grade")
-          .eq("id", session.student_id)
-          .single()
-      )
-        .then((r) => r.data as { grade: string } | null)
-        .catch(() => null),
+      service
+        .from("students")
+        .select("grade")
+        .eq("id", session.student_id)
+        .single()
+        .then((r) => r.data as { grade: string } | null, () => null),
       getNotesForSession(service, sessionId),
     ]);
 
