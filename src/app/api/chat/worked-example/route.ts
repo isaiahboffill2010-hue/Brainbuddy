@@ -1,25 +1,9 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { openai } from "@/lib/openai/client";
-import type OpenAI from "openai";
+import { anthropic } from "@/lib/openai/client";
 
 export const runtime = "nodejs";
 
-/*
- * POST /api/chat/worked-example
- *
- * Analyzes the student's message (+ optional image), detects the concept,
- * generates a fresh similar problem, and returns a fully structured
- * worked-example JSON that the frontend renders as a visual card.
- *
- * Body:
- *   userMessage    string   — what the student typed
- *   imageUrl?      string   — persistent Supabase Storage URL
- *   imageDataUrl?  string   — ephemeral base64 data URL (snip path)
- *   subject        string   — e.g. "Math"
- *   studentName    string
- *   grade          string   — e.g. "4th Grade"
- */
 export async function POST(req: Request) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -30,7 +14,6 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "userMessage or image required" }, { status: 400 });
   }
 
-  // ── Build the image content block for GPT vision ───────────────────────────
   const resolvedImage: string | undefined = imageDataUrl ?? imageUrl ?? undefined;
 
   const systemPrompt = `You are an expert tutor who creates clear, visual worked examples for students.
@@ -46,13 +29,21 @@ Rules:
 - The similar question MUST use completely different numbers than the original
 - Keep language friendly and simple — this is for a kid`;
 
-  const userContent: OpenAI.Chat.Completions.ChatCompletionContentPart[] = [];
+  type ContentBlock =
+    | { type: "text"; text: string }
+    | { type: "image"; source: { type: "base64"; media_type: "image/jpeg" | "image/png" | "image/gif" | "image/webp"; data: string } }
+    | { type: "image"; source: { type: "url"; url: string } };
+
+  const userContent: ContentBlock[] = [];
 
   if (resolvedImage) {
-    userContent.push({
-      type: "image_url",
-      image_url: { url: resolvedImage, detail: "high" },
-    });
+    if (resolvedImage.startsWith("data:")) {
+      const [header, data] = resolvedImage.split(",");
+      const mediaType = (header.match(/data:(image\/\w+);/)?.[1] ?? "image/jpeg") as "image/jpeg" | "image/png" | "image/gif" | "image/webp";
+      userContent.push({ type: "image", source: { type: "base64", media_type: mediaType, data } });
+    } else {
+      userContent.push({ type: "image", source: { type: "url", url: resolvedImage } });
+    }
   }
 
   userContent.push({
@@ -81,21 +72,18 @@ Analyze the concept and return ONLY this JSON (no markdown, no extra text):
 }`,
   });
 
-  const completion = await openai.chat.completions.create({
-    model: resolvedImage ? "gpt-4o" : "gpt-4o-mini",
-    messages: [
-      { role: "system", content: systemPrompt },
-      { role: "user", content: userContent },
-    ],
-    response_format: { type: "json_object" },
-    temperature: 0.6,
+  const completion = await anthropic.messages.create({
+    model: "claude-sonnet-4-6",
+    system: systemPrompt,
+    messages: [{ role: "user", content: userContent as Parameters<typeof anthropic.messages.create>[0]["messages"][0]["content"] }],
     max_tokens: 1200,
   });
 
-  const raw = completion.choices[0]?.message?.content ?? "{}";
+  const raw = completion.content[0]?.type === "text" ? completion.content[0].text : "{}";
+  const jsonMatch = raw.match(/\{[\s\S]*\}/);
   let parsed: WorkedExampleResponse;
   try {
-    parsed = JSON.parse(raw);
+    parsed = JSON.parse(jsonMatch?.[0] ?? "{}");
   } catch {
     return NextResponse.json({ error: "Failed to parse AI response" }, { status: 500 });
   }

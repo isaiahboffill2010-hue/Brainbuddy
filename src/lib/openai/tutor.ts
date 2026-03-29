@@ -1,6 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/types/database";
-import { openai } from "./client";
+import { anthropic } from "./client";
 import { buildSystemPrompt, buildMemoryExtractionPrompt } from "./prompts";
 import { getStudent } from "@/lib/supabase/queries/students";
 import { getProgressForSubject } from "@/lib/supabase/queries/progress";
@@ -22,10 +22,9 @@ export async function streamTutorResponse(params: {
 }): Promise<ReadableStream<Uint8Array>> {
   const { sessionId, studentId, subjectId, subjectName, userMessage, imageUrl, supabase } = params;
 
-  // Treat empty string as "no subject" (e.g. intro session)
   const hasSubject = Boolean(subjectId);
 
-  // 1. Load student context — skip subject-specific queries when no subject
+  // 1. Load student context
   const [student, progress, learningNotes] = await Promise.all([
     getStudent(supabase, studentId),
     hasSubject ? getProgressForSubject(supabase, studentId, subjectId) : Promise.resolve(null),
@@ -55,38 +54,54 @@ export async function streamTutorResponse(params: {
   const history = await getRecentMessages(supabase, sessionId, 20);
 
   // 4. Build messages array
-  type OpenAIMessage = {
-    role: "system" | "user" | "assistant";
-    content: string | Array<{ type: string; text?: string; image_url?: { url: string } }>;
+  type ContentBlock =
+    | { type: "text"; text: string }
+    | { type: "image"; source: { type: "base64"; media_type: "image/jpeg" | "image/png" | "image/gif" | "image/webp"; data: string } }
+    | { type: "image"; source: { type: "url"; url: string } };
+
+  type AnthropicMessage = {
+    role: "user" | "assistant";
+    content: string | ContentBlock[];
   };
 
-  const messages: OpenAIMessage[] = [
-    { role: "system", content: systemPrompt },
+  // Build last user message content (with optional image)
+  let lastUserContent: string | ContentBlock[];
+  if (imageUrl) {
+    if (imageUrl.startsWith("data:")) {
+      // Base64 data URL — extract media type and data
+      const [header, data] = imageUrl.split(",");
+      const mediaType = (header.match(/data:(image\/\w+);/)?.[1] ?? "image/jpeg") as "image/jpeg" | "image/png" | "image/gif" | "image/webp";
+      lastUserContent = [
+        { type: "image", source: { type: "base64", media_type: mediaType, data } },
+        { type: "text", text: userMessage },
+      ];
+    } else {
+      lastUserContent = [
+        { type: "image", source: { type: "url", url: imageUrl } },
+        { type: "text", text: userMessage },
+      ];
+    }
+  } else {
+    lastUserContent = userMessage;
+  }
+
+  const messages: AnthropicMessage[] = [
     ...history.map((m) => ({
       role: m.role as "user" | "assistant",
       content: m.content,
     })),
-    {
-      role: "user" as const,
-      content: imageUrl
-        ? [
-            { type: "image_url", image_url: { url: imageUrl } },
-            { type: "text", text: userMessage },
-          ]
-        : userMessage,
-    },
+    { role: "user" as const, content: lastUserContent },
   ];
 
-  // 5. Stream from OpenAI
-  const stream = await openai.chat.completions.create({
-    model: "gpt-4o",
-    messages: messages as Parameters<typeof openai.chat.completions.create>[0]["messages"],
-    stream: true,
+  // 5. Stream from Claude
+  const stream = anthropic.messages.stream({
+    model: "claude-sonnet-4-6",
+    system: systemPrompt,
+    messages: messages as Parameters<typeof anthropic.messages.stream>[0]["messages"],
     max_tokens: 600,
-    temperature: 0.3,
   });
 
-  // 6. Return ReadableStream — properly handle errors so the client isn't left hanging
+  // 6. Return ReadableStream
   let fullResponse = "";
   const encoder = new TextEncoder();
 
@@ -94,20 +109,21 @@ export async function streamTutorResponse(params: {
     async start(controller) {
       try {
         for await (const chunk of stream) {
-          const text = chunk.choices[0]?.delta?.content ?? "";
-          if (text) {
-            fullResponse += text;
-            controller.enqueue(encoder.encode(text));
+          if (chunk.type === "content_block_delta" && chunk.delta.type === "text_delta") {
+            const text = chunk.delta.text;
+            if (text) {
+              fullResponse += text;
+              controller.enqueue(encoder.encode(text));
+            }
           }
         }
         controller.close();
       } catch (e) {
-        // Signal the error to the client so it doesn't hang
         controller.error(e);
         return;
       }
 
-      // Background: update learning memory only when there is a real subject
+      // Background: update learning memory
       if (hasSubject) {
         updateLearningMemory({
           supabase,
@@ -136,36 +152,29 @@ async function updateLearningMemory(params: {
 }) {
   const { supabase, sessionId, studentId, subjectId, conversation } = params;
 
-  if (conversation.length < 4) return; // Not enough data yet
+  if (conversation.length < 4) return;
 
-  // Cast to any for direct .from() calls — SupabaseClient<Database> inference
-  // breaks when passed as a parameter (known @supabase/supabase-js TS issue).
-  // The runtime behaviour is correct; this is purely a type workaround.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const db = supabase as any;
 
   type ProgressRow = Database["public"]["Tables"]["student_subject_progress"]["Row"];
 
   try {
-    const response = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      messages: [
-        { role: "system", content: buildMemoryExtractionPrompt() },
-        { role: "user", content: conversation.join("\n") },
-      ],
+    const response = await anthropic.messages.create({
+      model: "claude-haiku-4-5-20251001",
+      system: buildMemoryExtractionPrompt(),
+      messages: [{ role: "user", content: conversation.join("\n") }],
       max_tokens: 300,
-      temperature: 0.3,
-      response_format: { type: "json_object" },
     });
 
-    const raw = response.choices[0]?.message?.content ?? "{}";
-    const extracted = JSON.parse(raw) as {
+    const raw = response.content[0]?.type === "text" ? response.content[0].text : "{}";
+    const jsonMatch = raw.match(/\{[\s\S]*\}/);
+    const extracted = JSON.parse(jsonMatch?.[0] ?? "{}") as {
       mastered?: string[];
       struggling?: string[];
       note?: string;
     };
 
-    // Update session learning notes
     await db
       .from("ai_sessions")
       .update({
@@ -174,7 +183,6 @@ async function updateLearningMemory(params: {
       })
       .eq("id", sessionId);
 
-    // Update subject progress (merge arrays, deduplicate)
     const { data: prevData } = await db
       .from("student_subject_progress")
       .select("topics_mastered, topics_struggling, session_count")
@@ -186,7 +194,6 @@ async function updateLearningMemory(params: {
     const newMastered = Array.from(
       new Set([...(prev?.topics_mastered ?? []), ...(extracted.mastered ?? [])])
     );
-    // Remove from struggling if now mastered
     const newStruggling = Array.from(
       new Set([...(prev?.topics_struggling ?? []), ...(extracted.struggling ?? [])])
     ).filter((t) => !newMastered.includes(t));

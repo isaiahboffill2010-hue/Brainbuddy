@@ -1,4 +1,4 @@
-import { openai } from "@/lib/openai/client";
+import { anthropic } from "@/lib/openai/client";
 
 export const runtime = "nodejs";
 
@@ -39,7 +39,6 @@ Subject: ${subject}
 
 Answer their question helpfully and encouragingly.`;
   } else {
-    // default: hint
     userPrompt = `Give ONE helpful hint for this question without revealing the answer. Be encouraging.
 
 Question: ${question}
@@ -48,19 +47,11 @@ Subject: ${subject}
 Student: ${studentName}, ${grade}`;
   }
 
-  const stream = await openai.chat.completions.create({
-    model: "gpt-4o-mini",
-    messages: [
-      {
-        role: "system",
-        content:
-          "You are Cosmo, a friendly AI tutor for kids. Keep responses SHORT and encouraging. No markdown. No LaTeX. Plain sentences only.",
-      },
-      { role: "user", content: userPrompt },
-    ],
-    stream: true,
+  const stream = anthropic.messages.stream({
+    model: "claude-haiku-4-5-20251001",
+    system: "You are Cosmo, a friendly AI tutor for kids. Keep responses SHORT and encouraging. No markdown. No LaTeX. Plain sentences only.",
+    messages: [{ role: "user", content: userPrompt }],
     max_tokens: 300,
-    temperature: 0.7,
   });
 
   const encoder = new TextEncoder();
@@ -68,9 +59,9 @@ Student: ${studentName}, ${grade}`;
     async start(controller) {
       try {
         for await (const chunk of stream) {
-          const text = chunk.choices[0]?.delta?.content ?? "";
-          if (text) {
-            controller.enqueue(encoder.encode(text));
+          if (chunk.type === "content_block_delta" && chunk.delta.type === "text_delta") {
+            const text = chunk.delta.text;
+            if (text) controller.enqueue(encoder.encode(text));
           }
         }
         controller.close();

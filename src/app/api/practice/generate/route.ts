@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient, createServiceClient } from "@/lib/supabase/server";
-import { openai } from "@/lib/openai/client";
+import { anthropic } from "@/lib/openai/client";
 
 export const runtime = "nodejs";
 
@@ -16,7 +16,6 @@ export async function POST(req: Request) {
 
   const service = createServiceClient();
 
-  // Fetch student, subject progress, and recent notes in parallel
   const [studentRes, progressRes, notesRes, subjectRes] = await Promise.all([
     service
       .from("students")
@@ -93,18 +92,17 @@ Return ONLY this JSON (no other text):
 
 If there are no known weak topics, pick foundational topics for the subject and grade level.`;
 
-  const completion = await openai.chat.completions.create({
-    model: "gpt-4o-mini",
+  const completion = await anthropic.messages.create({
+    model: "claude-haiku-4-5-20251001",
     messages: [{ role: "user", content: prompt }],
-    response_format: { type: "json_object" },
-    temperature: 0.7,
     max_tokens: 2000,
   });
 
-  const raw = completion.choices[0]?.message?.content ?? "{}";
+  const raw = completion.content[0]?.type === "text" ? completion.content[0].text : "{}";
+  const jsonMatch = raw.match(/\{[\s\S]*\}/);
   let parsed: { focusTopic?: string; questions?: unknown[] };
   try {
-    parsed = JSON.parse(raw);
+    parsed = JSON.parse(jsonMatch?.[0] ?? "{}");
   } catch {
     return NextResponse.json({ error: "Failed to parse AI response" }, { status: 500 });
   }
