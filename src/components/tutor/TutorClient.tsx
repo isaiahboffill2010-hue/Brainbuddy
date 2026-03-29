@@ -300,7 +300,7 @@ export function TutorClient({
     } catch {
       setMessages((prev) => [
         ...prev,
-        { role: "assistant", content: "Something went wrong. Make sure your OpenAI API key is set in .env.local." },
+        { role: "assistant", content: "Something went wrong. Please try again in a moment." },
       ]);
       setStreamText("");
     } finally {
