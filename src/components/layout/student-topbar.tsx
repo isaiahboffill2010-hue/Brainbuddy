@@ -22,12 +22,12 @@ export function StudentTopbar({ studentName, studentEmoji = "🧠" }: StudentTop
   }
 
   return (
-    <header className="sticky top-0 z-40 flex items-center justify-between border-b border-white/5 bg-background/80 backdrop-blur-xl px-4 h-14">
+    <header className="sticky top-0 z-40 flex items-center justify-between border-b border-white/10 bg-[#111827]/80 backdrop-blur-xl px-4 h-14 shadow-lg">
       <Link href="/home" className="flex items-center gap-2.5">
         <Image src="/cosmo-logo.png" alt="BrainBuddy" width={32} height={32} className="rounded-xl" />
         {studentName && (
           <div>
-            <span className="font-semibold text-sm">Hi, {studentName}!</span>
+            <span className="font-semibold text-white text-sm">Hi, {studentName}!</span>
             <span className="ml-1.5 text-sm">👋</span>
           </div>
         )}
@@ -36,7 +36,7 @@ export function StudentTopbar({ studentName, studentEmoji = "🧠" }: StudentTop
         variant="ghost"
         size="icon"
         onClick={handleSignOut}
-        className="hover:bg-white/5 text-muted-foreground hover:text-foreground"
+        className="hover:bg-white/10 text-slate-400 hover:text-white transition-colors"
         title="Sign out"
       >
         <LogOut className="h-4 w-4" />

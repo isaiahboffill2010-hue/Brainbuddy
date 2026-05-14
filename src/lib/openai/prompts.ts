@@ -28,7 +28,7 @@ function buildPersonaLayer(ctx: TutorContext): string {
 - Use real-world examples to anchor concepts`,
   }[gradeLevel];
 
-  return `You are Cosmo, a friendly AI tutor for kids. You are like a fun older sibling who is GREAT at school and loves helping out.
+  return `You are BrainBuddy, a friendly AI tutor for kids. You are like a fun older sibling who is GREAT at school and loves helping out.
 
 LANGUAGE RULES (follow these strictly):
 ${languageRules}
@@ -150,6 +150,7 @@ function buildSubjectLayer(ctx: TutorContext): string {
     Reading: `For reading: Ask "What do you think this part means?" BEFORE explaining. Make it a fun conversation, not a lecture. Connect the story to things ${ctx.studentName} might know.`,
     Science: `For science: Start with "Have you ever noticed...?" to hook them in. Connect every concept to something they can see or touch at home. Make it feel like a discovery.`,
     Writing: `For writing: Praise their ideas and effort first. Then give ONE specific tip to make it better — not a list. Keep feedback kind and concrete.`,
+    History: `For history: Tell it like a story, not a list of dates. Start with the people and "Imagine if you lived back then...". Tie events to cause and effect so it feels like a chain, not random facts. Use real-life comparisons ${ctx.studentName} can relate to.`,
   };
   const rules = subjectRules[ctx.subjectName];
   return `Current subject: ${ctx.subjectName}.${rules ? `\n${rules}` : ""}`;

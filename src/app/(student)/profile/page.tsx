@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import Image from "next/image";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { getProfile } from "@/lib/supabase/queries/profiles";
@@ -36,8 +37,12 @@ export default async function StudentProfilePage() {
     <div className="space-y-6">
       {/* Avatar hero */}
       <div className="text-center space-y-3 py-6">
-        <div className="inline-flex h-24 w-24 items-center justify-center rounded-3xl bg-gradient-to-br from-violet-100 to-indigo-100 text-6xl border-2 border-violet-200/50 mx-auto">
-          {student.avatar_emoji}
+        <div className="inline-flex h-24 w-24 items-center justify-center rounded-3xl bg-gradient-to-br from-violet-100 to-indigo-100 text-6xl border-2 border-violet-200/50 mx-auto overflow-hidden">
+          {student.avatar_url ? (
+            <Image src={student.avatar_url} alt={student.name} width={96} height={96} className="object-cover w-full h-full" />
+          ) : (
+            student.avatar_emoji
+          )}
         </div>
         <div>
           <h1 className="text-2xl font-bold">{student.name}</h1>

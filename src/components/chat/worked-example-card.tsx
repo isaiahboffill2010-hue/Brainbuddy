@@ -28,6 +28,7 @@ const subjectPalette: Record<string, { color: string; bg: string; border: string
   Reading:     { color: "#22C55E", bg: "#EEF8F0", border: "#BBF7D0", emoji: "📚" },
   Science:     { color: "#8B7FFF", bg: "#F3F0FF", border: "#D5D0FF", emoji: "🔬" },
   Writing:     { color: "#FFC857", bg: "#FFF8EC", border: "#FFE5A0", emoji: "✏️" },
+  History:     { color: "#F97316", bg: "#FFF7ED", border: "#FED7AA", emoji: "📜" },
 };
 function getPalette(subject?: string) {
   return subjectPalette[subject ?? ""] ?? { color: "#4F7CFF", bg: "#EEF3FF", border: "#C7D7FF", emoji: "📐" };
@@ -56,9 +57,9 @@ export function WorkedExampleCard({ example }: { example: WorkedExample }) {
         className="px-5 py-4 flex items-center gap-3"
         style={{ backgroundColor: pal.bg, borderBottom: `1px solid ${pal.border}` }}
       >
-        {/* Cosmo logo */}
+        {/* BrainBuddy logo */}
         <div className="h-9 w-9 rounded-2xl bg-gradient-to-br from-[#4F7CFF] to-[#8B7FFF] flex items-center justify-center flex-shrink-0 shadow-md overflow-hidden">
-          <Image src="/cosmo-logo.png" alt="Cosmo" width={28} height={28} className="rounded-xl" />
+          <Image src="/cosmo-logo.png" alt="BrainBuddy" width={28} height={28} className="rounded-xl" />
         </div>
 
         <div className="flex-1 min-w-0">

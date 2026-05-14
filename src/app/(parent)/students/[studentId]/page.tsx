@@ -1,5 +1,6 @@
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { createClient } from "@/lib/supabase/server";
 import { getStudent } from "@/lib/supabase/queries/students";
 import { getProgressForStudent } from "@/lib/supabase/queries/progress";
@@ -35,8 +36,12 @@ export default async function StudentDetailPage({
       {/* Header */}
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-4">
-          <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-violet-100 to-indigo-100 flex items-center justify-center text-4xl border border-violet-200/50">
-            {student.avatar_emoji}
+          <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-violet-100 to-indigo-100 flex items-center justify-center text-4xl border border-violet-200/50 overflow-hidden">
+            {student.avatar_url ? (
+              <Image src={student.avatar_url} alt={student.name} width={64} height={64} className="object-cover w-full h-full" />
+            ) : (
+              student.avatar_emoji
+            )}
           </div>
           <div>
             <h1 className="text-3xl font-bold">{student.name}</h1>

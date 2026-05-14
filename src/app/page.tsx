@@ -9,8 +9,8 @@ import {
 const features = [
   {
     icon: Brain,
-    title: "AI Tutor — Cosmo",
-    desc: "Ask anything and get step-by-step explanations tailored to your grade. Cosmo adapts to how YOU learn.",
+    title: "AI Tutor — BrainBuddy",
+    desc: "Ask anything and get step-by-step explanations tailored to your grade. BrainBuddy adapts to how YOU learn.",
     iconBg: "#EEF3FF",
     iconColor: "#4F7CFF",
     border: "#C7D7FF",
@@ -18,7 +18,7 @@ const features = [
   {
     icon: Zap,
     title: "Worked Example Cards",
-    desc: "Cosmo auto-generates visual step-by-step worked example cards with hints and a similar practice problem.",
+    desc: "BrainBuddy auto-generates visual step-by-step worked example cards with hints and a similar practice problem.",
     iconBg: "#F3F0FF",
     iconColor: "#8B7FFF",
     border: "#D5D0FF",
@@ -26,7 +26,7 @@ const features = [
   {
     icon: BookOpen,
     title: "Personalized Practice",
-    desc: "Practice mode targets your weak topics per subject with custom questions and on-demand hints from Cosmo.",
+    desc: "Practice mode targets your weak topics per subject with custom questions and on-demand hints from BrainBuddy.",
     iconBg: "#EEF8F0",
     iconColor: "#22C55E",
     border: "#BBF7D0",
@@ -42,7 +42,7 @@ const features = [
   {
     icon: ImageIcon,
     title: "Send Images in Chat",
-    desc: "Send a photo of any problem directly to Cosmo. The AI reads and explains it — no typing the whole question required.",
+    desc: "Send a photo of any problem directly to BrainBuddy. The AI reads and explains it — no typing the whole question required.",
     iconBg: "#FFF8EC",
     iconColor: "#FFC857",
     border: "#FFE5A0",
@@ -62,6 +62,7 @@ const subjects = [
   { emoji: "📚", name: "Reading", bg: "#EEF8F0", border: "#BBF7D0", color: "#22C55E" },
   { emoji: "🔬", name: "Science", bg: "#F3F0FF", border: "#D5D0FF", color: "#8B7FFF" },
   { emoji: "✏️", name: "Writing", bg: "#FFF8EC", border: "#FFE5A0", color: "#FFC857" },
+  { emoji: "📜", name: "History", bg: "#FFF7ED", border: "#FED7AA", color: "#F97316" },
 ];
 
 const highlights = [
@@ -69,7 +70,7 @@ const highlights = [
   "Visual worked example cards — auto-generated",
   "Personalized practice targeting weak topics",
   "Chat history saved by subject",
-  "Send photos of problems — Cosmo reads them",
+  "Send photos of problems — BrainBuddy reads them",
   "Safe, profanity-free environment for all ages",
 ];
 
@@ -148,14 +149,14 @@ export default function LandingPage() {
               </div>
             </div>
 
-            {/* Right — Cosmo mascot card */}
+            {/* Right — BrainBuddy mascot card */}
             <div className="flex-shrink-0 flex flex-col items-center gap-4">
               <div className="relative">
                 <div className="h-48 w-48 rounded-3xl bg-white border border-[#E8EDF8] shadow-[0_12px_40px_rgba(79,124,255,0.15)] flex items-center justify-center overflow-hidden">
                   <Image src="/cosmo-logo.png" alt="BrainBuddy" width={192} height={192} className="object-contain w-full h-full" />
                 </div>
                 <div className="absolute -top-3 -right-3 bg-[#4F7CFF] rounded-2xl px-3 py-1.5 text-white text-xs font-bold shadow-[0_4px_12px_rgba(79,124,255,0.4)] whitespace-nowrap">
-                  Hi! I&apos;m Cosmo ✨
+                  Hi! I&apos;m BrainBuddy ✨
                 </div>
                 <div className="absolute -bottom-3 -left-3 bg-[#22C55E] rounded-2xl px-3 py-1.5 text-white text-xs font-bold shadow-[0_4px_12px_rgba(34,197,94,0.35)]">
                   Let&apos;s learn! 🚀
@@ -217,8 +218,8 @@ export default function LandingPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {[
               { n: "01", title: "Create your profile", desc: "Set up your student profile with your name, grade, and photo. BrainBuddy personalizes everything to you." },
-              { n: "02", title: "Ask Cosmo anything", desc: "Type a question or send a photo. Cosmo explains it step by step in a way that makes sense for your grade." },
-              { n: "03", title: "Practice and improve", desc: "Use Practice Mode to work on your weak topics. Cosmo targets exactly what needs work." },
+              { n: "02", title: "Ask BrainBuddy anything", desc: "Type a question or send a photo. BrainBuddy explains it step by step in a way that makes sense for your grade." },
+              { n: "03", title: "Practice and improve", desc: "Use Practice Mode to work on your weak topics. BrainBuddy targets exactly what needs work." },
             ].map((step, i, arr) => (
               <div key={step.n} className="relative flex items-start gap-4 md:flex-col md:gap-0">
                 {i < arr.length - 1 && (
@@ -265,7 +266,7 @@ export default function LandingPage() {
             <span className="text-[#4F7CFF]">level up?</span>
           </h2>
           <p className="text-[#6B7A9A] text-lg">
-            Create your free account and start learning with Cosmo today.
+            Create your free account and start learning with BrainBuddy today.
           </p>
           <Link href="/register">
             <Button size="lg" className="bg-[#4F7CFF] text-white hover:bg-[#3D6AE8] shadow-[0_8px_24px_rgba(79,124,255,0.35)] transition-all text-base px-10 h-14 gap-2 rounded-2xl">

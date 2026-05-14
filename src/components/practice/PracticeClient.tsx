@@ -40,6 +40,7 @@ const subjectMeta: Record<string, { emoji: string; color: string; bg: string; bo
   Reading:     { emoji: "📚", color: "#22C55E", bg: "#EEF8F0", border: "#BBF7D0" },
   Science:     { emoji: "🔬", color: "#8B7FFF", bg: "#F3F0FF", border: "#D5D0FF" },
   Writing:     { emoji: "✏️", color: "#FFC857", bg: "#FFF8EC", border: "#FFE5A0" },
+  History:     { emoji: "📜", color: "#F97316", bg: "#FFF7ED", border: "#FED7AA" },
 };
 
 function getMeta(name?: string | null) {
@@ -71,15 +72,15 @@ export function PracticeClient({
   const [selectedChoice, setSelectedChoice] = useState<number | null>(null);
   const [submitted, setSubmitted] = useState(false);
   const [score, setScore] = useState(0);
-  const [cosmoText, setCosmoText] = useState("");
-  const [cosmoLoading, setCosmoLoading] = useState(false);
-  const [cosmoInput, setCosmoInput] = useState("");
+  const [tutorText, setBrainBuddyText] = useState("");
+  const [tutorLoading, setBrainBuddyLoading] = useState(false);
+  const [tutorInput, setBrainBuddyInput] = useState("");
 
-  const cosmoEndRef = useRef<HTMLDivElement>(null);
+  const tutorEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    cosmoEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [cosmoText]);
+    tutorEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [tutorText]);
 
   const currentQuestion = questions[currentIdx] ?? null;
   const progress = activeSubject ? (progressBySubject[activeSubject.id] ?? null) : null;
@@ -88,7 +89,7 @@ export function PracticeClient({
   async function generateQuestions() {
     if (!activeSubject) return;
     setPracticeState("loading");
-    setCosmoText("");
+    setBrainBuddyText("");
     try {
       const res = await fetch("/api/practice/generate", {
         method: "POST",
@@ -103,18 +104,18 @@ export function PracticeClient({
       setSelectedChoice(null);
       setSubmitted(false);
       setScore(0);
-      setCosmoText("");
+      setBrainBuddyText("");
       setPracticeState("practice");
     } catch {
       setPracticeState("idle");
     }
   }
 
-  // ── Cosmo hint ────────────────────────────────────────────────────────────
-  async function callCosmo(hintType: string, customMsg?: string) {
+  // ── BrainBuddy hint ────────────────────────────────────────────────────────────
+  async function callTutor(hintType: string, customMsg?: string) {
     if (!currentQuestion) return;
-    setCosmoLoading(true);
-    setCosmoText("");
+    setBrainBuddyLoading(true);
+    setBrainBuddyText("");
     try {
       const res = await fetch("/api/practice/hint", {
         method: "POST",
@@ -140,12 +141,12 @@ export function PracticeClient({
         const { done, value } = await reader.read();
         if (done) break;
         full += decoder.decode(value, { stream: true });
-        setCosmoText(full);
+        setBrainBuddyText(full);
       }
     } catch {
-      setCosmoText("Hmm, I had trouble thinking just now. Try again!");
+      setBrainBuddyText("Hmm, I had trouble thinking just now. Try again!");
     } finally {
-      setCosmoLoading(false);
+      setBrainBuddyLoading(false);
     }
   }
 
@@ -164,7 +165,7 @@ export function PracticeClient({
       setCurrentIdx((i) => i + 1);
       setSelectedChoice(null);
       setSubmitted(false);
-      setCosmoText("");
+      setBrainBuddyText("");
     }
   }
 
@@ -177,14 +178,14 @@ export function PracticeClient({
     setSelectedChoice(null);
     setSubmitted(false);
     setScore(0);
-    setCosmoText("");
+    setBrainBuddyText("");
   }
 
-  async function handleCosmoSend() {
-    const msg = cosmoInput.trim();
-    if (!msg || cosmoLoading) return;
-    setCosmoInput("");
-    await callCosmo("custom", msg);
+  async function handleTutorSend() {
+    const msg = tutorInput.trim();
+    if (!msg || tutorLoading) return;
+    setBrainBuddyInput("");
+    await callTutor("custom", msg);
   }
 
   const meta = getMeta(activeSubject?.name);
@@ -513,17 +514,17 @@ export function PracticeClient({
         </div>
       </div>
 
-      {/* ── RIGHT: Cosmo helper ── */}
+      {/* ── RIGHT: BrainBuddy helper ── */}
       <div className="w-[300px] flex-shrink-0 flex flex-col bg-white rounded-3xl border border-[#E8EDF8] shadow-card overflow-hidden">
 
         {/* Header */}
         <div className="px-4 py-4 border-b border-[#E8EDF8] flex-shrink-0">
           <div className="flex items-center gap-2.5 mb-1">
             <div className="h-9 w-9 rounded-2xl bg-gradient-blue flex items-center justify-center shadow-blue flex-shrink-0 overflow-hidden">
-              <Image src="/cosmo-logo.png" alt="Cosmo" width={28} height={28} className="rounded-xl" />
+              <Image src="/cosmo-logo.png" alt="BrainBuddy" width={28} height={28} className="rounded-xl" />
             </div>
             <div>
-              <p className="font-bold text-[#1F2A44] text-sm">Cosmo</p>
+              <p className="font-bold text-[#1F2A44] text-sm">BrainBuddy</p>
               <p className="text-[11px] text-[#9AA4BA]">Your study helper</p>
             </div>
             <div className="ml-auto flex items-center gap-1">
@@ -556,13 +557,13 @@ export function PracticeClient({
                   { label: "📖 Explain Answer", type: "explain", requiresSubmit: true },
                   { label: "🔢 Step by Step", type: "steps" },
                 ].map(({ label, type, requiresSubmit }) => {
-                  const disabled = cosmoLoading || (requiresSubmit && !submitted);
-                  const isActive = cosmoLoading;
+                  const disabled = tutorLoading || (requiresSubmit && !submitted);
+                  const isActive = tutorLoading;
                   return (
                     <button
                       key={type}
                       disabled={disabled}
-                      onClick={() => callCosmo(type)}
+                      onClick={() => callTutor(type)}
                       className="w-full rounded-2xl py-2.5 text-sm font-semibold border transition-all disabled:opacity-40 disabled:cursor-not-allowed"
                       style={{
                         backgroundColor: isActive ? "#EEF3FF" : "#F7FAFF",
@@ -576,9 +577,9 @@ export function PracticeClient({
                 })}
               </div>
 
-              {/* Cosmo response */}
+              {/* BrainBuddy response */}
               <div className="flex-1 overflow-y-auto">
-                {cosmoLoading && !cosmoText && (
+                {tutorLoading && !tutorText && (
                   <div className="flex items-center gap-2 rounded-2xl bg-[#F7FAFF] border border-[#E8EDF8] px-4 py-3">
                     {[0, 1, 2].map((i) => (
                       <span
@@ -589,45 +590,45 @@ export function PracticeClient({
                     ))}
                   </div>
                 )}
-                {cosmoText && (
+                {tutorText && (
                   <div className="rounded-2xl bg-[#F7FAFF] border border-[#E8EDF8] p-4 text-sm text-[#1F2A44] leading-relaxed">
-                    {cosmoText}
+                    {tutorText}
                   </div>
                 )}
-                <div ref={cosmoEndRef} />
+                <div ref={tutorEndRef} />
               </div>
             </>
           )}
         </div>
 
-        {/* Divider + Ask Cosmo input */}
+        {/* Divider + Ask BrainBuddy input */}
         {practiceState === "practice" && (
           <div className="flex-shrink-0 border-t border-[#E8EDF8] px-4 py-3">
             <p className="text-[10px] font-semibold text-[#9AA4BA] uppercase tracking-wider mb-2">
-              Ask Cosmo
+              Ask BrainBuddy
             </p>
             <div className="flex items-end gap-2 bg-[#F7FAFF] border border-[#E8EDF8] rounded-2xl px-3 py-2 focus-within:border-[#4F7CFF]/40 transition-colors">
               <textarea
-                value={cosmoInput}
-                onChange={(e) => setCosmoInput(e.target.value)}
+                value={tutorInput}
+                onChange={(e) => setBrainBuddyInput(e.target.value)}
                 onKeyDown={(e) => {
                   if (e.key === "Enter" && !e.shiftKey) {
                     e.preventDefault();
-                    handleCosmoSend();
+                    handleTutorSend();
                   }
                 }}
-                placeholder="Ask Cosmo anything..."
+                placeholder="Ask BrainBuddy anything..."
                 rows={1}
-                disabled={cosmoLoading}
+                disabled={tutorLoading}
                 className="flex-1 bg-transparent resize-none text-sm text-[#1F2A44] placeholder:text-[#C4CDE0] outline-none min-h-[24px] max-h-[80px] py-1 disabled:opacity-50"
                 style={{ scrollbarWidth: "none" }}
               />
               <button
-                onClick={handleCosmoSend}
-                disabled={!cosmoInput.trim() || cosmoLoading}
+                onClick={handleTutorSend}
+                disabled={!tutorInput.trim() || tutorLoading}
                 className="h-8 w-8 rounded-xl bg-[#4F7CFF] flex items-center justify-center shadow-blue hover:opacity-90 transition-all disabled:opacity-40 disabled:cursor-not-allowed flex-shrink-0"
               >
-                {cosmoLoading ? (
+                {tutorLoading ? (
                   <Loader2 className="h-3.5 w-3.5 text-white animate-spin" />
                 ) : (
                   <Send className="h-3.5 w-3.5 text-white" />

@@ -56,6 +56,7 @@ const subjectMeta: Record<string, { emoji: string; color: string; bg: string; bo
   Reading:     { emoji: "📚", color: "#22C55E", bg: "#EEF8F0", border: "#BBF7D0" },
   Science:     { emoji: "🔬", color: "#8B7FFF", bg: "#F3F0FF", border: "#D5D0FF" },
   Writing:     { emoji: "✏️", color: "#FFC857", bg: "#FFF8EC", border: "#FFE5A0" },
+  History:     { emoji: "📜", color: "#F97316", bg: "#FFF7ED", border: "#FED7AA" },
 };
 function getMeta(name?: string | null) {
   return subjectMeta[name ?? ""] ?? { emoji: "🧠", color: "#4F7CFF", bg: "#EEF3FF", border: "#C7D7FF" };
@@ -445,7 +446,7 @@ export function TutorClient({
           <div className="flex items-center justify-between px-5 py-3.5 border-b border-[#E8EDF8] flex-shrink-0">
             <div className="flex items-center gap-3">
               <div className="h-9 w-9 rounded-2xl bg-gradient-blue flex items-center justify-center shadow-blue flex-shrink-0 overflow-hidden">
-                <Image src="/cosmo-logo.png" alt="Cosmo" width={28} height={28} className="rounded-xl" />
+                <Image src="/cosmo-logo.png" alt="BrainBuddy" width={28} height={28} className="rounded-xl" />
               </div>
               <div>
                 <p className="font-bold text-[#1F2A44] text-sm">BrainBuddy AI Tutor</p>
@@ -492,7 +493,7 @@ export function TutorClient({
             {messages.length === 0 && !loadingMessages && !streamText && (
               <div className="flex flex-col items-center justify-center h-full text-center space-y-4 py-8">
                 <div className="h-16 w-16 rounded-3xl bg-gradient-blue flex items-center justify-center shadow-blue animate-float overflow-hidden">
-                  <Image src="/cosmo-logo.png" alt="Cosmo" width={48} height={48} className="rounded-2xl" />
+                  <Image src="/cosmo-logo.png" alt="BrainBuddy" width={48} height={48} className="rounded-2xl" />
                 </div>
                 <div className="space-y-1">
                   <p className="font-bold text-[#1F2A44] text-lg">Hey {student.name}! 👋</p>
@@ -529,7 +530,7 @@ export function TutorClient({
               <div key={i} className={`flex gap-3 ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
                 {msg.role === "assistant" && (
                   <div className="h-8 w-8 rounded-xl bg-gradient-blue flex items-center justify-center flex-shrink-0 shadow-blue mt-0.5 overflow-hidden">
-                    <Image src="/cosmo-logo.png" alt="Cosmo" width={22} height={22} className="rounded-lg" />
+                    <Image src="/cosmo-logo.png" alt="BrainBuddy" width={22} height={22} className="rounded-lg" />
                   </div>
                 )}
                 <div className={`max-w-[78%] flex flex-col gap-1.5 ${msg.role === "user" ? "items-end" : "items-start"}`}>
@@ -576,7 +577,7 @@ export function TutorClient({
             {streamText && (
               <div className="flex gap-3 justify-start">
                 <div className="h-8 w-8 rounded-xl bg-gradient-blue flex items-center justify-center flex-shrink-0 shadow-blue mt-0.5 overflow-hidden">
-                  <Image src="/cosmo-logo.png" alt="Cosmo" width={22} height={22} className="rounded-lg" />
+                  <Image src="/cosmo-logo.png" alt="BrainBuddy" width={22} height={22} className="rounded-lg" />
                 </div>
                 <div className="max-w-[78%] rounded-2xl rounded-bl-sm px-4 py-3 text-sm leading-relaxed bg-[#F7FAFF] border border-[#E8EDF8] text-[#1F2A44] streaming-cursor"
                   style={{ whiteSpace: "pre-wrap" }}>
@@ -589,7 +590,7 @@ export function TutorClient({
             {(streaming || starting) && !streamText && (
               <div className="flex gap-3 justify-start">
                 <div className="h-8 w-8 rounded-xl bg-gradient-blue flex items-center justify-center flex-shrink-0 shadow-blue overflow-hidden">
-                  <Image src="/cosmo-logo.png" alt="Cosmo" width={22} height={22} className="rounded-lg" />
+                  <Image src="/cosmo-logo.png" alt="BrainBuddy" width={22} height={22} className="rounded-lg" />
                 </div>
                 <div className="rounded-2xl rounded-bl-sm px-4 py-3 bg-[#F7FAFF] border border-[#E8EDF8] flex items-center gap-2">
                   {[0, 1, 2].map((i) => (
@@ -598,7 +599,7 @@ export function TutorClient({
                   ))}
                   {snip.status === "idle" && (
                     <span className="text-xs text-[#9AA4BA] ml-1">
-                      Cosmo is analyzing your question…
+                      BrainBuddy is analyzing your question…
                     </span>
                   )}
                 </div>
@@ -729,7 +730,7 @@ export function TutorClient({
                 </span>
               )}
             </div>
-            <p className="text-[11px] text-[#9AA4BA]">Cosmo writes notes as you learn</p>
+            <p className="text-[11px] text-[#9AA4BA]">BrainBuddy writes notes as you learn</p>
           </div>
 
           <div className="flex-1 overflow-y-auto px-3 py-3 space-y-2.5">

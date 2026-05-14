@@ -4,13 +4,14 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { MessageSquare, Plus, Clock, ChevronRight, Trash2 } from "lucide-react";
 
-const SUBJECTS = ["Math", "Reading", "Science", "Writing"] as const;
+const SUBJECTS = ["Math", "Reading", "Science", "Writing", "History"] as const;
 
 const subjectMeta: Record<string, { emoji: string; color: string; bg: string; border: string }> = {
   Math:    { emoji: "🔢", color: "#4F7CFF", bg: "#EEF3FF", border: "#C7D7FF" },
   Reading: { emoji: "📚", color: "#22C55E", bg: "#EEF8F0", border: "#BBF7D0" },
   Science: { emoji: "🔬", color: "#8B7FFF", bg: "#F3F0FF", border: "#D5D0FF" },
   Writing: { emoji: "✏️", color: "#FFC857", bg: "#FFF8EC", border: "#FFE5A0" },
+  History: { emoji: "📜", color: "#F97316", bg: "#FFF7ED", border: "#FED7AA" },
 };
 
 function timeAgo(iso: string) {

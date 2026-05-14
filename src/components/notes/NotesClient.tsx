@@ -12,7 +12,7 @@ type StudentNote = {
   created_at: string;
 };
 
-const SUBJECTS = ["All", "Math", "Reading", "Science", "Writing"] as const;
+const SUBJECTS = ["All", "Math", "Reading", "Science", "Writing", "History"] as const;
 type SubjectFilter = (typeof SUBJECTS)[number];
 
 const subjectMeta: Record<string, { color: string; bg: string; border: string; emoji: string }> = {
@@ -20,6 +20,7 @@ const subjectMeta: Record<string, { color: string; bg: string; border: string; e
   Reading: { color: "#22C55E", bg: "#EEF8F0", border: "#BBF7D0", emoji: "📚" },
   Science: { color: "#8B7FFF", bg: "#F3F0FF", border: "#D5D0FF", emoji: "🔬" },
   Writing: { color: "#FFC857", bg: "#FFF8EC", border: "#FFE5A0", emoji: "✏️" },
+  History: { color: "#F97316", bg: "#FFF7ED", border: "#FED7AA", emoji: "📜" },
 };
 
 function timeAgo(iso: string) {
@@ -190,7 +191,7 @@ export function NotesClient({ initialNotes }: NotesClientProps) {
           {/* Subject picker */}
           <p className="text-xs font-semibold text-[#9AA4BA] uppercase tracking-wider mb-2">Subject</p>
           <div className="flex gap-2 mb-4 flex-wrap">
-            {(["Math", "Reading", "Science", "Writing"] as const).map(s => {
+            {(["Math", "Reading", "Science", "Writing", "History"] as const).map(s => {
               const m = subjectMeta[s];
               return (
                 <button

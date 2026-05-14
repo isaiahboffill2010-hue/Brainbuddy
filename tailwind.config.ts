@@ -89,6 +89,12 @@ const config: Config = {
       fontFamily: {
         sans: ["var(--font-sans)", "system-ui", "sans-serif"],
       },
+      backgroundImage: {
+        "gradient-hero": "linear-gradient(135deg, rgba(79,124,255,0.1) 0%, rgba(139,127,255,0.1) 50%, rgba(22,211,238,0.1) 100%)",
+        "gradient-glass": "linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%)",
+        "gradient-glow": "linear-gradient(135deg, rgba(139,127,255,0.2) 0%, rgba(79,124,255,0.2) 50%, rgba(22,211,238,0.2) 100%)",
+        "noise-texture": "url('data:image/svg+xml,%3Csvg viewBox=\"0 0 256 256\" xmlns=\"http://www.w3.org/2000/svg\"%3E%3Cfilter id=\"noiseFilter\"%3E%3CfeTurbulence type=\"fractalNoise\" baseFrequency=\"0.9\" numOctaves=\"4\" stitchTiles=\"stitch\"/%3E%3C/filter%3E%3Crect width=\"100%25\" height=\"100%25\" filter=\"url(%23noiseFilter)\"/%3E%3C/svg%3E')",
+      },
       boxShadow: {
         card: "0 1px 4px rgba(79,124,255,0.06), 0 4px 16px rgba(79,124,255,0.08)",
         "card-hover": "0 4px 12px rgba(79,124,255,0.1), 0 12px 32px rgba(79,124,255,0.14)",
@@ -96,6 +102,12 @@ const config: Config = {
         purple: "0 8px 32px rgba(139,127,255,0.25)",
         yellow: "0 8px 32px rgba(255,200,87,0.3)",
         soft: "0 2px 8px rgba(31,42,68,0.06), 0 1px 2px rgba(31,42,68,0.04)",
+        glass: "0 8px 32px rgba(0,0,0,0.12), inset 0 1px 0 rgba(255,255,255,0.1)",
+        "glass-hover": "0 12px 40px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.15)",
+        glow: "0 0 20px rgba(139,127,255,0.3), 0 0 40px rgba(79,124,255,0.2)",
+        "glow-purple": "0 0 20px rgba(139,127,255,0.4), 0 0 40px rgba(139,127,255,0.2)",
+        "glow-blue": "0 0 20px rgba(79,124,255,0.4), 0 0 40px rgba(79,124,255,0.2)",
+        "glow-cyan": "0 0 20px rgba(22,211,238,0.4), 0 0 40px rgba(22,211,238,0.2)",
       },
       keyframes: {
         "accordion-down": {
@@ -118,13 +130,22 @@ const config: Config = {
           from: { opacity: "0" },
           to: { opacity: "1" },
         },
+        "pulse-soft": {
+          "0%, 100%": { opacity: "1" },
+          "50%": { opacity: "0.7" },
+        },
+        "glow-pulse": {
+          from: { boxShadow: "0 0 20px rgba(139,127,255,0.3)" },
+          to: { boxShadow: "0 0 30px rgba(139,127,255,0.6)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
         float: "float 3s ease-in-out infinite",
         "slide-up": "slide-up 0.4s ease-out both",
-        "fade-in": "fade-in 0.3s ease-out both",
+        "pulse-soft": "pulse-soft 2s cubic-bezier(0.4, 0, 0.6, 1) infinite",
+        "glow-pulse": "glow-pulse 2s ease-in-out infinite alternate",
       },
     },
   },

@@ -84,6 +84,7 @@ export async function POST(req: Request) {
       ...(body.interests     ? { interests:      body.interests }      : {}),
       ...(body.personality   ? { personality:    body.personality }    : {}),
       ...(body.struggles_with ? { struggles_with: body.struggles_with } : {}),
+      ...(body.learning_description ? { learning_description: body.learning_description } : {}),
     };
 
     const { data: student, error: studentError } = await service
@@ -137,24 +138,24 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: `[learning_prefs] ${prefsError.message}` }, { status: 500 });
     }
 
-    // Create intro "Meet Cosmo" session (no subject)
+    // Create intro "Meet BrainBuddy" session (no subject)
     const { data: introSession } = await service
       .from("ai_sessions")
       .insert({
         student_id: student.id,
-        title: "Meet Cosmo 👋",
+        title: "Meet BrainBuddy 👋",
         is_active: true,
       })
       .select("id")
       .single();
 
-    // Save Cosmo's opening message so the kid sees it right away
+    // Save BrainBuddy's opening message so the kid sees it right away
     if (introSession) {
       const interestNote = body.interests
         ? ` I heard you're into ${body.interests} — that's so cool!`
         : "";
       const opening =
-        `Hi ${student.name}! 👋 I'm Cosmo, your learning buddy!` +
+        `Hi ${student.name}! 👋 I'm BrainBuddy, your learning buddy!` +
         `${interestNote} I'm here to make school fun and easy for you.` +
         ` What's your favorite thing to do when you're NOT at school? 🌟`;
 

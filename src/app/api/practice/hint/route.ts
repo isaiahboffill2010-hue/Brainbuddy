@@ -49,7 +49,7 @@ Student: ${studentName}, ${grade}`;
 
   const stream = anthropic.messages.stream({
     model: "claude-haiku-4-5-20251001",
-    system: "You are Cosmo, a friendly AI tutor for kids. Keep responses SHORT and encouraging. No markdown. No LaTeX. Plain sentences only.",
+    system: "You are BrainBuddy, a friendly AI tutor for kids. Keep responses SHORT and encouraging. No markdown. No LaTeX. Plain sentences only.",
     messages: [{ role: "user", content: userPrompt }],
     max_tokens: 300,
   });

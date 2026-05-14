@@ -47,9 +47,13 @@ export default async function ParentLayout({ children }: { children: React.React
     "there";
 
   return (
-    <div className="flex min-h-screen bg-[#F7FAFF]">
+    <div className="flex min-h-screen bg-[#0B1120] relative overflow-hidden">
+      {/* Ambient background effects */}
+      <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/5 via-purple-500/5 to-cyan-500/5 pointer-events-none" />
+      <div className="absolute top-0 left-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
       <DashboardSidebar userName={displayName} userEmoji={studentEmoji} avatarUrl={studentAvatarUrl} />
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 relative z-10">
         <DashboardTopbar userName={displayName} userEmoji={studentEmoji} avatarUrl={studentAvatarUrl} />
         <main className="flex-1 p-4 md:p-6 xl:p-8 max-w-[1400px] w-full mx-auto">
           {children}

@@ -237,7 +237,7 @@ export function StudentForm({ initialData, onSubmit, submitLabel = "Save" }: Stu
           placeholder="e.g. Minecraft, soccer, drawing, dinosaurs"
         />
         <p className="text-xs text-muted-foreground">
-          Cosmo will use these to make examples feel familiar and fun.
+          BrainBuddy will use these to make examples feel familiar and fun.
         </p>
       </div>
 
@@ -256,28 +256,28 @@ export function StudentForm({ initialData, onSubmit, submitLabel = "Save" }: Stu
         />
       </div>
 
-      {/* Learning description — free-text note to Cosmo */}
+      {/* Learning description — free-text note to BrainBuddy */}
       <div className="space-y-2 rounded-2xl border-2 border-violet-200 bg-violet-50/60 p-4">
         <div className="flex items-center gap-2 mb-1">
           <span className="text-lg">✏️</span>
           <Label htmlFor="learning_description" className="text-base font-semibold text-violet-900">
-            Write a note to Cosmo about how {name || "this student"} learns
+            Write a note to BrainBuddy about how {name || "this student"} learns
           </Label>
         </div>
         <p className="text-xs text-violet-700 leading-relaxed mb-2">
-          Describe in your own words how your child understands best, what they find hard, and how you&apos;d like Cosmo to explain things.
-          Cosmo reads this before every session and adjusts the way it teaches.
+          Describe in your own words how your child understands best, what they find hard, and how you&apos;d like BrainBuddy to explain things.
+          BrainBuddy reads this before every session and adjusts the way it teaches.
         </p>
         <Textarea
           id="learning_description"
           value={learningDescription}
           onChange={(e) => setLearningDescription(e.target.value)}
-          placeholder={`e.g. "${name || "Emma"} needs everything explained in very simple steps — never skip steps. She gets frustrated quickly if she doesn't understand, so Cosmo should always check in. She struggles with reading long text so keep answers short. She learns best through examples from real life. She has dyslexia so avoid large blocks of text."`}
+          placeholder={`e.g. "${name || "Emma"} needs everything explained in very simple steps — never skip steps. She gets frustrated quickly if she doesn't understand, so BrainBuddy should always check in. She struggles with reading long text so keep answers short. She learns best through examples from real life. She has dyslexia so avoid large blocks of text."`}
           className="min-h-[100px] resize-none text-sm bg-white border-violet-200 focus:border-violet-400"
           rows={4}
         />
         <p className="text-xs text-violet-600 font-medium">
-          💡 The more detail you add, the better Cosmo can adapt to {name || "your child"}&apos;s needs.
+          💡 The more detail you add, the better BrainBuddy can adapt to {name || "your child"}&apos;s needs.
         </p>
       </div>
 
@@ -306,7 +306,7 @@ export function StudentForm({ initialData, onSubmit, submitLabel = "Save" }: Stu
           Cancel
         </Button>
         <Button type="submit" disabled={loading} className="flex-1">
-          {loading ? "Setting up Cosmo..." : submitLabel}
+          {loading ? "Setting up BrainBuddy..." : submitLabel}
         </Button>
       </div>
     </form>

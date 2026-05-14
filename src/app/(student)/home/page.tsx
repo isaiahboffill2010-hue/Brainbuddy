@@ -9,6 +9,7 @@ const SUBJECTS = [
   { name: "Reading", icon: "📚", color: "#3b82f6", glow: "shadow-[0_0_16px_rgba(59,130,246,0.3)]", border: "border-blue-500/25", bg: "from-blue-500/15 to-cyan-500/5", desc: "Stories & comprehension" },
   { name: "Science", icon: "🔬", color: "#8b5cf6", glow: "shadow-[0_0_16px_rgba(139,92,246,0.3)]", border: "border-violet-500/25", bg: "from-violet-500/15 to-purple-500/5", desc: "How the world works" },
   { name: "Writing", icon: "✏️", color: "#6366f1", glow: "shadow-[0_0_16px_rgba(99,102,241,0.3)]", border: "border-indigo-500/25", bg: "from-indigo-500/15 to-blue-500/5", desc: "Essays & creativity" },
+  { name: "History", icon: "📜", color: "#f97316", glow: "shadow-[0_0_16px_rgba(249,115,22,0.3)]", border: "border-orange-500/25", bg: "from-orange-500/15 to-amber-500/5", desc: "Stories of the past" },
 ];
 
 export default async function StudentHomePage() {

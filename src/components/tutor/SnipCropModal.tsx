@@ -120,7 +120,7 @@ export function SnipCropModal({ screenshotDataUrl, onCrop, onCancel }: SnipCropM
             <p className="text-sm font-bold text-white">Snip Question</p>
             <p className="text-xs text-white/40">
               {hasSelection
-                ? `Selected ${Math.round(rect!.w)} × ${Math.round(rect!.h)} px — click "Send to Cosmo" when ready`
+                ? `Selected ${Math.round(rect!.w)} × ${Math.round(rect!.h)} px — click "Send to BrainBuddy" when ready`
                 : "Click and drag to draw a box around your question"}
             </p>
           </div>
@@ -151,7 +151,7 @@ export function SnipCropModal({ screenshotDataUrl, onCrop, onCancel }: SnipCropM
             }}
           >
             <Check className="h-4 w-4" />
-            Send to Cosmo
+            Send to BrainBuddy
           </button>
         </div>
       </div>
