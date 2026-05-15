@@ -210,6 +210,7 @@ export interface Database {
           role: "user" | "assistant";
           content: string;
           image_url: string | null;
+          worked_example: Json | null;
           explanation_style: string | null;
           was_helpful: boolean | null;
           created_at: string;
@@ -220,10 +221,12 @@ export interface Database {
           role: "user" | "assistant";
           content: string;
           image_url?: string | null;
+          worked_example?: Json | null;
           explanation_style?: string | null;
           was_helpful?: boolean | null;
         };
         Update: {
+          worked_example?: Json | null;
           was_helpful?: boolean | null;
         };
         Relationships: [];

@@ -140,6 +140,7 @@ CREATE TABLE IF NOT EXISTS ai_messages (
   role              TEXT NOT NULL CHECK (role IN ('user','assistant')),
   content           TEXT NOT NULL,
   image_url         TEXT,
+  worked_example    JSONB,
   explanation_style TEXT,
   was_helpful       BOOLEAN,
   created_at        TIMESTAMPTZ NOT NULL DEFAULT NOW()

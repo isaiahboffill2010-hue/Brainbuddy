@@ -264,6 +264,7 @@ export function TutorClient({
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
+            sessionId: session.id,
             userMessage: text,
             imageUrl: persistedImageUrl ?? undefined,
             imageDataUrl: imageDataUrl ?? undefined,

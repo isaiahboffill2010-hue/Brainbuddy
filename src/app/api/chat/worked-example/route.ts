@@ -1,15 +1,15 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/server";
 import { anthropic } from "@/lib/openai/client";
 
 export const runtime = "nodejs";
 
 export async function POST(req: Request) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const service = createServiceClient();
+  const { data: { user } } = await service.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { userMessage, imageUrl, imageDataUrl, subject, studentName, grade } = await req.json();
+  const { sessionId, userMessage, imageUrl, imageDataUrl, subject, studentName, grade } = await req.json();
   if (!userMessage && !imageUrl && !imageDataUrl) {
     return NextResponse.json({ error: "userMessage or image required" }, { status: 400 });
   }
@@ -86,6 +86,29 @@ Analyze the concept and return ONLY this JSON (no markdown, no extra text):
     parsed = JSON.parse(jsonMatch?.[0] ?? "{}");
   } catch {
     return NextResponse.json({ error: "Failed to parse AI response" }, { status: 500 });
+  }
+
+  // If a sessionId was provided, attach the worked example to the latest assistant message
+  if (sessionId) {
+    try {
+      const { data: lastMsg } = await service
+        .from("ai_messages")
+        .select("id")
+        .eq("session_id", sessionId)
+        .eq("role", "assistant")
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (lastMsg && lastMsg.id) {
+        await service
+          .from("ai_messages")
+          .update({ worked_example: parsed })
+          .eq("id", lastMsg.id);
+      }
+    } catch (e) {
+      console.error("Failed to save worked example", e);
+    }
   }
 
   return NextResponse.json(parsed);
