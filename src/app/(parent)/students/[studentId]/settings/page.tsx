@@ -24,7 +24,7 @@ export default function StudentSettingsPage() {
     age: number;
     grade: string;
     avatar_emoji: string;
-    learning_style: "visual" | "auditory" | "kinesthetic" | "reading";
+    learning_style: string;
     confidence_level: number;
     interests?: string;
     personality?: string;

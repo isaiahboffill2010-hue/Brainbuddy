@@ -12,6 +12,7 @@ import { SubjectIcon } from "@/components/shared/subject-icon";
 import { Progress } from "@/components/ui/progress";
 import { formatRelativeTime } from "@/lib/utils/format";
 import { Settings, ArrowRight } from "lucide-react";
+import { LEARNING_STYLES } from "@/types/app";
 
 export default async function StudentDetailPage({
   params,
@@ -43,13 +44,21 @@ export default async function StudentDetailPage({
               student.avatar_emoji
             )}
           </div>
-          <div>
+            <div>
             <h1 className="text-3xl font-bold">{student.name}</h1>
             <div className="flex items-center gap-2 mt-1">
               <Badge variant="secondary">{student.grade}</Badge>
               <span className="text-muted-foreground text-sm">Age {student.age}</span>
               <span className="text-muted-foreground text-sm">·</span>
-              <span className="text-muted-foreground text-sm capitalize">{student.learning_style} learner</span>
+              <div className="flex items-center gap-2">
+                {(String(student.learning_style || "").split(",").map(s => s.trim()).filter(Boolean) as string[]).map((val) => {
+                  const info = LEARNING_STYLES.find((ls) => ls.value === val);
+                  return (
+                    <span key={val} className="text-muted-foreground text-sm capitalize">{info?.label ?? val}</span>
+                  );
+                })}
+                <span className="text-muted-foreground text-sm">learner</span>
+              </div>
             </div>
           </div>
         </div>

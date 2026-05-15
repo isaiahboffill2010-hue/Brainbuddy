@@ -21,7 +21,7 @@ interface StudentFormProps {
     age: number;
     grade: string;
     avatar_emoji: string;
-    learning_style: "visual" | "auditory" | "kinesthetic" | "reading";
+    learning_style: string;
     confidence_level: number;
     interests?: string;
     personality?: string;
@@ -42,8 +42,8 @@ export function StudentForm({ initialData, onSubmit, submitLabel = "Save" }: Stu
     (initialData as any)?.avatar_url ?? null
   );
   const avatarInputRef = useRef<HTMLInputElement>(null);
-  const [learningStyle, setLearningStyle] = useState<"visual" | "auditory" | "kinesthetic" | "reading">(
-    initialData?.learning_style ?? "visual"
+  const [learningStyles, setLearningStyles] = useState<string[]>(
+    ((initialData as any)?.learning_style ? String((initialData as any).learning_style).split(",") : ["visual"]) as string[]
   );
   const [confidence, setConfidence] = useState(initialData?.confidence_level ?? 5);
   const [interests, setInterests] = useState(initialData?.interests ?? "");
@@ -63,7 +63,7 @@ export function StudentForm({ initialData, onSubmit, submitLabel = "Save" }: Stu
         age: parseInt(age),
         grade,
         avatar_emoji: "🦊",
-        learning_style: learningStyle,
+        learning_style: learningStyles.join(","),
         confidence_level: confidence,
         interests: interests.trim() || undefined,
         personality: personality || undefined,
@@ -182,22 +182,28 @@ export function StudentForm({ initialData, onSubmit, submitLabel = "Save" }: Stu
         <Label>How does {name || "this student"} learn best?</Label>
         <div className="grid grid-cols-2 gap-3">
           {LEARNING_STYLES.map((style) => (
-            <button
-              key={style.value}
-              type="button"
-              onClick={() => setLearningStyle(style.value as typeof learningStyle)}
-              className={cn(
-                "flex flex-col items-start gap-1 rounded-xl border-2 p-3 text-left transition-all",
-                learningStyle === style.value
-                  ? "border-primary bg-primary/5"
-                  : "border-border hover:border-muted-foreground/30"
-              )}
-            >
-              <span className="text-2xl">{style.emoji}</span>
-              <span className="font-medium text-sm">{style.label}</span>
-              <span className="text-xs text-muted-foreground leading-tight">{style.description}</span>
-            </button>
-          ))}
+              <button
+                key={style.value}
+                type="button"
+                onClick={() => {
+                  setLearningStyles((prev) =>
+                    prev.includes(style.value)
+                      ? prev.filter((v) => v !== style.value)
+                      : [...prev, style.value]
+                  );
+                }}
+                className={cn(
+                  "flex flex-col items-start gap-1 rounded-xl border-2 p-3 text-left transition-all",
+                  learningStyles.includes(style.value)
+                    ? "border-primary bg-primary/5"
+                    : "border-border hover:border-muted-foreground/30"
+                )}
+              >
+                <span className="text-2xl">{style.emoji}</span>
+                <span className="font-medium text-sm">{style.label}</span>
+                <span className="text-xs text-muted-foreground leading-tight">{style.description}</span>
+              </button>
+            ))}
         </div>
       </div>
 
