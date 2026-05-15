@@ -76,23 +76,23 @@ const highlights = [
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-[#F7FAFF] text-[#1F2A44] overflow-x-hidden">
+    <div className="min-h-screen bg-[#071019] text-slate-200 overflow-x-hidden">
 
       {/* ── Nav ── */}
-      <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-[#E8EDF8] shadow-[0_2px_12px_rgba(79,124,255,0.06)]">
+      <nav className="sticky top-0 z-50 bg-[#071019]/60 backdrop-blur-lg border-b border-white/6 shadow-2xl">
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2.5">
             <Image src="/cosmo-logo.png" alt="BrainBuddy" width={36} height={36} className="rounded-xl object-contain" />
-            <span className="font-bold text-lg text-[#1F2A44]">BrainBuddy</span>
+            <span className="font-bold text-lg text-white">BrainBuddy</span>
           </Link>
           <div className="flex items-center gap-3">
             <Link href="/login">
-              <Button variant="ghost" size="sm" className="text-[#6B7A9A] hover:text-[#1F2A44]">
+              <Button variant="ghost" size="sm" className="text-slate-300 hover:text-white">
                 Sign In
               </Button>
             </Link>
             <Link href="/register">
-              <Button size="sm" className="bg-[#4F7CFF] text-white hover:bg-[#3D6AE8] shadow-[0_4px_12px_rgba(79,124,255,0.3)] transition-all">
+              <Button size="sm" className="bg-gradient-to-r from-indigo-500 to-purple-500 text-white hover:from-indigo-600 hover:to-purple-600 shadow-lg transition-all">
                 Get Started Free
               </Button>
             </Link>
@@ -110,29 +110,29 @@ export default function LandingPage() {
           <div className="flex flex-col lg:flex-row items-center gap-12">
             {/* Left — text */}
             <div className="flex-1 space-y-6 text-center lg:text-left">
-              <div className="inline-flex items-center gap-2 bg-[#EEF3FF] border border-[#C7D7FF] rounded-full px-4 py-1.5">
-                <Sparkles className="h-3.5 w-3.5 text-[#4F7CFF]" />
-                <span className="text-xs font-semibold text-[#4F7CFF] uppercase tracking-wider">AI-powered learning</span>
+              <div className="inline-flex items-center gap-2 bg-white/5 border border-white/6 rounded-full px-4 py-1.5">
+                <Sparkles className="h-3.5 w-3.5 text-indigo-300" />
+                <span className="text-xs font-semibold text-indigo-300 uppercase tracking-wider">AI-powered learning</span>
               </div>
 
-              <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight leading-[1.1] text-[#1F2A44]">
+              <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight leading-[1.1] text-white">
                 Your personal AI tutor,{" "}
-                <span className="text-[#4F7CFF]">always ready.</span>
+                <span className="text-indigo-300">always ready.</span>
               </h1>
 
-              <p className="text-lg text-[#6B7A9A] max-w-xl leading-relaxed">
+              <p className="text-lg text-slate-300 max-w-xl leading-relaxed">
                 BrainBuddy explains schoolwork step by step, generates visual worked examples, and personalizes practice to exactly what you need.
               </p>
 
               <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3">
                 <Link href="/register">
-                  <Button size="lg" className="bg-[#4F7CFF] text-white hover:bg-[#3D6AE8] shadow-[0_8px_24px_rgba(79,124,255,0.35)] transition-all text-base px-8 gap-2 h-12 rounded-2xl">
+                  <Button size="lg" className="bg-gradient-to-r from-indigo-500 to-purple-500 text-white hover:from-indigo-600 hover:to-purple-600 shadow-lg transition-all text-base px-8 gap-2 h-12 rounded-2xl">
                     Start Learning Free
                     <ArrowRight className="h-4 w-4" />
                   </Button>
                 </Link>
                 <Link href="/login">
-                  <Button size="lg" variant="outline" className="border-[#E8EDF8] text-[#6B7A9A] hover:border-[#4F7CFF]/40 hover:text-[#1F2A44] text-base px-8 h-12 rounded-2xl">
+                  <Button size="lg" variant="outline" className="border-white/6 text-slate-300 hover:border-indigo-400/30 hover:text-white text-base px-8 h-12 rounded-2xl">
                     Sign In
                   </Button>
                 </Link>
@@ -143,7 +143,7 @@ export default function LandingPage() {
                 {highlights.map((h) => (
                   <div key={h} className="flex items-center gap-2">
                     <CheckCircle2 className="h-4 w-4 text-[#22C55E] flex-shrink-0" />
-                    <span className="text-sm text-[#6B7A9A]">{h}</span>
+                    <span className="text-sm text-slate-300">{h}</span>
                   </div>
                 ))}
               </div>
@@ -152,13 +152,13 @@ export default function LandingPage() {
             {/* Right — BrainBuddy mascot card */}
             <div className="flex-shrink-0 flex flex-col items-center gap-4">
               <div className="relative">
-                <div className="h-48 w-48 rounded-3xl bg-white border border-[#E8EDF8] shadow-[0_12px_40px_rgba(79,124,255,0.15)] flex items-center justify-center overflow-hidden">
+                <div className="h-48 w-48 rounded-3xl bg-white/5 border border-white/6 shadow-lg flex items-center justify-center overflow-hidden">
                   <Image src="/cosmo-logo.png" alt="BrainBuddy" width={192} height={192} className="object-contain w-full h-full" />
                 </div>
-                <div className="absolute -top-3 -right-3 bg-[#4F7CFF] rounded-2xl px-3 py-1.5 text-white text-xs font-bold shadow-[0_4px_12px_rgba(79,124,255,0.4)] whitespace-nowrap">
+                <div className="absolute -top-3 -right-3 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-2xl px-3 py-1.5 text-white text-xs font-bold shadow-lg whitespace-nowrap">
                   Hi! I&apos;m BrainBuddy ✨
                 </div>
-                <div className="absolute -bottom-3 -left-3 bg-[#22C55E] rounded-2xl px-3 py-1.5 text-white text-xs font-bold shadow-[0_4px_12px_rgba(34,197,94,0.35)]">
+                <div className="absolute -bottom-3 -left-3 bg-green-500 rounded-2xl px-3 py-1.5 text-white text-xs font-bold shadow-md">
                   Let&apos;s learn! 🚀
                 </div>
               </div>
@@ -166,8 +166,7 @@ export default function LandingPage() {
               {/* Mini subject pills */}
               <div className="flex gap-2 flex-wrap justify-center mt-2">
                 {subjects.map((s) => (
-                  <span key={s.name} className="flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold border"
-                    style={{ background: s.bg, borderColor: s.border, color: s.color }}>
+                  <span key={s.name} className="flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold border border-white/6 bg-white/3 text-slate-200">
                     <span>{s.emoji}</span> {s.name}
                   </span>
                 ))}
@@ -178,27 +177,26 @@ export default function LandingPage() {
       </section>
 
       {/* ── Features ── */}
-      <section className="py-20 px-6 bg-white border-y border-[#E8EDF8]">
+      <section className="py-20 px-6 bg-transparent border-y border-white/6">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-12 space-y-3">
-            <h2 className="text-3xl md:text-4xl font-bold text-[#1F2A44]">
+            <h2 className="text-3xl md:text-4xl font-bold text-white">
               Everything you need to{" "}
-              <span className="text-[#4F7CFF]">actually learn</span>
+              <span className="text-indigo-300">actually learn</span>
             </h2>
-            <p className="text-[#6B7A9A] max-w-xl mx-auto">
+            <p className="text-slate-300 max-w-xl mx-auto">
               Not just a chatbot — BrainBuddy is a full learning system built for students.
             </p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {features.map((f) => (
-              <div key={f.title} className="bg-[#F7FAFF] rounded-2xl border border-[#E8EDF8] p-6 space-y-4 hover:shadow-[0_8px_24px_rgba(79,124,255,0.1)] hover:border-[#C7D7FF] transition-all group">
-                <div className="h-10 w-10 rounded-xl flex items-center justify-center flex-shrink-0 transition-transform group-hover:scale-110"
-                  style={{ background: f.iconBg }}>
-                  <f.icon className="h-5 w-5" style={{ color: f.iconColor }} />
+              <div key={f.title} className="bg-white/5 rounded-2xl border border-white/6 p-6 space-y-4 hover:shadow-lg hover:border-indigo-400/20 transition-all group">
+                <div className="h-10 w-10 rounded-xl flex items-center justify-center flex-shrink-0 transition-transform group-hover:scale-110 bg-white/6">
+                  <f.icon className="h-5 w-5 text-indigo-300" />
                 </div>
                 <div className="space-y-1.5">
-                  <h3 className="font-semibold text-base text-[#1F2A44]">{f.title}</h3>
-                  <p className="text-sm text-[#6B7A9A] leading-relaxed">{f.desc}</p>
+                  <h3 className="font-semibold text-base text-white">{f.title}</h3>
+                  <p className="text-sm text-slate-300 leading-relaxed">{f.desc}</p>
                 </div>
               </div>
             ))}
@@ -225,11 +223,11 @@ export default function LandingPage() {
                 {i < arr.length - 1 && (
                   <div className="hidden md:block absolute top-6 left-[calc(50%+28px)] right-0 h-px bg-[#E8EDF8]" />
                 )}
-                <div className="bg-white rounded-2xl border border-[#E8EDF8] p-6 space-y-3 shadow-[0_2px_12px_rgba(79,124,255,0.06)] w-full hover:shadow-[0_8px_24px_rgba(79,124,255,0.1)] hover:border-[#C7D7FF] transition-all">
-                  <div className="text-3xl font-extrabold text-[#4F7CFF] opacity-40">{step.n}</div>
-                  <h3 className="font-semibold text-[#1F2A44]">{step.title}</h3>
-                  <p className="text-sm text-[#6B7A9A] leading-relaxed">{step.desc}</p>
-                </div>
+                <div className="bg-white/5 rounded-2xl border border-white/6 p-6 space-y-3 shadow-sm w-full hover:shadow-lg hover:border-indigo-400/20 transition-all">
+                    <div className="text-3xl font-extrabold text-indigo-300 opacity-40">{step.n}</div>
+                    <h3 className="font-semibold text-white">{step.title}</h3>
+                    <p className="text-sm text-slate-300 leading-relaxed">{step.desc}</p>
+                  </div>
               </div>
             ))}
           </div>
@@ -237,7 +235,7 @@ export default function LandingPage() {
       </section>
 
       {/* ── Stats strip ── */}
-      <section className="py-12 px-6 bg-white border-y border-[#E8EDF8]">
+      <section className="py-12 px-6 bg-transparent border-y border-white/6">
         <div className="max-w-4xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
           {[
             { value: "4", label: "Core subjects", suffix: "" },
@@ -246,8 +244,8 @@ export default function LandingPage() {
             { value: "∞", label: "Patience", suffix: "" },
           ].map((s) => (
             <div key={s.label} className="space-y-1">
-              <div className="text-3xl font-extrabold text-[#4F7CFF]">{s.value}{s.suffix}</div>
-              <div className="text-sm text-[#6B7A9A]">{s.label}</div>
+              <div className="text-3xl font-extrabold text-indigo-300">{s.value}{s.suffix}</div>
+              <div className="text-sm text-slate-300">{s.label}</div>
             </div>
           ))}
         </div>
@@ -261,11 +259,11 @@ export default function LandingPage() {
               <Image src="/cosmo-logo.png" alt="BrainBuddy" width={80} height={80} className="object-contain w-full h-full" />
             </div>
           </div>
-          <h2 className="text-4xl md:text-5xl font-extrabold text-[#1F2A44]">
+          <h2 className="text-4xl md:text-5xl font-extrabold text-white">
             Ready to{" "}
-            <span className="text-[#4F7CFF]">level up?</span>
+            <span className="text-indigo-300">level up?</span>
           </h2>
-          <p className="text-[#6B7A9A] text-lg">
+          <p className="text-slate-300 text-lg">
             Create your free account and start learning with BrainBuddy today.
           </p>
           <Link href="/register">
@@ -274,22 +272,22 @@ export default function LandingPage() {
               Get Started — It&apos;s Free
             </Button>
           </Link>
-          <p className="text-xs text-[#9AA4BA]">No credit card needed • Set up in 60 seconds</p>
+          <p className="text-xs text-slate-300">No credit card needed • Set up in 60 seconds</p>
         </div>
       </section>
 
       {/* ── Footer ── */}
-      <footer className="border-t border-[#E8EDF8] bg-white py-8 px-6">
+      <footer className="border-t border-white/6 bg-transparent py-8 px-6">
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
             <Image src="/cosmo-logo.png" alt="BrainBuddy" width={28} height={28} className="rounded-xl object-contain" />
-            <span className="font-bold text-[#1F2A44]">BrainBuddy</span>
+            <span className="font-bold text-white">BrainBuddy</span>
           </div>
-          <p className="text-xs text-[#9AA4BA]">
+          <p className="text-xs text-slate-300">
             © {new Date().getFullYear()} BrainBuddy. Built to help every student succeed.
           </p>
-          <div className="flex items-center gap-1.5 text-xs text-[#9AA4BA]">
-            <Shield className="h-3 w-3" />
+          <div className="flex items-center gap-1.5 text-xs text-slate-300">
+            <Shield className="h-3 w-3 text-slate-300" />
             Safe &amp; secure for kids
           </div>
         </div>
