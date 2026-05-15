@@ -370,55 +370,7 @@ export default async function StudentDashboard() {
         )}
       </div>
 
-      {/* ── REWARDS ────────────────────────────────────────────────────── */}
-      <div className="bg-[#1E293B]/80 backdrop-blur-xl rounded-3xl border border-white/10 shadow-2xl p-6">
-        <div className="flex items-center justify-between mb-5">
-          <h2 className="font-bold text-white text-lg flex items-center gap-2">
-            <Trophy className="h-5 w-5 text-orange-400" /> Rewards & Badges
-          </h2>
-          <div className="flex items-center gap-2 bg-orange-500/20 border border-orange-500/30 rounded-full px-3 py-1">
-            <Star className="h-3.5 w-3.5 text-orange-400" />
-            <span className="text-sm font-bold text-orange-400">{totalPoints} pts</span>
-          </div>
-        </div>
-
-        {/* streak highlight */}
-        <div className="rounded-2xl bg-gradient-to-r from-orange-500/20 to-yellow-500/20 border border-orange-500/30 p-4 mb-5 flex items-center gap-4">
-          <div className="h-14 w-14 rounded-2xl bg-gradient-to-r from-orange-500 to-yellow-500 flex items-center justify-center text-3xl shadow-lg flex-shrink-0">
-            🔥
-          </div>
-          <div>
-            <p className="font-bold text-white text-lg">{streakDays} Day Streak</p>
-            <p className="text-sm text-slate-300">
-              {streakDays === 0
-                ? "Learn something today to start your streak!"
-                : streakDays >= 7
-                  ? "Amazing! You're on fire! 🏆"
-                  : `${7 - streakDays} more day${7 - streakDays !== 1 ? "s" : ""} to earn the Consistent badge!`}
-            </p>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          {badges.map((badge) => (
-            <div key={badge.id}
-              className={`rounded-2xl p-3 text-center transition-all ${
-                badge.earned
-                  ? "bg-gradient-to-br from-indigo-500/20 to-purple-500/20 border border-indigo-500/30 hover:shadow-lg hover:-translate-y-0.5"
-                  : "bg-white/5 border border-white/10 opacity-50"
-              }`}>
-              <div className={`text-3xl mb-1.5 ${badge.earned ? "" : "grayscale"}`}>{badge.emoji}</div>
-              <p className={`text-xs font-bold ${badge.earned ? "text-white" : "text-slate-300"}`}>{badge.label}</p>
-              <p className="text-[10px] text-slate-300 mt-0.5 leading-tight">{badge.desc}</p>
-              {badge.earned && (
-                <div className="mt-1.5 inline-flex items-center gap-1 bg-green-500 text-white rounded-full px-2 py-0.5 text-[10px] font-bold">
-                  <Award className="h-2.5 w-2.5" /> Earned
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
-      </div>
+      
 
       {/* ── RECENT ACTIVITY ────────────────────────────────────────────── */}
       <div className="bg-[#1E293B]/80 backdrop-blur-xl rounded-3xl border border-white/10 shadow-2xl p-6">
