@@ -69,7 +69,10 @@ CREATE TABLE IF NOT EXISTS students (
   age              INT CHECK (age BETWEEN 4 AND 18),
   grade            TEXT NOT NULL,
   avatar_emoji     TEXT NOT NULL DEFAULT '🦊',
-  learning_style   TEXT NOT NULL DEFAULT 'visual' CHECK (learning_style IN ('visual','auditory','kinesthetic','reading')),
+  -- Allow either a single style or a comma-separated list of allowed styles
+  learning_style   TEXT NOT NULL DEFAULT 'visual' CHECK (
+    learning_style ~ '^(visual|auditory|kinesthetic|reading)(,(visual|auditory|kinesthetic|reading))*$'
+  ),
   confidence_level INT NOT NULL DEFAULT 5 CHECK (confidence_level BETWEEN 1 AND 10),
   created_at       TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at       TIMESTAMPTZ NOT NULL DEFAULT NOW()

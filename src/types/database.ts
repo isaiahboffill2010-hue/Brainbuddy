@@ -69,7 +69,7 @@ export interface Database {
           grade: string;
           avatar_emoji: string;
           avatar_url: string | null;
-          learning_style: "visual" | "auditory" | "kinesthetic" | "reading";
+          learning_style: string;
           confidence_level: number;
           interests: string | null;
           personality: "curious" | "energetic" | "shy" | "creative" | "funny" | null;
@@ -86,7 +86,7 @@ export interface Database {
           grade: string;
           avatar_emoji?: string;
           avatar_url?: string | null;
-          learning_style?: "visual" | "auditory" | "kinesthetic" | "reading";
+          learning_style?: string;
           confidence_level?: number;
           interests?: string | null;
           personality?: "curious" | "energetic" | "shy" | "creative" | "funny" | null;
@@ -99,7 +99,7 @@ export interface Database {
           grade?: string;
           avatar_emoji?: string;
           avatar_url?: string | null;
-          learning_style?: "visual" | "auditory" | "kinesthetic" | "reading";
+          learning_style?: string;
           confidence_level?: number;
           interests?: string | null;
           personality?: "curious" | "energetic" | "shy" | "creative" | "funny" | null;

@@ -39,7 +39,7 @@ export type TutorContext = {
   studentName: string;
   grade: string;
   age: number;
-  learningStyle: "visual" | "auditory" | "kinesthetic" | "reading";
+  learningStyle: string;
   confidenceLevel: number;
   subjectName: string;
   topicsMastered?: string[];
