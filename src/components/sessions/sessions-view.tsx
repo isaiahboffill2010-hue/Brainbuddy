@@ -76,7 +76,7 @@ export function SessionsView({ sessions: initialSessions, studentId, subjectIdMa
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-extrabold text-[#1F2A44]">My Chats</h1>
+          <h1 className="text-2xl font-extrabold text-white">My Chats</h1>
           <p className="text-sm text-[#9AA4BA] mt-0.5">Pick up where you left off</p>
         </div>
         <button
