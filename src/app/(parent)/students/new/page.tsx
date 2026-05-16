@@ -17,6 +17,12 @@ export default function NewStudentPage() {
     interests?: string;
     personality?: string;
     struggles_with?: string;
+    stuck_behavior?: string;
+    confusion_support?: string;
+    error_feedback?: string;
+    teaching_pace?: string;
+    motivation?: string;
+    teaching_avoid?: string;
     learning_description?: string;
     avatarFile?: File;
   }) {
@@ -46,7 +52,7 @@ export default function NewStudentPage() {
     <div className="max-w-2xl mx-auto pb-12 animate-fade-in">
 
       {/* ── Hero intro ── */}
-      <div className="relative rounded-3xl bg-gradient-hero overflow-hidden p-7 mb-8 shadow-blue">
+      <div className="relative rounded-3xl bg-slate-950/95 overflow-hidden p-7 mb-8 shadow-2xl shadow-black/30 border border-white/10">
         <div className="absolute -top-8 -right-8 h-40 w-40 rounded-full bg-white/5 pointer-events-none" />
         <div className="absolute -bottom-6 -left-4 h-28 w-28 rounded-full bg-white/8 pointer-events-none" />
 
@@ -72,16 +78,16 @@ export default function NewStudentPage() {
       {/* ── Feature pills ── */}
       <div className="grid grid-cols-3 gap-3 mb-8">
         {[
-          { icon: Brain,    color: "#4F7CFF", bg: "#EEF3FF", border: "#C7D7FF", title: "AI-Powered",      desc: "The AI reads your profile before every session" },
-          { icon: Target,   color: "#8B7FFF", bg: "#F3F0FF", border: "#D5D0FF", title: "Personalized",    desc: "Questions and explanations matched to how you think" },
-          { icon: Sparkles, color: "#22C55E", bg: "#EEF8F0", border: "#BBF7D0", title: "Adaptive",        desc: "BrainBuddy adjusts as you grow and improve" },
+          { icon: Brain,    color: "#4F7CFF", bg: "#111827", border: "#334155", title: "AI-Powered",      desc: "The AI reads your profile before every session." },
+          { icon: Target,   color: "#8B7FFF", bg: "#111827", border: "#334155", title: "Personalized",    desc: "BrainBuddy learns how your child thinks and adapts." },
+          { icon: Sparkles, color: "#22C55E", bg: "#111827", border: "#334155", title: "Gentle",        desc: "Answers are clear, kind, and never too fast." },
         ].map(({ icon: Icon, color, bg, border, title, desc }) => (
-          <div key={title} className="rounded-2xl border p-4 text-center" style={{ backgroundColor: bg, borderColor: border }}>
+          <div key={title} className="rounded-2xl border border-white/10 bg-slate-950/90 p-4 text-center shadow-lg shadow-black/10">
             <div className="h-9 w-9 rounded-xl flex items-center justify-center mx-auto mb-2" style={{ backgroundColor: color }}>
               <Icon className="h-4 w-4 text-white" />
             </div>
-            <p className="text-xs font-bold text-[#1F2A44]">{title}</p>
-            <p className="text-[11px] text-[#9AA4BA] mt-0.5 leading-snug">{desc}</p>
+            <p className="text-xs font-bold text-white">{title}</p>
+            <p className="text-[11px] text-slate-400 mt-0.5 leading-snug">{desc}</p>
           </div>
         ))}
       </div>

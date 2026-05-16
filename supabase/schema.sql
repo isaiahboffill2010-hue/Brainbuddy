@@ -74,6 +74,12 @@ CREATE TABLE IF NOT EXISTS students (
     learning_style ~ '^(visual|auditory|kinesthetic|reading)(,(visual|auditory|kinesthetic|reading))*$'
   ),
   confidence_level INT NOT NULL DEFAULT 5 CHECK (confidence_level BETWEEN 1 AND 10),
+  stuck_behavior   TEXT,
+  confusion_support TEXT,
+  error_feedback   TEXT,
+  teaching_pace    TEXT,
+  motivation       TEXT,
+  teaching_avoid   TEXT,
   created_at       TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at       TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
@@ -318,10 +324,16 @@ CREATE POLICY "notes: service role only delete" ON student_notes FOR DELETE
 -- STUDENT PROFILE EXTENSIONS (run if upgrading)
 -- ─────────────────────────────────────────────
 ALTER TABLE students
-  ADD COLUMN IF NOT EXISTS interests           TEXT,
-  ADD COLUMN IF NOT EXISTS personality         TEXT CHECK (personality IN ('curious','energetic','shy','creative','funny')),
-  ADD COLUMN IF NOT EXISTS struggles_with      TEXT,
-  ADD COLUMN IF NOT EXISTS learning_description TEXT;
+  ADD COLUMN IF NOT EXISTS interests            TEXT,
+  ADD COLUMN IF NOT EXISTS personality          TEXT CHECK (personality IN ('curious','energetic','shy','creative','funny')),
+  ADD COLUMN IF NOT EXISTS struggles_with       TEXT,
+  ADD COLUMN IF NOT EXISTS learning_description TEXT,
+  ADD COLUMN IF NOT EXISTS stuck_behavior       TEXT,
+  ADD COLUMN IF NOT EXISTS confusion_support    TEXT,
+  ADD COLUMN IF NOT EXISTS error_feedback       TEXT,
+  ADD COLUMN IF NOT EXISTS teaching_pace        TEXT,
+  ADD COLUMN IF NOT EXISTS motivation           TEXT,
+  ADD COLUMN IF NOT EXISTS teaching_avoid       TEXT;
 
 -- ─────────────────────────────────────────────
 -- STORAGE BUCKET (run after enabling storage)

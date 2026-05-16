@@ -81,9 +81,15 @@ export async function POST(req: Request) {
       learning_style: body.learning_style ?? "visual",
       confidence_level: body.confidence_level ?? 5,
       profile_id: parentProfileId,
-      ...(body.interests     ? { interests:      body.interests }      : {}),
-      ...(body.personality   ? { personality:    body.personality }    : {}),
-      ...(body.struggles_with ? { struggles_with: body.struggles_with } : {}),
+      ...(body.interests      ? { interests:      body.interests }      : {}),
+      ...(body.personality    ? { personality:    body.personality }    : {}),
+      ...(body.struggles_with  ? { struggles_with: body.struggles_with } : {}),
+      ...(body.stuck_behavior  ? { stuck_behavior: body.stuck_behavior } : {}),
+      ...(body.confusion_support ? { confusion_support: body.confusion_support } : {}),
+      ...(body.error_feedback  ? { error_feedback: body.error_feedback } : {}),
+      ...(body.teaching_pace   ? { teaching_pace: body.teaching_pace } : {}),
+      ...(body.motivation      ? { motivation: body.motivation } : {}),
+      ...(body.teaching_avoid  ? { teaching_avoid: body.teaching_avoid } : {}),
       ...(body.learning_description ? { learning_description: body.learning_description } : {}),
     };
 

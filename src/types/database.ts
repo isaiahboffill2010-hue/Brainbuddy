@@ -75,6 +75,12 @@ export interface Database {
           personality: "curious" | "energetic" | "shy" | "creative" | "funny" | null;
           struggles_with: string | null;
           learning_description: string | null;
+          stuck_behavior: string | null;
+          confusion_support: string | null;
+          error_feedback: string | null;
+          teaching_pace: string | null;
+          motivation: string | null;
+          teaching_avoid: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -92,6 +98,12 @@ export interface Database {
           personality?: "curious" | "energetic" | "shy" | "creative" | "funny" | null;
           struggles_with?: string | null;
           learning_description?: string | null;
+          stuck_behavior?: string | null;
+          confusion_support?: string | null;
+          error_feedback?: string | null;
+          teaching_pace?: string | null;
+          motivation?: string | null;
+          teaching_avoid?: string | null;
         };
         Update: {
           name?: string;

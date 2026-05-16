@@ -29,6 +29,12 @@ export default function StudentSettingsPage() {
     interests?: string;
     personality?: string;
     struggles_with?: string;
+    stuck_behavior?: string;
+    confusion_support?: string;
+    error_feedback?: string;
+    teaching_pace?: string;
+    motivation?: string;
+    teaching_avoid?: string;
     learning_description?: string;
     avatarFile?: File;
   }) {

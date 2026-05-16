@@ -9,7 +9,16 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import {
-  GRADE_OPTIONS, LEARNING_STYLES, PERSONALITY_OPTIONS, type Student,
+  GRADE_OPTIONS,
+  LEARNING_STYLES,
+  PERSONALITY_OPTIONS,
+  STUCK_BEHAVIORS,
+  CONFUSION_SUPPORT_OPTIONS,
+  ERROR_FEEDBACK_OPTIONS,
+  TEACHING_PACE_OPTIONS,
+  MOTIVATION_OPTIONS,
+  AVOID_OPTIONS,
+  type Student,
 } from "@/types/app";
 import { cn } from "@/lib/utils/cn";
 import { Camera, User } from "lucide-react";
@@ -26,6 +35,12 @@ interface StudentFormProps {
     interests?: string;
     personality?: string;
     struggles_with?: string;
+    stuck_behavior?: string;
+    confusion_support?: string;
+    error_feedback?: string;
+    teaching_pace?: string;
+    motivation?: string;
+    teaching_avoid?: string;
     learning_description?: string;
     avatarFile?: File;
   }) => Promise<void>;
@@ -49,6 +64,16 @@ export function StudentForm({ initialData, onSubmit, submitLabel = "Save" }: Stu
   const [interests, setInterests] = useState(initialData?.interests ?? "");
   const [personality, setPersonality] = useState<string>(initialData?.personality ?? "");
   const [strugglesWith, setStrugglesWith] = useState(initialData?.struggles_with ?? "");
+  const [stuckBehavior, setStuckBehavior] = useState<string>((initialData as any)?.stuck_behavior ?? "");
+  const [confusionSupport, setConfusionSupport] = useState<string>((initialData as any)?.confusion_support ?? "");
+  const [errorFeedback, setErrorFeedback] = useState<string>((initialData as any)?.error_feedback ?? "");
+  const [teachingPace, setTeachingPace] = useState<string>((initialData as any)?.teaching_pace ?? "normal");
+  const [motivations, setMotivations] = useState<string[]>(
+    ((initialData as any)?.motivation ? String((initialData as any).motivation).split(",") : []) as string[]
+  );
+  const [avoidList, setAvoidList] = useState<string[]>(
+    ((initialData as any)?.teaching_avoid ? String((initialData as any).teaching_avoid).split(",") : []) as string[]
+  );
   const [learningDescription, setLearningDescription] = useState(initialData?.learning_description ?? "");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -68,6 +93,12 @@ export function StudentForm({ initialData, onSubmit, submitLabel = "Save" }: Stu
         interests: interests.trim() || undefined,
         personality: personality || undefined,
         struggles_with: strugglesWith.trim() || undefined,
+        stuck_behavior: stuckBehavior || undefined,
+        confusion_support: confusionSupport || undefined,
+        error_feedback: errorFeedback || undefined,
+        teaching_pace: teachingPace || undefined,
+        motivation: motivations.length > 0 ? motivations.join(",") : undefined,
+        teaching_avoid: avoidList.length > 0 ? avoidList.join(",") : undefined,
         learning_description: learningDescription.trim() || undefined,
         avatarFile: avatarFile ?? undefined,
       });
@@ -78,7 +109,7 @@ export function StudentForm({ initialData, onSubmit, submitLabel = "Save" }: Stu
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-6 text-slate-100">
       {error && (
         <div className="rounded-lg bg-destructive/10 px-4 py-3 text-sm text-destructive border border-destructive/20">
           {error}
@@ -231,6 +262,175 @@ export function StudentForm({ initialData, onSubmit, submitLabel = "Save" }: Stu
         </div>
       </div>
 
+      <div className="grid gap-4">
+        <div className="rounded-3xl border border-white/10 bg-slate-950/80 p-4">
+          <div className="flex items-center justify-between gap-4 mb-4">
+            <div>
+              <Label className="text-base">When the student gets stuck</Label>
+              <p className="text-sm text-slate-400">Choose how they usually respond.</p>
+            </div>
+            <span className="text-xs text-slate-500">Optional</span>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {STUCK_BEHAVIORS.map((option) => (
+              <button
+                key={option.value}
+                type="button"
+                onClick={() => setStuckBehavior(option.value)}
+                className={cn(
+                  "flex flex-col items-start gap-1 rounded-xl border-2 p-3 text-left transition-all",
+                  stuckBehavior === option.value
+                    ? "border-primary bg-primary/5"
+                    : "border-border hover:border-muted-foreground/30"
+                )}
+              >
+                <span className="text-2xl">{option.emoji}</span>
+                <span className="font-medium text-sm">{option.label}</span>
+                <span className="text-xs text-slate-400 leading-tight">{option.description}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="rounded-3xl border border-white/10 bg-slate-950/80 p-4">
+            <Label className="text-base">How should BrainBuddy help when the student is confused?</Label>
+            <p className="text-sm text-slate-400 mb-4">Pick the way that helps them learn best.</p>
+            <div className="grid gap-3">
+              {CONFUSION_SUPPORT_OPTIONS.map((option) => (
+                <button
+                  key={option.value}
+                  type="button"
+                  onClick={() => setConfusionSupport(option.value)}
+                  className={cn(
+                    "flex flex-col items-start gap-1 rounded-xl border-2 p-3 text-left transition-all",
+                    confusionSupport === option.value
+                      ? "border-primary bg-primary/5"
+                      : "border-border hover:border-muted-foreground/30"
+                  )}
+                >
+                  <span className="text-2xl">{option.emoji}</span>
+                  <span className="font-medium text-sm">{option.label}</span>
+                  <span className="text-xs text-slate-400 leading-tight">{option.description}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="rounded-3xl border border-white/10 bg-slate-950/80 p-4">
+            <Label className="text-base">What should BrainBuddy do when the student gets something wrong?</Label>
+            <p className="text-sm text-slate-400 mb-4">Choose the feedback style that helps them feel safe.</p>
+            <div className="grid gap-3">
+              {ERROR_FEEDBACK_OPTIONS.map((option) => (
+                <button
+                  key={option.value}
+                  type="button"
+                  onClick={() => setErrorFeedback(option.value)}
+                  className={cn(
+                    "flex flex-col items-start gap-1 rounded-xl border-2 p-3 text-left transition-all",
+                    errorFeedback === option.value
+                      ? "border-primary bg-primary/5"
+                      : "border-border hover:border-muted-foreground/30"
+                  )}
+                >
+                  <span className="text-2xl">{option.emoji}</span>
+                  <span className="font-medium text-sm">{option.label}</span>
+                  <span className="text-xs text-slate-400 leading-tight">{option.description}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div className="rounded-3xl border border-white/10 bg-slate-950/80 p-4">
+          <Label className="text-base">How fast should BrainBuddy teach?</Label>
+          <p className="text-sm text-slate-400 mb-4">Pick the pace that feels best for learning.</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {TEACHING_PACE_OPTIONS.map((option) => (
+              <button
+                key={option.value}
+                type="button"
+                onClick={() => setTeachingPace(option.value)}
+                className={cn(
+                  "flex flex-col items-start gap-1 rounded-xl border-2 p-3 text-left transition-all",
+                  teachingPace === option.value
+                    ? "border-primary bg-primary/5"
+                    : "border-border hover:border-muted-foreground/30"
+                )}
+              >
+                <span className="text-2xl">{option.emoji}</span>
+                <span className="font-medium text-sm">{option.label}</span>
+                <span className="text-xs text-slate-400 leading-tight">{option.description}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="rounded-3xl border border-white/10 bg-slate-950/80 p-4">
+          <div className="grid gap-4 lg:grid-cols-2">
+            <div>
+              <Label className="text-base">What motivates {name || "this student"}?</Label>
+              <p className="text-sm text-slate-400 mb-4">Pick the things that keep them excited to learn.</p>
+              <div className="grid grid-cols-1 gap-3">
+                {MOTIVATION_OPTIONS.map((option) => (
+                  <button
+                    key={option.value}
+                    type="button"
+                    onClick={() => {
+                      setMotivations((prev) =>
+                        prev.includes(option.value)
+                          ? prev.filter((value) => value !== option.value)
+                          : [...prev, option.value]
+                      );
+                    }}
+                    className={cn(
+                      "flex flex-col items-start gap-1 rounded-xl border-2 p-3 text-left transition-all",
+                      motivations.includes(option.value)
+                        ? "border-primary bg-primary/5"
+                        : "border-border hover:border-muted-foreground/30"
+                    )}
+                  >
+                    <span className="text-2xl">{option.emoji}</span>
+                    <span className="font-medium text-sm">{option.label}</span>
+                    <span className="text-xs text-slate-400 leading-tight">{option.description}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <Label className="text-base">What should BrainBuddy avoid?</Label>
+              <p className="text-sm text-slate-400 mb-4">Pick things that make learning harder for them.</p>
+              <div className="grid grid-cols-1 gap-3">
+                {AVOID_OPTIONS.map((option) => (
+                  <button
+                    key={option.value}
+                    type="button"
+                    onClick={() => {
+                      setAvoidList((prev) =>
+                        prev.includes(option.value)
+                          ? prev.filter((value) => value !== option.value)
+                          : [...prev, option.value]
+                      );
+                    }}
+                    className={cn(
+                      "flex flex-col items-start gap-1 rounded-xl border-2 p-3 text-left transition-all",
+                      avoidList.includes(option.value)
+                        ? "border-primary bg-primary/5"
+                        : "border-border hover:border-muted-foreground/30"
+                    )}
+                  >
+                    <span className="text-2xl">{option.emoji}</span>
+                    <span className="font-medium text-sm">{option.label}</span>
+                    <span className="text-xs text-slate-400 leading-tight">{option.description}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Interests */}
       <div className="space-y-2">
         <Label htmlFor="interests">
@@ -263,26 +463,26 @@ export function StudentForm({ initialData, onSubmit, submitLabel = "Save" }: Stu
       </div>
 
       {/* Learning description — free-text note to BrainBuddy */}
-      <div className="space-y-2 rounded-2xl border-2 border-violet-200 bg-violet-50/60 p-4">
+      <div className="space-y-2 rounded-3xl border border-white/10 bg-slate-950/80 p-4">
         <div className="flex items-center gap-2 mb-1">
           <span className="text-lg">✏️</span>
-          <Label htmlFor="learning_description" className="text-base font-semibold text-violet-900">
-            Write a note to BrainBuddy about how {name || "this student"} learns
+          <Label htmlFor="learning_description" className="text-base font-semibold text-white">
+            Tell BrainBuddy anything that would help it teach this student better.
           </Label>
         </div>
-        <p className="text-xs text-violet-700 leading-relaxed mb-2">
-          Describe in your own words how your child understands best, what they find hard, and how you&apos;d like BrainBuddy to explain things.
-          BrainBuddy reads this before every session and adjusts the way it teaches.
+        <p className="text-sm text-slate-400 leading-relaxed mb-2">
+          Examples: needs short steps, gets frustrated with long reading, likes hints before answers,
+          learns better with examples, needs encouragement, or loses focus if explanations are too long.
         </p>
         <Textarea
           id="learning_description"
           value={learningDescription}
           onChange={(e) => setLearningDescription(e.target.value)}
-          placeholder={`e.g. "${name || "Emma"} needs everything explained in very simple steps — never skip steps. She gets frustrated quickly if she doesn't understand, so BrainBuddy should always check in. She struggles with reading long text so keep answers short. She learns best through examples from real life. She has dyslexia so avoid large blocks of text."`}
-          className="min-h-[100px] resize-none text-sm bg-white border-violet-200 focus:border-violet-400"
+          placeholder="This student learns best when things are explained one step at a time. They get frustrated when instructions are too long. Give hints before showing the answer, use simple words, and encourage them when they try."
+          className="min-h-[100px] resize-none text-sm bg-slate-900 border-slate-700 focus:border-cyan-400"
           rows={4}
         />
-        <p className="text-xs text-violet-600 font-medium">
+        <p className="text-xs text-slate-500 font-medium">
           💡 The more detail you add, the better BrainBuddy can adapt to {name || "your child"}&apos;s needs.
         </p>
       </div>
