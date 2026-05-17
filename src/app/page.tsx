@@ -208,7 +208,7 @@ export default function LandingPage() {
       <section className="py-20 px-6">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-12 space-y-3">
-            <h2 className="text-3xl md:text-4xl font-bold text-[#1F2A44]">
+            <h2 className="text-3xl md:text-4xl font-bold text-white">
               Up and running in{" "}
               <span className="text-[#4F7CFF]">seconds</span>
             </h2>

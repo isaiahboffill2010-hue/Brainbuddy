@@ -4,6 +4,8 @@ export function buildSystemPrompt(context: TutorContext): string {
   return [
     buildPersonaLayer(context),
     buildStudentLayer(context),
+    buildLearningPreferencesLayer(context),
+    buildFreshSessionIntroLayer(context),
     buildMemoryLayer(context),
     buildSubjectLayer(context),
   ]
@@ -127,6 +129,127 @@ function buildStudentLayer(ctx: TutorContext): string {
   return parts.join("\n");
 }
 
+function buildLearningPreferencesLayer(ctx: TutorContext): string {
+  const parts: string[] = [];
+
+  if (ctx.stuckBehavior) {
+    parts.push(
+      `IF ${ctx.studentName} gets stuck: ${formatStuckBehavior(ctx.stuckBehavior)}.`
+    );
+  }
+
+  if (ctx.confusionSupport) {
+    parts.push(
+      `IF ${ctx.studentName} seems confused: ${formatConfusionSupport(ctx.confusionSupport)}.`
+    );
+  }
+
+  if (ctx.errorFeedback) {
+    parts.push(
+      `WHEN giving feedback on mistakes: ${formatErrorFeedback(ctx.errorFeedback)}.`
+    );
+  }
+
+  if (ctx.teachingPace) {
+    parts.push(
+      `Teaching pace should be: ${formatTeachingPace(ctx.teachingPace)}.`
+    );
+  }
+
+  if (ctx.motivation) {
+    parts.push(
+      `Motivate ${ctx.studentName} by: ${formatMotivation(ctx.motivation)}.`
+    );
+  }
+
+  if (ctx.teachingAvoid) {
+    parts.push(
+      `Avoid: ${formatTeachingAvoid(ctx.teachingAvoid)}.`
+    );
+  }
+
+  if (!parts.length) return "";
+
+  return [
+    `Use the student's learning preferences below to guide every response:`,
+    ...parts,
+  ].join("\n");
+}
+
+function buildFreshSessionIntroLayer(ctx: TutorContext): string {
+  if (!ctx.isFreshSession) return "";
+
+  return `FIRST RESPONSE IN A NEW CHAT: Start with a warm, short introduction that says how ${ctx.studentName} learns best and how BrainBuddy will help them. ` +
+    `For example: "I know you learn best by ... so I'll help you by ..." Then continue with the teaching or answer.`;
+}
+
+function formatStuckBehavior(value: string): string {
+  const map: Record<string, string> = {
+    keeps_trying: "encourage them to keep trying with calm support and small steps",
+    guesses_quickly: "give a gentle pause and help them think through the problem instead of guessing",
+    gets_frustrated: "stay calm, give reassurance, and break the idea into smaller pieces",
+    shuts_down: "be very gentle, give them a simple restart, and offer a small win",
+    asks_for_help: "answer quickly with a clear path forward and keep it friendly",
+  };
+  return map[value] ?? value;
+}
+
+function formatConfusionSupport(value: string): string {
+  const map: Record<string, string> = {
+    small_hint: "give a small hint first, then check if they understand",
+    step_by_step: "explain the idea step-by-step and slow down as needed",
+    show_example: "show one clear example and then ask them to try it",
+    ask_guiding: "ask a helpful guiding question rather than giving the answer right away",
+    easier_question: "make the problem a bit easier before moving back to the main idea",
+  };
+  return map[value] ?? value;
+}
+
+function formatErrorFeedback(value: string): string {
+  const map: Record<string, string> = {
+    encourage_first: "start with something positive, then explain the mistake clearly",
+    hint_try_again: "give a hint and let them try again before showing the answer",
+    explain_mistake: "show why it was wrong and how to fix it in simple steps",
+    easier_question: "offer a slightly easier question so they can build confidence",
+    show_answer: "give the correct answer and explain it in a kind, clear way",
+  };
+  return map[value] ?? value;
+}
+
+function formatTeachingPace(value: string): string {
+  const map: Record<string, string> = {
+    slow_simple: "slow and simple",
+    normal: "steady and comfortable",
+    fast_fewer_details: "faster with fewer details",
+    let_student_choose: "offer options so the student can choose to slow down or speed up",
+  };
+  return map[value] ?? value;
+}
+
+function formatMotivation(value: string): string {
+  const map: Record<string, string> = {
+    praise: "with lots of praise and encouragement",
+    points_rewards: "by using points or rewards as motivation",
+    challenges: "by turning learning into a fun challenge or level-up",
+    seeing_progress: "by showing them how much they improve step by step",
+    funny_examples: "by using funny examples and light humor",
+    beat_score: "by helping them beat their own score or best result",
+  };
+  return map[value] ?? value;
+}
+
+function formatTeachingAvoid(value: string): string {
+  const map: Record<string, string> = {
+    long_explanations: "long explanations",
+    hard_words: "hard words",
+    too_much_text: "too much text",
+    timed_pressure: "feeling rushed with a timer",
+    too_many_questions: "asking too many questions at once",
+    answers_too_fast: "giving answers too quickly before they have time to think",
+  };
+  return map[value] ?? value;
+}
+
 function buildMemoryLayer(ctx: TutorContext): string {
   if (!ctx.learningNotes && !ctx.topicsMastered?.length && !ctx.topicsStruggling?.length) {
     return "";
@@ -154,6 +277,48 @@ function buildSubjectLayer(ctx: TutorContext): string {
   };
   const rules = subjectRules[ctx.subjectName];
   return `Current subject: ${ctx.subjectName}.${rules ? `\n${rules}` : ""}`;
+}
+
+export function buildSessionIntroMessage(ctx: TutorContext): string {
+  const parts = [
+    `Hi ${ctx.studentName}! I'm BrainBuddy, your friendly tutor for ${ctx.subjectName}.`,
+  ];
+
+  if (ctx.learningStyle) {
+    parts.push(`You learn best ${learningStylePhrase(ctx.learningStyle)}.`);
+  }
+
+  if (ctx.learningDescription) {
+    parts.push(`Here's the best way to help you: ${ctx.learningDescription}`);
+  }
+
+  if (ctx.teachingPace) {
+    parts.push(`I will teach at a ${formatTeachingPace(ctx.teachingPace)} pace.`);
+  }
+
+  const motivation = ctx.motivation ? formatMotivation(ctx.motivation) : "in a way that keeps you excited to learn";
+  parts.push(`I'll help by ${motivation}.`);
+
+  if (ctx.stuckBehavior) {
+    parts.push(`If you get stuck, I'll ${formatStuckBehavior(ctx.stuckBehavior)}.`);
+  }
+
+  if (ctx.teachingAvoid) {
+    parts.push(`I will avoid ${formatTeachingAvoid(ctx.teachingAvoid)} so you can keep learning without extra stress.`);
+  }
+
+  parts.push(`Let's get started!`);
+  return parts.join(" ");
+}
+
+function learningStylePhrase(value: string): string {
+  const map: Record<string, string> = {
+    visual: "with pictures, examples, and clear mental images",
+    auditory: "by talking through ideas and hearing them explained",
+    kinesthetic: "by doing things step by step and trying them out",
+    reading: "by reading clear steps and writing down key ideas",
+  };
+  return map[value] ?? `in a way that fits their learning style`;
 }
 
 // Helper: bucket age into grade level groups

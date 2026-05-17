@@ -45,7 +45,7 @@ export default function NewStudentPage() {
       await fetch(`/api/students/${student.id}/avatar`, { method: "POST", body: fd });
     }
 
-    router.push("/dashboard");
+    router.push("/choose-plan");
   }
 
   return (

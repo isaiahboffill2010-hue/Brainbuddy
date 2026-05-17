@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { User, Mail, Shield, Bell, LogOut } from "lucide-react";
+import { ManageBillingButton } from "@/components/shared/ManageBillingButton";
 
 export default async function ParentSettingsPage() {
   const supabase = await createClient();
@@ -9,10 +10,10 @@ export default async function ParentSettingsPage() {
 
   const { data: profileData } = await supabase
     .from("profiles")
-    .select("full_name, email, role")
+    .select("full_name, email, role, plan, subscription_status")
     .eq("user_id", user.id)
     .single();
-  const profile = profileData as { full_name: string | null; email: string | null; role: string } | null;
+  const profile = profileData as { full_name: string | null; email: string | null; role: string; plan?: string | null; subscription_status?: string | null } | null;
 
   const displayName = profile?.full_name ?? user.user_metadata?.full_name ?? user.email?.split("@")[0] ?? "—";
   const displayEmail = profile?.email ?? user.email ?? "—";
@@ -58,8 +59,30 @@ export default async function ParentSettingsPage() {
               Student
             </span>
           </div>
+          <div className="flex items-center justify-between py-3 border-b border-[#E8EDF8]">
+            <div className="flex items-center gap-3">
+              <Shield className="h-4 w-4 text-[#9AA4BA]" />
+              <span className="text-sm text-[#6B7A9A]">Plan</span>
+            </div>
+            <span className="text-sm font-semibold text-[#1F2A44] capitalize">
+              {profile?.plan === "premium" ? "Premium" : "Free Trial"}
+            </span>
+          </div>
         </div>
       </div>
+
+        {profile?.plan === "premium" && (
+          <div className="bg-white rounded-3xl border border-[#E8EDF8] shadow-card p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="h-10 w-10 rounded-2xl bg-[#EEF3FF] flex items-center justify-center">
+                <Shield className="h-5 w-5 text-[#4F7CFF]" />
+              </div>
+              <h2 className="font-bold text-[#1F2A44]">Billing</h2>
+            </div>
+            <p className="text-sm text-[#9AA4BA] mb-4">Manage your subscription, payment method, and invoices in Stripe.</p>
+            <ManageBillingButton />
+          </div>
+        )}
 
       {/* Notifications card */}
       <div className="bg-white rounded-3xl border border-[#E8EDF8] shadow-card p-6">

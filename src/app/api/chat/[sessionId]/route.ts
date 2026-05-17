@@ -5,6 +5,7 @@ import { generateNote } from "@/lib/openai/note-generator";
 import { getSession } from "@/lib/supabase/queries/sessions";
 import { saveMessage } from "@/lib/supabase/queries/messages";
 import { saveNote, getNotesForSession } from "@/lib/supabase/queries/notes";
+import { fetchBillingProfile } from "@/lib/billing";
 
 export const runtime = "nodejs";
 
@@ -37,8 +38,28 @@ export async function GET(
 ) {
   const { sessionId } = await params;
   const supabase = await createClient();
+  const service = createServiceClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const billingProfile = await fetchBillingProfile(service, user.id);
+  const isPremium = billingProfile?.plan === "premium";
+  const messagesUsed = billingProfile?.messages_used ?? 0;
+  const messageLimit = billingProfile?.message_limit ?? 15;
+
+  if (!isPremium && messagesUsed >= messageLimit) {
+    return NextResponse.json(
+      {
+        error: "message_limit_reached",
+        message: "You used all 15 free AI tutor messages. Upgrade to BrainBuddy Premium for $20/month to keep learning with your personal AI tutor.",
+      },
+      { status: 403 }
+    );
+  }
+
+  if (!isPremium) {
+    await service.from("profiles").update({ messages_used: messagesUsed + 1 }).eq("user_id", user.id);
+  }
 
   const { data: messages } = await supabase
     .from("ai_messages")

@@ -12,7 +12,9 @@ export async function updateSession(request: NextRequest) {
     path.startsWith("/forgot-password") ||
     path.startsWith("/auth/callback") ||
     path.startsWith("/_next") ||
-    path.startsWith("/api/auth");
+    path.startsWith("/api/auth") ||
+    // Allow API routes to run and return JSON errors (don't redirect them to login)
+    path.startsWith("/api");
 
   // For the homepage, never call Supabase — just serve it
   if (path === "/") {

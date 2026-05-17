@@ -1,12 +1,28 @@
 import { NextResponse } from "next/server";
 import { createClient, createServiceClient } from "@/lib/supabase/server";
 import { createUpload } from "@/lib/supabase/queries/uploads";
+import { fetchBillingProfile } from "@/lib/billing";
 
 export async function POST(req: Request) {
   const supabase = await createClient();
   const service = createServiceClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const billingProfile = await fetchBillingProfile(service, user.id);
+  const isPremium = billingProfile?.plan === "premium";
+  const snipsUsed = billingProfile?.snips_used ?? 0;
+  const snipLimit = billingProfile?.snip_limit ?? 1;
+
+  if (!isPremium && snipsUsed >= snipLimit) {
+    return NextResponse.json(
+      {
+        error: "snip_limit_reached",
+        message: "You used your free homework snip/upload. Upgrade to BrainBuddy Premium for unlimited homework help and visual explanations.",
+      },
+      { status: 403 }
+    );
+  }
 
   const formData = await req.formData();
   const file = formData.get("file") as File | null;
@@ -43,6 +59,12 @@ export async function POST(req: Request) {
     question_text: questionText ?? undefined,
     status: "processed",
   });
+
+  if (upload) {
+    if (!isPremium) {
+      await service.from("profiles").update({ snips_used: snipsUsed + 1 }).eq("user_id", user.id);
+    }
+  }
 
   return NextResponse.json(upload, { status: 201 });
 }

@@ -31,6 +31,10 @@ export async function streamTutorResponse(params: {
     hasSubject ? getLastSessionSummary(supabase, studentId, subjectId) : Promise.resolve(null),
   ]);
 
+  // 2. Load recent message history (last 20)
+  const history = await getRecentMessages(supabase, sessionId, 20);
+  const isFreshSession = history.length === 0;
+
   const context: TutorContext = {
     studentName: student.name,
     grade: student.grade,
@@ -45,13 +49,17 @@ export async function streamTutorResponse(params: {
     personality: student.personality,
     strugglesWith: student.struggles_with,
     learningDescription: student.learning_description,
+    stuckBehavior: student.stuck_behavior,
+    confusionSupport: student.confusion_support,
+    errorFeedback: student.error_feedback,
+    teachingPace: student.teaching_pace,
+    motivation: student.motivation,
+    teachingAvoid: student.teaching_avoid,
+    isFreshSession,
   };
 
-  // 2. Build system prompt
+  // 3. Build system prompt
   const systemPrompt = buildSystemPrompt(context);
-
-  // 3. Load recent message history (last 20)
-  const history = await getRecentMessages(supabase, sessionId, 20);
 
   // 4. Build messages array
   type ContentBlock =

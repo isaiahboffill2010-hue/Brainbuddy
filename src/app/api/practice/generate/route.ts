@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient, createServiceClient } from "@/lib/supabase/server";
 import { anthropic } from "@/lib/openai/client";
+import { fetchBillingProfile } from "@/lib/billing";
 
 export const runtime = "nodejs";
 
@@ -15,6 +16,21 @@ export async function POST(req: Request) {
   }
 
   const service = createServiceClient();
+
+  const billingProfile = await fetchBillingProfile(service, user.id);
+  const isPremium = billingProfile?.plan === "premium";
+  const quizzesUsed = billingProfile?.quizzes_used ?? 0;
+  const quizLimit = billingProfile?.quiz_limit ?? 1;
+
+  if (!isPremium && quizzesUsed >= quizLimit) {
+    return NextResponse.json(
+      {
+        error: "quiz_limit_reached",
+        message: "You used your free practice quiz. Upgrade to BrainBuddy Premium for unlimited practice quizzes and personalized tutoring.",
+      },
+      { status: 403 }
+    );
+  }
 
   const [studentRes, progressRes, notesRes, subjectRes] = await Promise.all([
     service
@@ -57,6 +73,10 @@ export async function POST(req: Request) {
 
   if (!student) {
     return NextResponse.json({ error: "Student not found" }, { status: 404 });
+  }
+
+  if (!isPremium) {
+    await service.from("profiles").update({ quizzes_used: quizzesUsed + 1 }).eq("user_id", user.id);
   }
 
   const subjectName = subject?.name ?? "General";

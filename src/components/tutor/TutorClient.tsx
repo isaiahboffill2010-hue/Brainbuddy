@@ -8,6 +8,7 @@ import Image from "next/image";
 import { SnipCropModal } from "./SnipCropModal";
 import { captureScreenFrame } from "@/lib/screenCapture";
 import { WorkedExampleCard, type WorkedExample } from "@/components/chat/worked-example-card";
+import { UpgradeLimitModal } from "@/components/shared/UpgradeLimitModal";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 type Subject = { id: string; name: string; icon: string; color: string };
@@ -107,6 +108,12 @@ export function TutorClient({
   const [loadingNotes, setLoadingNotes] = useState(false);
   const [generatingExample, setGeneratingExample] = useState(false);
 
+  // Free-limit modal state
+  const [limitModalOpen, setLimitModalOpen] = useState(false);
+  const [limitMessage, setLimitMessage] = useState(
+    "You used all 15 free AI tutor messages. Upgrade to BrainBuddy Premium for $20/month to keep learning with your personal AI tutor."
+  );
+
   // Snip state machine
   const [snip, setSnip] = useState<SnipState>({ status: "idle" });
 
@@ -191,6 +198,7 @@ export function TutorClient({
       };
       setSessions((prev) => [enriched, ...prev]);
       setActiveSession(enriched);
+      await loadMessages(enriched.id);
       return enriched;
     } catch {
       return null;
@@ -213,6 +221,9 @@ export function TutorClient({
     if (!text.trim() && !file && !imageDataUrl) return;
     if (streaming) return;
 
+    const session = await getOrCreateSession();
+    if (!session) return;
+
     // Optimistic user message — local preview URL used here (not stored)
     setMessages((prev) => [
       ...prev,
@@ -220,9 +231,6 @@ export function TutorClient({
     ]);
     setStreaming(true);
     setStreamText("");
-
-    const session = await getOrCreateSession();
-    if (!session) { setStreaming(false); return; }
 
     // For normal file uploads: persist to Supabase Storage first
     let persistedImageUrl: string | null = null;
@@ -242,6 +250,13 @@ export function TutorClient({
           imageDataUrl: imageDataUrl ?? undefined,
         }),
       });
+      if (res.status === 403) {
+        const err = await res.json().catch(() => ({}));
+        const message = typeof err?.message === "string" ? err.message : limitMessage;
+        setLimitMessage(message);
+        setLimitModalOpen(true);
+        return;
+      }
       if (!res.ok || !res.body) throw new Error("Stream failed");
 
       const reader = res.body.getReader();
@@ -355,6 +370,13 @@ export function TutorClient({
       fd.append("studentId", student.id);
       if (activeSubject) fd.append("subjectId", activeSubject.id);
       const res = await fetch("/api/upload", { method: "POST", body: fd });
+      if (res.status === 403) {
+        const err = await res.json().catch(() => ({}));
+        const message = typeof err?.message === "string" ? err.message : limitMessage;
+        setLimitMessage(message);
+        setLimitModalOpen(true);
+        return null;
+      }
       if (!res.ok) return null;
       const data = await res.json();
       return data.image_url ?? null;
@@ -793,6 +815,9 @@ export function TutorClient({
           </div>
         </div>
       </div>
+
+      {/* Limit upgrade modal */}
+      <UpgradeLimitModal open={limitModalOpen} onClose={() => setLimitModalOpen(false)} message={limitMessage} />
     </>
   );
 }

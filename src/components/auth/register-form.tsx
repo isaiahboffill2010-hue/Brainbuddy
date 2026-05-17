@@ -25,7 +25,7 @@ export function RegisterForm() {
       email,
       password,
       options: {
-        data: { full_name: fullName, role: "parent" },
+        data: { full_name: fullName, role: "student" },
         emailRedirectTo: `${location.origin}/auth/callback`,
       },
     });
@@ -34,6 +34,7 @@ export function RegisterForm() {
       setLoading(false);
       return;
     }
+
     router.push("/dashboard");
     router.refresh();
   }

@@ -49,10 +49,23 @@ export default async function StudentDashboard() {
 
   const { data: profileRaw } = await supabase
     .from("profiles")
-    .select("id, full_name")
+    .select(
+      "id, full_name, plan, subscription_status, messages_used, snips_used, quizzes_used, message_limit, snip_limit, quiz_limit"
+    )
     .eq("user_id", user?.id ?? "")
     .maybeSingle();
-  const profile = profileRaw as { id: string; full_name: string | null } | null;
+  const profile = profileRaw as {
+    id: string;
+    full_name: string | null;
+    plan?: string | null;
+    subscription_status?: string | null;
+    messages_used?: number | null;
+    snips_used?: number | null;
+    quizzes_used?: number | null;
+    message_limit?: number | null;
+    snip_limit?: number | null;
+    quiz_limit?: number | null;
+  } | null;
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let student: any = null;
@@ -117,6 +130,15 @@ export default async function StudentDashboard() {
   const badges              = computeBadges(totalSessions, homeworkCount, streakDays, subjectsActive, topicsMasteredTotal);
   const earnedBadges        = badges.filter(b => b.earned);
   const studentName         = student?.name ?? profile?.full_name?.split(" ")[0] ?? "there";
+  const isPremium = profile?.plan === "premium";
+  const planLabel = isPremium ? "BrainBuddy Premium" : "Free Trial";
+  const planStatus = isPremium ? "Premium active" : "Free trial active";
+  const messagesUsed = profile?.messages_used ?? 0;
+  const messageLimit = profile?.message_limit ?? 15;
+  const snipsUsed = profile?.snips_used ?? 0;
+  const snipLimit = profile?.snip_limit ?? 1;
+  const quizzesUsed = profile?.quizzes_used ?? 0;
+  const quizLimit = profile?.quiz_limit ?? 1;
 
   return (
     <div className="space-y-6 pb-10 animate-fade-in">
@@ -181,6 +203,36 @@ export default async function StudentDashboard() {
             <div className="text-xs text-slate-300 mt-0.5">{s.sub}</div>
           </div>
         ))}
+      </div>
+
+      <div className="grid grid-cols-1 gap-4">
+        <div className="bg-[#1E293B]/80 backdrop-blur-xl rounded-3xl border border-white/10 shadow-2xl p-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+              <p className="text-sm text-slate-400 uppercase tracking-[0.2em]">{planLabel}</p>
+              <h2 className="text-2xl font-extrabold text-white">{planStatus}</h2>
+            </div>
+            {!isPremium && (
+              <a href="/premium/checkout" className="inline-flex items-center justify-center rounded-2xl bg-gradient-to-r from-indigo-500 to-purple-500 px-5 py-3 text-sm font-semibold text-white shadow-lg hover:shadow-purple-500/20 transition-all">
+                Upgrade Plan
+              </a>
+            )}
+          </div>
+          <div className="grid grid-cols-2 gap-3 mt-6 text-sm text-slate-300">
+            <div className="rounded-2xl bg-white/5 border border-white/10 p-4">
+              <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Messages</p>
+              <p className="mt-2 text-lg font-semibold text-white">{messagesUsed}/{messageLimit}</p>
+            </div>
+            <div className="rounded-2xl bg-white/5 border border-white/10 p-4">
+              <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Homework snips</p>
+              <p className="mt-2 text-lg font-semibold text-white">{snipsUsed}/{snipLimit}</p>
+            </div>
+            <div className="rounded-2xl bg-white/5 border border-white/10 p-4">
+              <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Practice quizzes</p>
+              <p className="mt-2 text-lg font-semibold text-white">{quizzesUsed}/{quizLimit}</p>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* ── PROFILE + AI TUTOR ─────────────────────────────────────────── */}

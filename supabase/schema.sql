@@ -8,14 +8,24 @@
 -- One row per auth.users entry. Stores role.
 -- ─────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS profiles (
-  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id     UUID NOT NULL UNIQUE REFERENCES auth.users(id) ON DELETE CASCADE,
-  role        TEXT NOT NULL CHECK (role IN ('parent', 'student', 'teacher')),
-  full_name   TEXT,
-  email       TEXT,
-  avatar_url  TEXT,
-  created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  updated_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  id                     UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id                UUID NOT NULL UNIQUE REFERENCES auth.users(id) ON DELETE CASCADE,
+  role                   TEXT NOT NULL CHECK (role IN ('parent', 'student', 'teacher')),
+  full_name              TEXT,
+  email                  TEXT,
+  avatar_url             TEXT,
+  plan                   TEXT NOT NULL DEFAULT 'free' CHECK (plan IN ('free', 'premium')),
+  subscription_status    TEXT NOT NULL DEFAULT 'trial' CHECK (subscription_status IN ('trial', 'active', 'past_due', 'canceled', 'none')),
+  messages_used          INT NOT NULL DEFAULT 0,
+  snips_used             INT NOT NULL DEFAULT 0,
+  quizzes_used           INT NOT NULL DEFAULT 0,
+  message_limit          INT NOT NULL DEFAULT 15,
+  snip_limit             INT NOT NULL DEFAULT 1,
+  quiz_limit             INT NOT NULL DEFAULT 1,
+  stripe_customer_id     TEXT,
+  stripe_subscription_id TEXT,
+  created_at             TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at             TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 -- Auto-create profile on sign-up
