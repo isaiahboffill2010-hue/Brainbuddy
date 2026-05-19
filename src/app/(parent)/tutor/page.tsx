@@ -22,12 +22,12 @@ export default async function TutorPage({
 
   if (!profile) {
     return (
-      <div className="flex flex-col items-center justify-center py-20 text-center space-y-3">
+      <div className="flex flex-col items-center justify-center py-20 text-center space-y-3 animate-fade-in">
         <div className="text-5xl">🧠</div>
-        <p className="text-lg font-bold text-[#1F2A44]">Set up your profile first</p>
-        <p className="text-sm text-[#9AA4BA]">Add a student to start using the AI tutor</p>
+        <p className="text-lg font-bold text-white">Set up your profile first</p>
+        <p className="text-sm text-slate-400">Add a student to start using the AI tutor</p>
         <Link href="/students/new">
-          <button className="flex items-center gap-2 bg-gradient-blue text-white rounded-2xl px-5 py-2.5 text-sm font-bold shadow-blue hover:opacity-90 transition-all mt-2">
+          <button className="flex items-center gap-2 bg-gradient-to-r from-indigo-500 to-purple-500 text-white rounded-2xl px-5 py-2.5 text-sm font-bold shadow-lg shadow-indigo-500/30 hover:opacity-90 transition-all mt-2">
             <PlusCircle className="h-4 w-4" /> Add Student
           </button>
         </Link>
@@ -46,12 +46,12 @@ export default async function TutorPage({
 
   if (!studentId) {
     return (
-      <div className="flex flex-col items-center justify-center py-20 text-center space-y-3">
+      <div className="flex flex-col items-center justify-center py-20 text-center space-y-3 animate-fade-in">
         <div className="text-5xl">🧒</div>
-        <p className="text-lg font-bold text-[#1F2A44]">No student added yet</p>
-        <p className="text-sm text-[#9AA4BA]">Add a student profile to start AI tutoring sessions</p>
+        <p className="text-lg font-bold text-white">No student added yet</p>
+        <p className="text-sm text-slate-400">Add a student profile to start AI tutoring sessions</p>
         <Link href="/students/new">
-          <button className="flex items-center gap-2 bg-gradient-blue text-white rounded-2xl px-5 py-2.5 text-sm font-bold shadow-blue hover:opacity-90 transition-all mt-2">
+          <button className="flex items-center gap-2 bg-gradient-to-r from-indigo-500 to-purple-500 text-white rounded-2xl px-5 py-2.5 text-sm font-bold shadow-lg shadow-indigo-500/30 hover:opacity-90 transition-all mt-2">
             <PlusCircle className="h-4 w-4" /> Add Student
           </button>
         </Link>

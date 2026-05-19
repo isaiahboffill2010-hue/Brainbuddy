@@ -93,11 +93,11 @@ export default function NewStudentPage() {
       </div>
 
       {/* ── Info banner ── */}
-      <div className="rounded-2xl bg-[#FFF8EC] border border-[#FFE5A0] px-5 py-4 mb-8 flex items-start gap-3">
+      <div className="rounded-2xl bg-amber-500/10 border border-amber-500/25 px-5 py-4 mb-8 flex items-start gap-3 backdrop-blur-sm">
         <span className="text-2xl flex-shrink-0">💡</span>
         <div>
-          <p className="text-sm font-bold text-[#1F2A44]">This is how you learn</p>
-          <p className="text-xs text-[#6B7A9A] mt-0.5 leading-relaxed">
+          <p className="text-sm font-bold text-amber-200">This is how you learn</p>
+          <p className="text-xs text-slate-400 mt-0.5 leading-relaxed">
             Every answer you fill in below is sent directly to the AI. BrainBuddy uses this to choose the right words,
             the right examples, and the right pace — every single time you ask a question.
             The more detail you add, the smarter it gets at helping you.
@@ -106,10 +106,10 @@ export default function NewStudentPage() {
       </div>
 
       {/* ── Form ── */}
-      <div className="bg-white rounded-3xl border border-[#E8EDF8] shadow-card p-7">
+      <div className="rounded-3xl border border-white/10 bg-slate-950/80 backdrop-blur-sm shadow-2xl shadow-black/30 p-7">
         <div className="mb-6">
-          <h2 className="text-lg font-extrabold text-[#1F2A44]">Create Your Learning Profile</h2>
-          <p className="text-sm text-[#9AA4BA] mt-0.5">
+          <h2 className="text-lg font-extrabold text-white">Create Your Learning Profile</h2>
+          <p className="text-sm text-slate-400 mt-0.5">
             Fill this in once — BrainBuddy will remember it forever.
           </p>
         </div>

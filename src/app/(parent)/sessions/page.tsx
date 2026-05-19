@@ -1,4 +1,6 @@
 import { redirect } from "next/navigation";
+import Link from "next/link";
+import { PlusCircle } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { SessionsView } from "@/components/sessions/sessions-view";
 import type { SessionItem } from "@/components/sessions/sessions-view";
@@ -27,7 +29,20 @@ export default async function SessionsPage() {
     studentId = (links as any)?.[0]?.student_id ?? "";
   }
 
-  if (!studentId) redirect("/students/new");
+  if (!studentId) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 text-center space-y-3 animate-fade-in">
+        <div className="text-5xl">🧒</div>
+        <p className="text-lg font-bold text-white">No student added yet</p>
+        <p className="text-sm text-slate-400">Add a student profile to start AI tutoring sessions</p>
+        <Link href="/students/new">
+          <button className="flex items-center gap-2 bg-gradient-to-r from-indigo-500 to-purple-500 text-white rounded-2xl px-5 py-2.5 text-sm font-bold shadow-lg shadow-indigo-500/30 hover:opacity-90 transition-all mt-2">
+            <PlusCircle className="h-4 w-4" /> Add Student
+          </button>
+        </Link>
+      </div>
+    );
+  }
 
   // Fetch all sessions with subject info
   const { data: rawSessions } = await supabase
