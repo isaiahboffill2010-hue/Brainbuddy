@@ -366,7 +366,7 @@ export default async function StudentDashboard() {
             <TrendingUp className="h-5 w-5 text-indigo-400" /> Quiz Progress
           </h2>
           <Link href="/subjects" className="flex items-center gap-1 text-sm text-indigo-400 font-semibold hover:text-indigo-300 transition-colors">
-            View all quizes <ChevronRight className="h-4 w-4" />
+            View all quizzes <ChevronRight className="h-4 w-4" />
           </Link>
         </div>
 

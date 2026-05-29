@@ -1,5 +1,5 @@
 "use client";
-import { Bell, ChevronDown } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
@@ -55,14 +55,6 @@ export function DashboardTopbar({ userName = "there", userEmoji = "🦊", avatar
       </p>
 
       <div className="hidden md:block h-6 w-px bg-white/10" />
-
-      {/* Notifications */}
-      <button className="relative h-10 w-10 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 transition-all">
-        <Bell className="h-4 w-4 text-slate-300" />
-        <span className="absolute -top-0.5 -right-0.5 h-4 w-4 rounded-full bg-indigo-500 border-2 border-[#0B1120] text-[9px] text-white font-bold flex items-center justify-center">
-          3
-        </span>
-      </button>
 
       {/* Avatar — shows the student's emoji + name */}
       <div className="relative" ref={menuRef}>

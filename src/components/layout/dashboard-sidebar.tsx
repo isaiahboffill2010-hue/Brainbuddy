@@ -13,7 +13,7 @@ const navItems = [
   { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard", badge: null },
   { href: "/tutor", icon: Brain, label: "AI Tutor", badge: null },
   { href: "/sessions", icon: MessageSquare, label: "My Chats", badge: null },
-  { href: "/subjects", icon: GraduationCap, label: "Quizes", badge: null },
+  { href: "/subjects", icon: GraduationCap, label: "Quizzes", badge: null },
   { href: "/notes", icon: BookMarked, label: "Notes", badge: null },
   { href: "/settings", icon: Settings, label: "Settings", badge: null },
 ];
