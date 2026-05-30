@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { BookOpen, Loader2, School, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,11 +11,21 @@ function periodNumber(period: string | null) {
   return match ? Number(match[0]) : 99;
 }
 
-export function StudentClassPanel({ studentClasses }: { studentClasses: JoinedClassSummary[] }) {
-  const [liveClasses, setLiveClasses] = useState(studentClasses);
+type StudentClassPanelProps = {
+  studentClasses?: JoinedClassSummary[];
+  studentClass?: JoinedClassSummary | null;
+};
+
+export function StudentClassPanel({ studentClasses, studentClass }: StudentClassPanelProps) {
+  const initialClasses = useMemo(() => {
+    if (Array.isArray(studentClasses)) return studentClasses;
+    return studentClass ? [studentClass] : [];
+  }, [studentClasses, studentClass]);
+  const [liveClasses, setLiveClasses] = useState(initialClasses);
   const [code, setCode] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [hydrated, setHydrated] = useState(false);
 
   const refreshClasses = useCallback(async () => {
     try {
@@ -29,10 +39,11 @@ export function StudentClassPanel({ studentClasses }: { studentClasses: JoinedCl
   }, []);
 
   useEffect(() => {
-    setLiveClasses(studentClasses);
-  }, [studentClasses]);
+    setLiveClasses(initialClasses);
+  }, [initialClasses]);
 
   useEffect(() => {
+    setHydrated(true);
     refreshClasses();
     const interval = window.setInterval(refreshClasses, 15000);
     return () => window.clearInterval(interval);
@@ -73,9 +84,9 @@ export function StudentClassPanel({ studentClasses }: { studentClasses: JoinedCl
           <School className="h-5 w-5 text-indigo-300" />
         </div>
         <div>
-          <h2 className="text-lg font-bold text-white">My Classes</h2>
+          <h2 className="text-lg font-bold text-white">Join a class</h2>
           <p className="text-sm text-slate-400">
-            Join each period with your teacher's class code.
+            Enter your teacher's class code to see what your class is learning.
           </p>
         </div>
       </div>
@@ -93,7 +104,7 @@ export function StudentClassPanel({ studentClasses }: { studentClasses: JoinedCl
       </form>
       {error && <p className="mt-2 text-sm text-red-300">{error}</p>}
 
-      {sortedClasses.length === 0 ? (
+      {hydrated && (sortedClasses.length === 0 ? (
         <p className="mt-4 rounded-2xl border border-dashed border-white/10 bg-white/5 p-3 text-sm text-slate-400">
           No classes joined yet. Add a class code when your teacher gives you one.
         </p>
@@ -143,7 +154,7 @@ export function StudentClassPanel({ studentClasses }: { studentClasses: JoinedCl
             );
           })}
         </div>
-      )}
+      ))}
     </section>
   );
 }

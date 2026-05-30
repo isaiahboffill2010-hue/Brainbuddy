@@ -1,7 +1,10 @@
 import { NextResponse } from "next/server";
 import { createClient, createServiceClient } from "@/lib/supabase/server";
 import { normalizeClassCode } from "@/lib/classes/class-code";
-import { getPrimaryStudentIdForProfile } from "@/lib/supabase/queries/classes";
+import {
+  getJoinedClassesForStudent,
+  getPrimaryStudentIdForProfile,
+} from "@/lib/supabase/queries/classes";
 
 export async function POST(req: Request) {
   const supabase = await createClient();
@@ -27,14 +30,26 @@ export async function POST(req: Request) {
 
   const { data: classData, error: classError } = await service
     .from("teacher_classes")
-    .select("id, is_active")
+    .select("id, is_active, period")
     .eq("class_code", classCode)
     .maybeSingle();
 
-  const classroom = classData as { id: string; is_active: boolean } | null;
+  const classroom = classData as { id: string; is_active: boolean; period: string | null } | null;
   if (classError) return NextResponse.json({ error: classError.message }, { status: 500 });
   if (!classroom || !classroom.is_active) {
     return NextResponse.json({ error: "We could not find that class code." }, { status: 404 });
+  }
+
+  const joinedClasses = await getJoinedClassesForStudent(service, studentId).catch(() => []);
+  const alreadyJoined = joinedClasses.some((item) => item.id === classroom.id);
+  if (alreadyJoined) return NextResponse.json({ ok: true });
+
+  if (joinedClasses.length >= 8) {
+    return NextResponse.json({ error: "You can join up to 8 period classes." }, { status: 400 });
+  }
+
+  if (classroom.period && joinedClasses.some((item) => item.period === classroom.period)) {
+    return NextResponse.json({ error: `You already joined a class for ${classroom.period}.` }, { status: 400 });
   }
 
   const { error } = await service

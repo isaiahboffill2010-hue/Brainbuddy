@@ -9,6 +9,7 @@ import type { TeacherClassWithStudents } from "@/lib/supabase/queries/classes";
 export function TeacherClassList({ initialClasses }: { initialClasses: TeacherClassWithStudents[] }) {
   const [classes, setClasses] = useState(initialClasses);
   const [refreshing, setRefreshing] = useState(false);
+  const [refreshError, setRefreshError] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [savingId, setSavingId] = useState<string | null>(null);
   const [editError, setEditError] = useState<string | null>(null);
@@ -25,6 +26,9 @@ export function TeacherClassList({ initialClasses }: { initialClasses: TeacherCl
       if (!res.ok) return;
       const data = await res.json();
       if (Array.isArray(data)) setClasses(data);
+      setRefreshError(null);
+    } catch {
+      setRefreshError("Could not refresh classes. Try again in a moment.");
     } finally {
       setRefreshing(false);
     }
@@ -87,6 +91,7 @@ export function TeacherClassList({ initialClasses }: { initialClasses: TeacherCl
           Refresh
         </button>
       </div>
+      {refreshError && <p className="mb-4 text-sm text-amber-200">{refreshError}</p>}
 
       {classes.length === 0 ? (
         <div className="flex min-h-[260px] flex-col items-center justify-center rounded-3xl border border-dashed border-white/10 bg-white/5 text-center p-6">
