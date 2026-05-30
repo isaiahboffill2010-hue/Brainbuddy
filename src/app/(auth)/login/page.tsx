@@ -1,4 +1,5 @@
 import { LoginForm } from "@/components/auth/login-form";
+import Link from "next/link";
 
 export default function LoginPage() {
   return (
@@ -8,6 +9,9 @@ export default function LoginPage() {
         <p className="text-sm text-white/50">Sign in to continue your learning journey</p>
       </div>
       <LoginForm />
+      <p className="text-center text-xs text-white/40">
+        Teacher? <Link href="/teacher/login" className="text-[#7AA3FF]">Open teacher login</Link>
+      </p>
     </div>
   );
 }

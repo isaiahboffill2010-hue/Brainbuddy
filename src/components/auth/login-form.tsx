@@ -27,7 +27,19 @@ export function LoginForm() {
       return;
     }
 
-    router.push("/dashboard");
+    const { data: { user } } = await supabase.auth.getUser();
+    let target = "/dashboard";
+    if (user) {
+      const { data: profileData } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      const profile = profileData as { role: string } | null;
+      if (profile?.role === "teacher") target = "/teacher/dashboard";
+    }
+
+    router.push(target);
     router.refresh();
   }
 

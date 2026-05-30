@@ -350,3 +350,101 @@ ALTER TABLE students
 -- ─────────────────────────────────────────────
 INSERT INTO storage.buckets (id, name, public) VALUES ('homework', 'homework', true)
 ON CONFLICT (id) DO UPDATE SET public = true;
+
+-- ============================================================
+-- TEACHER CLASSROOM MVP (additive)
+-- Run this section to add teacher-created classes and student class-code joins.
+-- ============================================================
+
+ALTER TABLE profiles
+  ADD COLUMN IF NOT EXISTS school_name TEXT;
+
+CREATE OR REPLACE FUNCTION handle_new_user()
+RETURNS TRIGGER LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
+BEGIN
+  INSERT INTO public.profiles (user_id, role, full_name, email, school_name)
+  VALUES (
+    NEW.id,
+    COALESCE(NEW.raw_user_meta_data->>'role', 'parent'),
+    COALESCE(NEW.raw_user_meta_data->>'full_name', NEW.email),
+    NEW.email,
+    NEW.raw_user_meta_data->>'school_name'
+  );
+  RETURN NEW;
+END;
+$$;
+
+CREATE TABLE IF NOT EXISTS teacher_classes (
+  id                       UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  teacher_profile_id       UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  class_name               TEXT NOT NULL,
+  school_level             TEXT CHECK (school_level IN ('Middle School', 'High School')),
+  grade_level              TEXT,
+  subject_id               UUID REFERENCES subjects(id) ON DELETE SET NULL,
+  period                   TEXT,
+  current_unit             TEXT,
+  learning_goal            TEXT,
+  brainbuddy_instructions  TEXT,
+  ai_rules                 JSONB NOT NULL DEFAULT '{}'::jsonb,
+  class_code               TEXT NOT NULL UNIQUE,
+  is_active                BOOLEAN NOT NULL DEFAULT TRUE,
+  created_at               TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at               TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS class_enrollments (
+  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  class_id    UUID NOT NULL REFERENCES teacher_classes(id) ON DELETE CASCADE,
+  student_id  UUID NOT NULL REFERENCES students(id) ON DELETE CASCADE,
+  joined_at   TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  UNIQUE (class_id, student_id)
+);
+
+CREATE INDEX IF NOT EXISTS teacher_classes_teacher_profile_id_idx ON teacher_classes(teacher_profile_id);
+CREATE INDEX IF NOT EXISTS teacher_classes_class_code_idx ON teacher_classes(class_code);
+CREATE INDEX IF NOT EXISTS class_enrollments_class_id_idx ON class_enrollments(class_id);
+CREATE INDEX IF NOT EXISTS class_enrollments_student_id_idx ON class_enrollments(student_id);
+
+ALTER TABLE teacher_classes ENABLE ROW LEVEL SECURITY;
+ALTER TABLE class_enrollments ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "teacher_classes: owner or joined student read" ON teacher_classes;
+CREATE POLICY "teacher_classes: owner or joined student read" ON teacher_classes FOR SELECT
+  USING (
+    teacher_profile_id IN (SELECT id FROM profiles WHERE user_id = auth.uid())
+    OR EXISTS (
+      SELECT 1
+      FROM class_enrollments ce
+      WHERE ce.class_id = teacher_classes.id
+        AND is_my_student(ce.student_id)
+    )
+  );
+
+DROP POLICY IF EXISTS "teacher_classes: teacher insert" ON teacher_classes;
+CREATE POLICY "teacher_classes: teacher insert" ON teacher_classes FOR INSERT
+  WITH CHECK (
+    teacher_profile_id IN (
+      SELECT id FROM profiles
+      WHERE user_id = auth.uid()
+        AND role = 'teacher'
+    )
+  );
+
+DROP POLICY IF EXISTS "teacher_classes: teacher update" ON teacher_classes;
+CREATE POLICY "teacher_classes: teacher update" ON teacher_classes FOR UPDATE
+  USING (teacher_profile_id IN (SELECT id FROM profiles WHERE user_id = auth.uid()))
+  WITH CHECK (teacher_profile_id IN (SELECT id FROM profiles WHERE user_id = auth.uid()));
+
+DROP POLICY IF EXISTS "class_enrollments: teacher or student read" ON class_enrollments;
+CREATE POLICY "class_enrollments: teacher or student read" ON class_enrollments FOR SELECT
+  USING (
+    is_my_student(student_id)
+    OR class_id IN (
+      SELECT id FROM teacher_classes
+      WHERE teacher_profile_id IN (SELECT id FROM profiles WHERE user_id = auth.uid())
+    )
+  );
+
+DROP POLICY IF EXISTS "class_enrollments: service role only insert" ON class_enrollments;
+CREATE POLICY "class_enrollments: service role only insert" ON class_enrollments FOR INSERT
+  WITH CHECK (false);

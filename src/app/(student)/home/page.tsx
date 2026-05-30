@@ -1,7 +1,13 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createServiceClient } from "@/lib/supabase/server";
 import { getProfile } from "@/lib/supabase/queries/profiles";
+import { StudentClassPanel } from "@/components/classes/StudentClassPanel";
+import {
+  getJoinedClassesForStudent,
+  getPrimaryStudentIdForProfile,
+  type JoinedClassSummary,
+} from "@/lib/supabase/queries/classes";
 import { Camera, TrendingUp, Sparkles } from "lucide-react";
 
 const SUBJECTS = [
@@ -14,13 +20,23 @@ const SUBJECTS = [
 
 export default async function StudentHomePage() {
   const supabase = await createClient();
+  const service = createServiceClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
   let name = "friend";
+  let joinedClasses: JoinedClassSummary[] = [];
+  let hasStudent = false;
   try {
     const profile = await getProfile(supabase, user.id);
-    if (profile) name = profile.full_name?.split(" ")[0] ?? "friend";
+    if (profile) {
+      name = profile.full_name?.split(" ")[0] ?? "friend";
+      const studentId = await getPrimaryStudentIdForProfile(service, profile.id);
+      if (studentId) {
+        hasStudent = true;
+        joinedClasses = await getJoinedClassesForStudent(service, studentId).catch(() => []);
+      }
+    }
   } catch { /* ok */ }
 
   return (
@@ -38,6 +54,8 @@ export default async function StudentHomePage() {
           </div>
         </div>
       </div>
+
+      {hasStudent && <StudentClassPanel studentClasses={joinedClasses} />}
 
       {/* Subject grid */}
       <div>

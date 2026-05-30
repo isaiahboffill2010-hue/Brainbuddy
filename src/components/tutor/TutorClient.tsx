@@ -3,12 +3,14 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import {
   Send, FileText, PlusCircle, Loader2, ImagePlus, X, BookOpen, Scissors, AlertCircle,
+  Target,
 } from "lucide-react";
 import Image from "next/image";
 import { SnipCropModal } from "./SnipCropModal";
 import { captureScreenFrame } from "@/lib/screenCapture";
 import { WorkedExampleCard, type WorkedExample } from "@/components/chat/worked-example-card";
 import { UpgradeLimitModal } from "@/components/shared/UpgradeLimitModal";
+import type { JoinedClassSummary } from "@/lib/supabase/queries/classes";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 type Subject = { id: string; name: string; icon: string; color: string };
@@ -86,15 +88,18 @@ export function TutorClient({
   subjects,
   initialSessions,
   initialSessionId,
+  joinedClass,
 }: {
   student: Student;
   subjects: Subject[];
   initialSessions: Session[];
   initialSessionId?: string;
+  joinedClass?: JoinedClassSummary | null;
 }) {
   const [sessions, setSessions] = useState<Session[]>(initialSessions);
   const [activeSession, setActiveSession] = useState<Session | null>(null);
   const [activeSubject, setActiveSubject] = useState<Subject | null>(subjects[0] ?? null);
+  const [liveJoinedClass, setLiveJoinedClass] = useState<JoinedClassSummary | null>(joinedClass ?? null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [streaming, setStreaming] = useState(false);
@@ -140,6 +145,29 @@ export function TutorClient({
     const t = setTimeout(() => setSnip({ status: "idle" }), 4000);
     return () => clearTimeout(t);
   }, [snip]);
+
+  const refreshJoinedClass = useCallback(async () => {
+    const query = activeSubject?.id ? `?subjectId=${encodeURIComponent(activeSubject.id)}` : "";
+
+    try {
+      const res = await fetch(`/api/classes/current${query}`, { cache: "no-store" });
+      if (!res.ok) return;
+      const data = await res.json();
+      setLiveJoinedClass(data ?? null);
+    } catch {
+      // Keep the current banner if a background refresh fails.
+    }
+  }, [activeSubject?.id]);
+
+  useEffect(() => {
+    setLiveJoinedClass(joinedClass ?? null);
+  }, [joinedClass]);
+
+  useEffect(() => {
+    refreshJoinedClass();
+    const interval = window.setInterval(refreshJoinedClass, 15000);
+    return () => window.clearInterval(interval);
+  }, [refreshJoinedClass]);
 
   // ── Data fetching ────────────────────────────────────────────────────────
   const loadMessages = useCallback(async (sessionId: string) => {
@@ -447,6 +475,10 @@ export function TutorClient({
 
   const currentMeta = getMeta(activeSubject?.name);
   const snipBusy = snip.status === "capturing" || snip.status === "sending";
+  const visibleClassFocus = liveJoinedClass && (
+    !liveJoinedClass.subjectId || !activeSubject?.id || liveJoinedClass.subjectId === activeSubject.id
+  ) ? liveJoinedClass : null;
+  const classFocusLabel = visibleClassFocus?.period || visibleClassFocus?.className || "your class";
 
   // ── Render ────────────────────────────────────────────────────────────────
   return (
@@ -509,6 +541,38 @@ export function TutorClient({
               );
             })}
           </div>
+
+          {visibleClassFocus && (
+            <div className="px-5 py-4 border-b border-[#C7D7FF] bg-gradient-to-r from-[#EEF3FF] via-white to-[#F3F0FF] flex-shrink-0">
+              <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                <div className="flex items-start gap-3 min-w-0">
+                  <div className="h-10 w-10 rounded-2xl bg-[#4F7CFF] flex items-center justify-center shadow-blue flex-shrink-0">
+                    <Target className="h-5 w-5 text-white" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-[#4F7CFF]">
+                      Teacher class focus
+                    </p>
+                    <p className="text-lg font-extrabold text-[#1F2A44] leading-tight">
+                      Focus on this first: {visibleClassFocus.currentUnit || visibleClassFocus.subjectName || "your class topic"}
+                    </p>
+                    <p className="text-xs font-semibold text-[#6B7A9A] mt-0.5">
+                      {classFocusLabel}
+                      {visibleClassFocus.subjectName ? ` · ${visibleClassFocus.subjectName}` : ""}
+                    </p>
+                  </div>
+                </div>
+                <div className="rounded-2xl border border-[#D5D0FF] bg-white px-4 py-3 lg:max-w-[44%]">
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-[#8B7FFF]">
+                    What BrainBuddy will prioritize
+                  </p>
+                  <p className="text-sm font-semibold text-[#1F2A44] leading-relaxed mt-1">
+                    {visibleClassFocus.learningGoal || visibleClassFocus.brainbuddyInstructions || `${classFocusLabel} is guiding today's BrainBuddy help.`}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Messages */}
           <div className="flex-1 overflow-y-auto px-5 py-5 space-y-4">

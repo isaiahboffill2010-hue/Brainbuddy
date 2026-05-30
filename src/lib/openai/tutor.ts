@@ -6,6 +6,7 @@ import { getStudent } from "@/lib/supabase/queries/students";
 import { getProgressForSubject } from "@/lib/supabase/queries/progress";
 import { getLastSessionSummary } from "@/lib/supabase/queries/sessions";
 import { getRecentMessages } from "@/lib/supabase/queries/messages";
+import { getClassContextForStudent } from "@/lib/supabase/queries/classes";
 import type { TutorContext } from "@/types/app";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -25,10 +26,11 @@ export async function streamTutorResponse(params: {
   const hasSubject = Boolean(subjectId);
 
   // 1. Load student context
-  const [student, progress, learningNotes] = await Promise.all([
+  const [student, progress, learningNotes, classContext] = await Promise.all([
     getStudent(supabase, studentId),
     hasSubject ? getProgressForSubject(supabase, studentId, subjectId) : Promise.resolve(null),
     hasSubject ? getLastSessionSummary(supabase, studentId, subjectId) : Promise.resolve(null),
+    getClassContextForStudent(supabase, studentId, hasSubject ? subjectId : undefined),
   ]);
 
   // 2. Load recent message history (last 20)
@@ -55,6 +57,15 @@ export async function streamTutorResponse(params: {
     teachingPace: student.teaching_pace,
     motivation: student.motivation,
     teachingAvoid: student.teaching_avoid,
+    classContext: classContext
+      ? {
+          className: classContext.className,
+          subjectName: classContext.subjectName,
+          currentUnit: classContext.currentUnit,
+          learningGoal: classContext.learningGoal,
+          brainbuddyInstructions: classContext.brainbuddyInstructions,
+        }
+      : null,
     isFreshSession,
   };
 

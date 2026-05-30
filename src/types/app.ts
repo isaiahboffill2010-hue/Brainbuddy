@@ -24,6 +24,14 @@ export type SessionWithMessages = AiSession & {
 // Auth
 export type UserRole = "parent" | "student" | "teacher";
 
+export type ClassLearningContext = {
+  className: string;
+  subjectName?: string | null;
+  currentUnit?: string | null;
+  learningGoal?: string | null;
+  brainbuddyInstructions?: string | null;
+};
+
 // Chat
 export type ChatMessage = {
   id: string;
@@ -55,6 +63,7 @@ export type TutorContext = {
   teachingPace?: string | null;
   motivation?: string | null;
   teachingAvoid?: string | null;
+  classContext?: ClassLearningContext | null;
   isFreshSession?: boolean;
 };
 

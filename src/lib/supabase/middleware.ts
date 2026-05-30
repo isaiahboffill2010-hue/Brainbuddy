@@ -9,6 +9,8 @@ export async function updateSession(request: NextRequest) {
     path === "/" ||
     path.startsWith("/login") ||
     path.startsWith("/register") ||
+    path.startsWith("/teacher/login") ||
+    path.startsWith("/teacher/register") ||
     path.startsWith("/forgot-password") ||
     path.startsWith("/auth/callback") ||
     path.startsWith("/_next") ||
@@ -56,7 +58,7 @@ export async function updateSession(request: NextRequest) {
     path.startsWith("/forgot-password");
 
   if (!user && !isPublicRoute) {
-    url.pathname = "/login";
+    url.pathname = path.startsWith("/teacher") ? "/teacher/login" : "/login";
     return NextResponse.redirect(url);
   }
 

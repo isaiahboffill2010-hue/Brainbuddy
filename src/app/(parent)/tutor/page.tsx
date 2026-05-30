@@ -1,5 +1,6 @@
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createServiceClient } from "@/lib/supabase/server";
 import { TutorClient } from "@/components/tutor/TutorClient";
+import { getJoinedClassesForStudent } from "@/lib/supabase/queries/classes";
 import Link from "next/link";
 import { PlusCircle } from "lucide-react";
 
@@ -10,6 +11,7 @@ export default async function TutorPage({
 }) {
   const { session: initialSessionId } = await searchParams;
   const supabase = await createClient();
+  const service = createServiceClient();
   const { data: { user } } = await supabase.auth.getUser();
 
   // Get parent profile
@@ -74,6 +76,7 @@ export default async function TutorPage({
   const student = studentRes.data as any;
   const subjects = (subjectsRes.data ?? []) as any[];
   const sessions = (sessionsRes.data ?? []) as any[];
+  const joinedClasses = await getJoinedClassesForStudent(service, studentId).catch(() => []);
 
   return (
     <TutorClient
@@ -81,6 +84,7 @@ export default async function TutorPage({
       subjects={subjects}
       initialSessions={sessions}
       initialSessionId={initialSessionId}
+      joinedClass={joinedClasses[0] ?? null}
     />
   );
 }

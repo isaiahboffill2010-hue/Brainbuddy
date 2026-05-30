@@ -17,6 +17,7 @@ export interface Database {
           role: "parent" | "student" | "teacher";
           full_name: string | null;
           email: string | null;
+          school_name: string | null;
           avatar_url: string | null;
           plan: "free" | "premium";
           subscription_status: "trial" | "active" | "past_due" | "canceled" | "none";
@@ -37,6 +38,7 @@ export interface Database {
           role: "parent" | "student" | "teacher";
           full_name?: string | null;
           email?: string | null;
+          school_name?: string | null;
           avatar_url?: string | null;
           plan?: "free" | "premium";
           subscription_status?: "trial" | "active" | "past_due" | "canceled" | "none";
@@ -54,6 +56,7 @@ export interface Database {
         Update: {
           full_name?: string | null;
           email?: string | null;
+          school_name?: string | null;
           avatar_url?: string | null;
           plan?: "free" | "premium";
           subscription_status?: "trial" | "active" | "past_due" | "canceled" | "none";
@@ -162,6 +165,75 @@ export interface Database {
           student_id: string;
         };
         Update: Record<string, never>;
+        Relationships: [];
+      };
+      teacher_classes: {
+        Row: {
+          id: string;
+          teacher_profile_id: string;
+          class_name: string;
+          school_level: "Middle School" | "High School" | null;
+          grade_level: string | null;
+          subject_id: string | null;
+          period: string | null;
+          current_unit: string | null;
+          learning_goal: string | null;
+          brainbuddy_instructions: string | null;
+          ai_rules: Json;
+          class_code: string;
+          is_active: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          teacher_profile_id: string;
+          class_name: string;
+          school_level?: "Middle School" | "High School" | null;
+          grade_level?: string | null;
+          subject_id?: string | null;
+          period?: string | null;
+          current_unit?: string | null;
+          learning_goal?: string | null;
+          brainbuddy_instructions?: string | null;
+          ai_rules?: Json;
+          class_code: string;
+          is_active?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          class_name?: string;
+          school_level?: "Middle School" | "High School" | null;
+          grade_level?: string | null;
+          subject_id?: string | null;
+          period?: string | null;
+          current_unit?: string | null;
+          learning_goal?: string | null;
+          brainbuddy_instructions?: string | null;
+          ai_rules?: Json;
+          class_code?: string;
+          is_active?: boolean;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      class_enrollments: {
+        Row: {
+          id: string;
+          class_id: string;
+          student_id: string;
+          joined_at: string;
+        };
+        Insert: {
+          id?: string;
+          class_id: string;
+          student_id: string;
+          joined_at?: string;
+        };
+        Update: {
+          joined_at?: string;
+        };
         Relationships: [];
       };
       learning_preferences: {

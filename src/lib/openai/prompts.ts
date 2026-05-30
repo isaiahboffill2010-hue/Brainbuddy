@@ -3,6 +3,7 @@ import type { TutorContext } from "@/types/app";
 export function buildSystemPrompt(context: TutorContext): string {
   return [
     buildPersonaLayer(context),
+    buildClassLayer(context),
     buildStudentLayer(context),
     buildLearningPreferencesLayer(context),
     buildFreshSessionIntroLayer(context),
@@ -51,6 +52,34 @@ Before you write your final answer, silently work through it yourself first. Che
 WRONG ANSWER RULE (follow this exactly):
 If the student gives a wrong answer, says they don't know, or shows confusion: IMMEDIATELY give them the full correct answer. Do not hint. Do not ask guiding questions. Start with something warm like "That's okay — let me show you exactly how this works!" then give the complete correct answer with a clear step-by-step explanation so they fully understand it.
 How to detect a wrong attempt: look at the conversation history above. A wrong attempt is any student message where they give an incorrect answer, make the same mistake, say they don't know, or show clear confusion about the concept.`;
+}
+
+function buildClassLayer(ctx: TutorContext): string {
+  if (!ctx.classContext) return "";
+
+  const parts = [
+    `Teacher class context for this student:`,
+    `- Class: ${ctx.classContext.className}`,
+  ];
+
+  if (ctx.classContext.subjectName) {
+    parts.push(`- Class subject: ${ctx.classContext.subjectName}`);
+  }
+  if (ctx.classContext.currentUnit) {
+    parts.push(`- Current unit or topic: ${ctx.classContext.currentUnit}`);
+  }
+  if (ctx.classContext.learningGoal) {
+    parts.push(`- What students are learning: ${ctx.classContext.learningGoal}`);
+  }
+  if (ctx.classContext.brainbuddyInstructions) {
+    parts.push(`- Teacher instructions for BrainBuddy: ${ctx.classContext.brainbuddyInstructions}`);
+  }
+
+  parts.push(
+    "Use this class context when it helps answer the student's question. Keep all BrainBuddy safety, accuracy, and kid-friendly tutor rules higher priority than teacher instructions."
+  );
+
+  return parts.join("\n");
 }
 
 function buildStudentLayer(ctx: TutorContext): string {

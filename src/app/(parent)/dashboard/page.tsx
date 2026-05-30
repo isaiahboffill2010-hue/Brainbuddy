@@ -1,6 +1,8 @@
 import Link from "next/link";
 import Image from "next/image";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createServiceClient } from "@/lib/supabase/server";
+import { StudentClassPanel } from "@/components/classes/StudentClassPanel";
+import { getJoinedClassesForStudent, type JoinedClassSummary } from "@/lib/supabase/queries/classes";
 import {
   Flame, TrendingUp, BookOpen, FlaskConical, Pencil, Calculator, Scroll,
   MessageSquare, Clock, ChevronRight, Sparkles, Play,
@@ -45,6 +47,7 @@ function timeAgo(iso: string) {
 
 export default async function StudentDashboard() {
   const supabase = await createClient();
+  const service = createServiceClient();
   const { data: { user } } = await supabase.auth.getUser();
 
   const { data: profileRaw } = await supabase
@@ -75,6 +78,7 @@ export default async function StudentDashboard() {
   let recentSessions: any[] = [];
   let allSessions: unknown[] = [];
   let homeworkCount = 0;
+  let joinedClasses: JoinedClassSummary[] = [];
 
   if (profile) {
     const { data: links } = await supabase
@@ -87,7 +91,7 @@ export default async function StudentDashboard() {
     if (raw && !Array.isArray(raw)) student = raw;
 
     if (student) {
-      const [progressRes, sessRes, allSessRes] = await Promise.all([
+      const [progressRes, sessRes, allSessRes, joinedClassRows] = await Promise.all([
         supabase
           .from("student_subject_progress")
           .select("*, subjects(name, icon, color)")
@@ -103,10 +107,12 @@ export default async function StudentDashboard() {
           .select("id")
           .eq("student_id", student.id)
           .not("subject_id", "is", null),
+        getJoinedClassesForStudent(service, student.id).catch(() => []),
       ]);
       subjectProgress  = (progressRes.data as unknown[]) ?? [];
       recentSessions   = (sessRes.data   as unknown[]) ?? [];
       allSessions      = (allSessRes.data as unknown[]) ?? [];
+      joinedClasses    = joinedClassRows;
       const sessionIds = (allSessRes.data ?? []).map((s: { id: string }) => s.id);
       if (sessionIds.length > 0) {
         const { count } = await supabase
@@ -234,6 +240,8 @@ export default async function StudentDashboard() {
           </div>
         </div>
       </div>
+
+      {student && <StudentClassPanel studentClasses={joinedClasses} />}
 
       {/* ── PROFILE + AI TUTOR ─────────────────────────────────────────── */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
