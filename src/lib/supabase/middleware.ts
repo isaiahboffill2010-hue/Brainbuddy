@@ -55,6 +55,8 @@ export async function updateSession(request: NextRequest) {
   const isAuthRoute =
     path.startsWith("/login") ||
     path.startsWith("/register") ||
+    path.startsWith("/teacher/login") ||
+    path.startsWith("/teacher/register") ||
     path.startsWith("/forgot-password");
 
   if (!user && !isPublicRoute) {
@@ -63,7 +65,20 @@ export async function updateSession(request: NextRequest) {
   }
 
   if (user && isAuthRoute) {
-    url.pathname = "/dashboard";
+    let role: string | null = null;
+    try {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+      role = (profile as { role?: string } | null)?.role ?? null;
+    } catch {
+      role = null;
+    }
+
+    url.pathname = role === "teacher" ? "/teacher/dashboard" : "/dashboard";
     return NextResponse.redirect(url);
   }
 
