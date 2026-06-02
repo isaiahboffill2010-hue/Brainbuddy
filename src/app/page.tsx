@@ -1,84 +1,28 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import {
-  ArrowRight, Sparkles, Brain, MessageSquare, Zap,
-  BookOpen, Shield, CheckCircle2, ImageIcon,
-} from "lucide-react";
-
-const features = [
-  {
-    icon: Brain,
-    title: "AI Tutor — BrainBuddy",
-    desc: "Ask anything and get step-by-step explanations tailored to your grade. BrainBuddy adapts to how YOU learn.",
-    iconBg: "#EEF3FF",
-    iconColor: "#4F7CFF",
-    border: "#C7D7FF",
-  },
-  {
-    icon: Zap,
-    title: "Worked Example Cards",
-    desc: "BrainBuddy auto-generates visual step-by-step worked example cards with hints and a similar practice problem.",
-    iconBg: "#F3F0FF",
-    iconColor: "#8B7FFF",
-    border: "#D5D0FF",
-  },
-  {
-    icon: BookOpen,
-    title: "Personalized Practice",
-    desc: "Practice mode targets your weak topics per subject with custom questions and on-demand hints from BrainBuddy.",
-    iconBg: "#EEF8F0",
-    iconColor: "#22C55E",
-    border: "#BBF7D0",
-  },
-  {
-    icon: MessageSquare,
-    title: "My Chats",
-    desc: "Every conversation is saved and organized by subject — Math, Reading, Science, Writing. Pick up right where you left off.",
-    iconBg: "#EEF3FF",
-    iconColor: "#4F7CFF",
-    border: "#C7D7FF",
-  },
-  {
-    icon: ImageIcon,
-    title: "Send Images in Chat",
-    desc: "Send a photo of any problem directly to BrainBuddy. The AI reads and explains it — no typing the whole question required.",
-    iconBg: "#FFF8EC",
-    iconColor: "#FFC857",
-    border: "#FFE5A0",
-  },
-  {
-    icon: Shield,
-    title: "Safe & Kid-Friendly",
-    desc: "Built-in profanity filter keeps every conversation clean. BrainBuddy is a safe space — no inappropriate content, ever.",
-    iconBg: "#EEF8F0",
-    iconColor: "#22C55E",
-    border: "#BBF7D0",
-  },
-];
+import { ArrowRight, CheckCircle2, Shield, Sparkles } from "lucide-react";
 
 const subjects = [
-  { emoji: "🔢", name: "Math",    bg: "#EEF3FF", border: "#C7D7FF", color: "#4F7CFF" },
-  { emoji: "📚", name: "Reading", bg: "#EEF8F0", border: "#BBF7D0", color: "#22C55E" },
-  { emoji: "🔬", name: "Science", bg: "#F3F0FF", border: "#D5D0FF", color: "#8B7FFF" },
-  { emoji: "✏️", name: "Writing", bg: "#FFF8EC", border: "#FFE5A0", color: "#FFC857" },
-  { emoji: "📜", name: "History", bg: "#FFF7ED", border: "#FED7AA", color: "#F97316" },
+  { emoji: "🔢", name: "Math" },
+  { emoji: "📚", name: "Reading" },
+  { emoji: "🔬", name: "Science" },
+  { emoji: "✏️", name: "Writing" },
+  { emoji: "📜", name: "History" },
 ];
 
 const highlights = [
   "Step-by-step explanations at your level",
-  "Visual worked example cards — auto-generated",
+  "Visual worked example cards - auto-generated",
   "Personalized practice targeting weak topics",
   "Chat history saved by subject",
-  "Send photos of problems — BrainBuddy reads them",
+  "Send photos of problems - BrainBuddy reads them",
   "Safe, profanity-free environment for all ages",
 ];
 
 export default function LandingPage() {
   return (
     <div className="min-h-screen bg-[#071019] text-slate-200 overflow-x-hidden">
-
-      {/* ── Nav ── */}
       <nav className="sticky top-0 z-50 bg-[#071019]/60 backdrop-blur-lg border-b border-white/6 shadow-2xl">
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2.5">
@@ -100,15 +44,12 @@ export default function LandingPage() {
         </div>
       </nav>
 
-      {/* ── Hero ── */}
       <section className="relative pt-20 pb-24 px-6 overflow-hidden">
-        {/* Subtle background blobs */}
         <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[#4F7CFF]/5 rounded-full -translate-y-1/2 translate-x-1/3 pointer-events-none" />
         <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-[#8B7FFF]/5 rounded-full translate-y-1/2 -translate-x-1/3 pointer-events-none" />
 
         <div className="max-w-5xl mx-auto relative z-10">
           <div className="flex flex-col lg:flex-row items-center gap-12">
-            {/* Left — text */}
             <div className="flex-1 space-y-6 text-center lg:text-left">
               <div className="inline-flex items-center gap-2 bg-white/5 border border-white/6 rounded-full px-4 py-1.5">
                 <Sparkles className="h-3.5 w-3.5 text-indigo-300" />
@@ -138,36 +79,33 @@ export default function LandingPage() {
                 </Link>
               </div>
 
-              {/* Highlight checklist */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-2">
-                {highlights.map((h) => (
-                  <div key={h} className="flex items-center gap-2">
+                {highlights.map((highlight) => (
+                  <div key={highlight} className="flex items-center gap-2">
                     <CheckCircle2 className="h-4 w-4 text-[#22C55E] flex-shrink-0" />
-                    <span className="text-sm text-slate-300">{h}</span>
+                    <span className="text-sm text-slate-300">{highlight}</span>
                   </div>
                 ))}
               </div>
             </div>
 
-            {/* Right — BrainBuddy mascot card */}
             <div className="flex-shrink-0 flex flex-col items-center gap-4">
               <div className="relative">
                 <div className="h-48 w-48 rounded-3xl bg-white/5 border border-white/6 shadow-lg flex items-center justify-center overflow-hidden">
                   <Image src="/cosmo-logo.png" alt="BrainBuddy" width={192} height={192} className="object-contain w-full h-full" />
                 </div>
                 <div className="absolute -top-3 -right-3 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-2xl px-3 py-1.5 text-white text-xs font-bold shadow-lg whitespace-nowrap">
-                  Hi! I&apos;m BrainBuddy ✨
+                  Hi! I&apos;m BrainBuddy
                 </div>
                 <div className="absolute -bottom-3 -left-3 bg-green-500 rounded-2xl px-3 py-1.5 text-white text-xs font-bold shadow-md">
-                  Let&apos;s learn! 🚀
+                  Let&apos;s learn!
                 </div>
               </div>
 
-              {/* Mini subject pills */}
               <div className="flex gap-2 flex-wrap justify-center mt-2">
-                {subjects.map((s) => (
-                  <span key={s.name} className="flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold border border-white/6 bg-white/3 text-slate-200">
-                    <span>{s.emoji}</span> {s.name}
+                {subjects.map((subject) => (
+                  <span key={subject.name} className="flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold border border-white/6 bg-white/3 text-slate-200">
+                    <span>{subject.emoji}</span> {subject.name}
                   </span>
                 ))}
               </div>
@@ -176,107 +114,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── Features ── */}
-      <section className="py-20 px-6 bg-transparent border-y border-white/6">
-        <div className="max-w-5xl mx-auto">
-          <div className="text-center mb-12 space-y-3">
-            <h2 className="text-3xl md:text-4xl font-bold text-white">
-              Everything you need to{" "}
-              <span className="text-indigo-300">actually learn</span>
-            </h2>
-            <p className="text-slate-300 max-w-xl mx-auto">
-              Not just a chatbot — BrainBuddy is a full learning system built for students.
-            </p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {features.map((f) => (
-              <div key={f.title} className="bg-white/5 rounded-2xl border border-white/6 p-6 space-y-4 hover:shadow-lg hover:border-indigo-400/20 transition-all group">
-                <div className="h-10 w-10 rounded-xl flex items-center justify-center flex-shrink-0 transition-transform group-hover:scale-110 bg-white/6">
-                  <f.icon className="h-5 w-5 text-indigo-300" />
-                </div>
-                <div className="space-y-1.5">
-                  <h3 className="font-semibold text-base text-white">{f.title}</h3>
-                  <p className="text-sm text-slate-300 leading-relaxed">{f.desc}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── How it works ── */}
-      <section className="py-20 px-6">
-        <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-12 space-y-3">
-            <h2 className="text-3xl md:text-4xl font-bold text-white">
-              Up and running in{" "}
-              <span className="text-[#4F7CFF]">seconds</span>
-            </h2>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {[
-              { n: "01", title: "Create your profile", desc: "Set up your student profile with your name, grade, and photo. BrainBuddy personalizes everything to you." },
-              { n: "02", title: "Ask BrainBuddy anything", desc: "Type a question or send a photo. BrainBuddy explains it step by step in a way that makes sense for your grade." },
-              { n: "03", title: "Practice and improve", desc: "Use Practice Mode to work on your weak topics. BrainBuddy targets exactly what needs work." },
-            ].map((step, i, arr) => (
-              <div key={step.n} className="relative flex items-start gap-4 md:flex-col md:gap-0">
-                {i < arr.length - 1 && (
-                  <div className="hidden md:block absolute top-6 left-[calc(50%+28px)] right-0 h-px bg-[#E8EDF8]" />
-                )}
-                <div className="bg-white/5 rounded-2xl border border-white/6 p-6 space-y-3 shadow-sm w-full hover:shadow-lg hover:border-indigo-400/20 transition-all">
-                    <div className="text-3xl font-extrabold text-indigo-300 opacity-40">{step.n}</div>
-                    <h3 className="font-semibold text-white">{step.title}</h3>
-                    <p className="text-sm text-slate-300 leading-relaxed">{step.desc}</p>
-                  </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── Stats strip ── */}
-      <section className="py-12 px-6 bg-transparent border-y border-white/6">
-        <div className="max-w-4xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
-          {[
-            { value: "4", label: "Core subjects", suffix: "" },
-            { value: "4", label: "Learning styles", suffix: "" },
-            { value: "24", label: "Availability", suffix: "/7" },
-            { value: "∞", label: "Patience", suffix: "" },
-          ].map((s) => (
-            <div key={s.label} className="space-y-1">
-              <div className="text-3xl font-extrabold text-indigo-300">{s.value}{s.suffix}</div>
-              <div className="text-sm text-slate-300">{s.label}</div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* ── CTA ── */}
-      <section className="py-24 px-6">
-        <div className="max-w-2xl mx-auto text-center space-y-6">
-          <div className="flex justify-center">
-            <div className="h-20 w-20 rounded-3xl bg-white border border-[#E8EDF8] shadow-[0_8px_24px_rgba(79,124,255,0.15)] overflow-hidden flex items-center justify-center">
-              <Image src="/cosmo-logo.png" alt="BrainBuddy" width={80} height={80} className="object-contain w-full h-full" />
-            </div>
-          </div>
-          <h2 className="text-4xl md:text-5xl font-extrabold text-white">
-            Ready to{" "}
-            <span className="text-indigo-300">level up?</span>
-          </h2>
-          <p className="text-slate-300 text-lg">
-            Create your free account and start learning with BrainBuddy today.
-          </p>
-          <Link href="/register">
-            <Button size="lg" className="bg-[#4F7CFF] text-white hover:bg-[#3D6AE8] shadow-[0_8px_24px_rgba(79,124,255,0.35)] transition-all text-base px-10 h-14 gap-2 rounded-2xl">
-              <Sparkles className="h-5 w-5" />
-              Get Started — It&apos;s Free
-            </Button>
-          </Link>
-          <p className="text-xs text-slate-300">No credit card needed • Set up in 60 seconds</p>
-        </div>
-      </section>
-
-      {/* ── Footer ── */}
       <footer className="border-t border-white/6 bg-transparent py-8 px-6">
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
@@ -284,7 +121,7 @@ export default function LandingPage() {
             <span className="font-bold text-white">BrainBuddy</span>
           </div>
           <p className="text-xs text-slate-300">
-            © {new Date().getFullYear()} BrainBuddy. Built to help every student succeed.
+            Copyright {new Date().getFullYear()} BrainBuddy. Built to help every student succeed.
           </p>
           <div className="flex items-center gap-1.5 text-xs text-slate-300">
             <Shield className="h-3 w-3 text-slate-300" />

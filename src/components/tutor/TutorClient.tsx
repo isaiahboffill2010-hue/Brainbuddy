@@ -536,43 +536,30 @@ export function TutorClient({
                     borderColor: isActive ? meta.color : meta.border,
                   }}
                 >
-                  <span>{meta.emoji}</span> {s.name}
+                  {s.name}
                 </button>
               );
             })}
           </div>
 
           {visibleClassFocus && (
-            <div className="px-5 py-4 border-b border-[#C7D7FF] bg-gradient-to-r from-[#EEF3FF] via-white to-[#F3F0FF] flex-shrink-0">
-              <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-                <div className="flex items-start gap-3 min-w-0">
-                  <div className="h-10 w-10 rounded-2xl bg-[#4F7CFF] flex items-center justify-center shadow-blue flex-shrink-0">
-                    <Target className="h-5 w-5 text-white" />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-[10px] font-bold uppercase tracking-wider text-[#4F7CFF]">
-                      Teacher class focus
-                    </p>
-                    <p className="text-lg font-extrabold text-[#1F2A44] leading-tight">
-                      Focus on this first: {visibleClassFocus.currentUnit || visibleClassFocus.subjectName || "your class topic"}
-                    </p>
-                    <p className="text-xs font-semibold text-[#6B7A9A] mt-0.5">
-                      {classFocusLabel}
-                      {visibleClassFocus.subjectName ? ` · ${visibleClassFocus.subjectName}` : ""}
-                    </p>
-                  </div>
+            <div className="px-4 py-2 border-b border-[#C7D7FF] bg-gradient-to-r from-[#EEF3FF] via-white to-[#F3F0FF] flex-shrink-0">
+              <div className="flex items-center gap-2">
+                <div className="h-7 w-7 rounded-lg bg-[#4F7CFF] flex items-center justify-center shadow-blue flex-shrink-0">
+                  <Target className="h-3.5 w-3.5 text-white" />
                 </div>
-                <div className="rounded-2xl border border-[#D5D0FF] bg-white px-4 py-3 lg:max-w-[44%]">
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-[#8B7FFF]">
-                    What BrainBuddy will prioritize
+                <div className="min-w-0">
+                  <p className="text-[8px] font-bold uppercase tracking-wide text-[#4F7CFF]">
+                    Teacher focus
                   </p>
-                  <p className="text-sm font-semibold text-[#1F2A44] leading-relaxed mt-1">
-                    {visibleClassFocus.learningGoal || visibleClassFocus.brainbuddyInstructions || `${classFocusLabel} is guiding today's BrainBuddy help.`}
+                  <p className="text-xs font-bold text-[#1F2A44] truncate">
+                    {visibleClassFocus.currentUnit || visibleClassFocus.subjectName || "your class topic"}
                   </p>
                 </div>
               </div>
             </div>
           )}
+
 
           {/* Messages */}
           <div className="flex-1 overflow-y-auto px-5 py-5 space-y-4">
@@ -587,22 +574,6 @@ export function TutorClient({
                   <p className="text-sm text-[#6B7A9A] max-w-xs">
                     I&apos;m BrainBuddy, your AI tutor. Ask me anything — or snip a question straight from your homework!
                   </p>
-                </div>
-                <div className="grid grid-cols-1 gap-2 max-w-sm w-full">
-                  {[
-                    "Explain this to me step by step",
-                    "I don't understand this problem",
-                    "Can you quiz me?",
-                    "Help me with my homework",
-                  ].map((prompt) => (
-                    <button
-                      key={prompt}
-                      onClick={() => { setInput(prompt); setTimeout(() => inputRef.current?.focus(), 50); }}
-                      className="text-left rounded-2xl bg-[#F7FAFF] border border-[#E8EDF8] px-4 py-2.5 text-sm text-[#6B7A9A] hover:bg-[#EEF3FF] hover:text-[#4F7CFF] hover:border-[#C7D7FF] transition-all"
-                    >
-                      &ldquo;{prompt}&rdquo;
-                    </button>
-                  ))}
                 </div>
               </div>
             )}
@@ -742,7 +713,7 @@ export function TutorClient({
               </div>
             )}
 
-            <div className="flex items-end gap-2 bg-[#F7FAFF] border border-[#E8EDF8] rounded-2xl px-3 py-2 focus-within:border-[#4F7CFF]/40 transition-colors">
+            <div className="flex items-end gap-2 bg-[#F7FAFF] border border-[#E8EDF8] rounded-2xl px-3 py-1.5 focus-within:border-[#4F7CFF]/40 transition-colors">
 
               {/* Upload image button */}
               <button
@@ -793,10 +764,6 @@ export function TutorClient({
                   : <Send className="h-4 w-4 text-white" />}
               </button>
             </div>
-
-            <p className="text-[10px] text-[#C4CDE0] text-center mt-1.5">
-              Enter to send · Shift+Enter for new line · Snip to capture from screen
-            </p>
           </div>
         </div>
 
