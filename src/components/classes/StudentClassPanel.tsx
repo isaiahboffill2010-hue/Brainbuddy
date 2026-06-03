@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { BookOpen, Loader2, School, Sparkles } from "lucide-react";
+import { BookOpen, Loader2, School, Sparkles, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import type { JoinedClassSummary } from "@/lib/supabase/queries/classes";
@@ -26,6 +26,7 @@ export function StudentClassPanel({ studentClasses, studentClass }: StudentClass
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [hydrated, setHydrated] = useState(false);
+  const [expandedClassId, setExpandedClassId] = useState<string | null>(null);
 
   const refreshClasses = useCallback(async () => {
     try {
@@ -109,14 +110,18 @@ export function StudentClassPanel({ studentClasses, studentClass }: StudentClass
           No classes joined yet. Add a class code when your teacher gives you one.
         </p>
       ) : (
-        <div className="mt-4 grid gap-3">
+        <div className="mt-4 space-y-2">
           {sortedClasses.map((studentClass) => {
             const classLabel = studentClass.period || studentClass.className;
+            const isExpanded = expandedClassId === studentClass.id;
 
             return (
-              <div key={studentClass.id} className="rounded-2xl border border-cyan-500/20 bg-cyan-500/10 p-4">
-                <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-                  <div className="min-w-0">
+              <div key={studentClass.id} className="rounded-2xl border border-cyan-500/20 bg-cyan-500/10 overflow-hidden">
+                <button
+                  onClick={() => setExpandedClassId(isExpanded ? null : studentClass.id)}
+                  className="w-full flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between p-4 hover:bg-cyan-500/20 transition-colors"
+                >
+                  <div className="min-w-0 flex-1 text-left">
                     <p className="text-xs font-semibold uppercase tracking-[0.2em] text-cyan-300">
                       {classLabel}
                     </p>
@@ -127,29 +132,38 @@ export function StudentClassPanel({ studentClasses, studentClass }: StudentClass
                       {[studentClass.gradeLevel, studentClass.subjectName].filter(Boolean).join(" - ") || "Class focus"}
                     </p>
                   </div>
-                  <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-semibold text-cyan-100">
-                    {studentClass.classCode}
-                  </span>
-                </div>
-
-                <div className="mt-3 grid gap-3 md:grid-cols-2">
-                  {studentClass.learningGoal && (
-                    <div className="rounded-2xl border border-white/10 bg-white/5 p-3">
-                      <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-indigo-200">
-                        <BookOpen className="h-3.5 w-3.5" /> Teacher focus
-                      </p>
-                      <p className="mt-1 text-sm text-white">{studentClass.learningGoal}</p>
-                    </div>
-                  )}
-                  <div className="rounded-2xl border border-white/10 bg-white/5 p-3">
-                    <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-purple-200">
-                      <Sparkles className="h-3.5 w-3.5" /> BrainBuddy
-                    </p>
-                    <p className="mt-1 text-sm text-white">
-                      {studentClass.brainbuddyInstructions || "BrainBuddy will help you study this topic step by step."}
-                    </p>
+                  <div className="flex items-center gap-3 flex-shrink-0">
+                    <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-semibold text-cyan-100">
+                      {studentClass.classCode}
+                    </span>
+                    <ChevronDown 
+                      className={`h-5 w-5 text-cyan-300 transition-transform ${isExpanded ? 'rotate-180' : ''}`} 
+                    />
                   </div>
-                </div>
+                </button>
+
+                {isExpanded && (
+                  <div className="border-t border-cyan-500/20 px-4 py-3 bg-cyan-500/5">
+                    <div className="grid gap-3 md:grid-cols-2">
+                      {studentClass.learningGoal && (
+                        <div className="rounded-2xl border border-white/10 bg-white/5 p-3">
+                          <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-indigo-200">
+                            <BookOpen className="h-3.5 w-3.5" /> Teacher focus
+                          </p>
+                          <p className="mt-1 text-sm text-white">{studentClass.learningGoal}</p>
+                        </div>
+                      )}
+                      <div className="rounded-2xl border border-white/10 bg-white/5 p-3">
+                        <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-purple-200">
+                          <Sparkles className="h-3.5 w-3.5" /> BrainBuddy
+                        </p>
+                        <p className="mt-1 text-sm text-white">
+                          {studentClass.brainbuddyInstructions || "BrainBuddy will help you study this topic step by step."}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             );
           })}

@@ -123,7 +123,7 @@ export function NotesClient({ initialNotes }: NotesClientProps) {
       {/* ── Header ─────────────────────────────────────────────── */}
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-extrabold text-[#1F2A44]">My Notes</h1>
+          <h1 className="text-2xl font-extrabold text-white">My Notes</h1>
           <p className="text-sm text-[#9AA4BA] mt-0.5">
             {notes.length} note{notes.length !== 1 ? "s" : ""} saved from your AI tutor sessions
           </p>

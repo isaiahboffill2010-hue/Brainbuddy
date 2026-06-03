@@ -22,7 +22,7 @@ export default async function ParentSettingsPage() {
     <div className="space-y-6 pb-8 animate-fade-in max-w-2xl">
 
       <div>
-        <h1 className="text-2xl font-extrabold text-[#1F2A44]">Settings</h1>
+        <h1 className="text-2xl font-extrabold text-white">Settings</h1>
         <p className="text-sm text-[#9AA4BA] mt-0.5">Manage your account and preferences</p>
       </div>
 
