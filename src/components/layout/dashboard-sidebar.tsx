@@ -4,7 +4,7 @@ import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import {
   LayoutDashboard, Brain, MessageSquare, GraduationCap, BookMarked,
-  Settings, LogOut, ChevronRight, Zap,
+  Settings, LogOut, ChevronRight, Zap, Target,
 } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 import { createClient } from "@/lib/supabase/client";
@@ -14,6 +14,7 @@ const navItems = [
   { href: "/tutor", icon: Brain, label: "AI Tutor", badge: null },
   { href: "/sessions", icon: MessageSquare, label: "My Chats", badge: null },
   { href: "/subjects", icon: GraduationCap, label: "Quizzes", badge: null },
+  { href: "/progress", icon: Target, label: "Progress", badge: null },
   { href: "/notes", icon: BookMarked, label: "Notes", badge: null },
   { href: "/settings", icon: Settings, label: "Settings", badge: null },
 ];

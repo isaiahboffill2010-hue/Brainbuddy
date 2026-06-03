@@ -380,6 +380,41 @@ export interface Database {
         };
         Relationships: [];
       };
+      quiz_question_attempts: {
+        Row: {
+          id: string;
+          student_id: string;
+          subject_id: string;
+          topic: string;
+          topic_key: string;
+          question_text: string | null;
+          selected_index: number;
+          correct_index: number;
+          is_correct: boolean;
+          mastery_check: boolean;
+          integrity_flagged: boolean;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          student_id: string;
+          subject_id: string;
+          topic: string;
+          topic_key: string;
+          question_text?: string | null;
+          selected_index: number;
+          correct_index: number;
+          is_correct: boolean;
+          mastery_check?: boolean;
+          integrity_flagged?: boolean;
+          created_at?: string;
+        };
+        Update: {
+          mastery_check?: boolean;
+          integrity_flagged?: boolean;
+        };
+        Relationships: [];
+      };
       student_notes: {
         Row: {
           id: string;

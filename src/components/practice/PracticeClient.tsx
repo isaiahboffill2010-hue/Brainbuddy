@@ -151,11 +151,33 @@ export function PracticeClient({
   }
 
   function handleSubmit() {
-    if (selectedChoice === null) return;
+    if (selectedChoice === null || !currentQuestion || !activeSubject) return;
     setSubmitted(true);
-    if (selectedChoice === currentQuestion?.correctIndex) {
+    const isCorrect = selectedChoice === currentQuestion.correctIndex;
+
+    if (isCorrect) {
       setScore((s) => s + 1);
     }
+
+    fetch("/api/practice/attempts", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        studentId: student.id,
+        subjectId: activeSubject.id,
+        attempts: [
+          {
+            topic: currentQuestion.topic,
+            question: currentQuestion.question,
+            selectedIndex: selectedChoice,
+            correctIndex: currentQuestion.correctIndex,
+            isCorrect,
+          },
+        ],
+      }),
+    }).catch(() => {
+      // Practice can continue even if the background progress save fails.
+    });
   }
 
   function handleNext() {
@@ -540,7 +562,6 @@ export function PracticeClient({
           {/* Idle / complete placeholder */}
           {(practiceState === "idle" || practiceState === "complete" || practiceState === "loading") && (
             <div className="flex flex-col items-center justify-center h-full text-center space-y-3 py-8">
-              <div className="text-4xl">💪</div>
               <p className="text-sm text-[#9AA4BA] leading-relaxed">
                 Start practicing and I&apos;ll help you when you get stuck!
               </p>

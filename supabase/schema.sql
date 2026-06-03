@@ -315,6 +315,39 @@ CREATE POLICY "progress: service role only write" ON student_subject_progress FO
 CREATE POLICY "progress: service role only update" ON student_subject_progress FOR UPDATE
   USING (false);
 
+-- QUIZ QUESTION ATTEMPTS
+-- Real submitted quiz answers. Mastery is calculated from these rows only.
+CREATE TABLE IF NOT EXISTS quiz_question_attempts (
+  id                 UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  student_id         UUID NOT NULL REFERENCES students(id) ON DELETE CASCADE,
+  subject_id         UUID NOT NULL REFERENCES subjects(id) ON DELETE CASCADE,
+  topic              TEXT NOT NULL,
+  topic_key          TEXT NOT NULL,
+  question_text      TEXT,
+  selected_index     INT NOT NULL,
+  correct_index      INT NOT NULL,
+  is_correct         BOOLEAN NOT NULL DEFAULT FALSE,
+  mastery_check      BOOLEAN NOT NULL DEFAULT FALSE,
+  integrity_flagged  BOOLEAN NOT NULL DEFAULT FALSE,
+  created_at         TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS quiz_attempts_student_topic_idx
+  ON quiz_question_attempts(student_id, subject_id, topic_key);
+
+CREATE INDEX IF NOT EXISTS quiz_attempts_student_created_idx
+  ON quiz_question_attempts(student_id, created_at DESC);
+
+ALTER TABLE quiz_question_attempts ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "quiz_attempts: student or parent read" ON quiz_question_attempts;
+CREATE POLICY "quiz_attempts: student or parent read" ON quiz_question_attempts FOR SELECT
+  USING (is_my_student(student_id));
+
+DROP POLICY IF EXISTS "quiz_attempts: service role only write" ON quiz_question_attempts;
+CREATE POLICY "quiz_attempts: service role only write" ON quiz_question_attempts FOR INSERT
+  WITH CHECK (false);
+
 -- STUDENT_NOTES
 ALTER TABLE student_notes ENABLE ROW LEVEL SECURITY;
 

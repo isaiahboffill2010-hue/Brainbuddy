@@ -204,18 +204,35 @@ async function updateLearningMemory(params: {
 
     const { data: prevData } = await db
       .from("student_subject_progress")
-      .select("topics_mastered, topics_struggling, session_count")
+      .select("topics_mastered, topics_struggling, session_count, last_session_at, streak_days")
       .eq("student_id", studentId)
       .eq("subject_id", subjectId)
       .single();
 
-    const prev = prevData as Pick<ProgressRow, "topics_mastered" | "topics_struggling" | "session_count"> | null;
-    const newMastered = Array.from(
-      new Set([...(prev?.topics_mastered ?? []), ...(extracted.mastered ?? [])])
-    );
+    const prev = prevData as Pick<ProgressRow, "topics_mastered" | "topics_struggling" | "session_count" | "last_session_at" | "streak_days"> | null;
+    const newMastered = prev?.topics_mastered ?? [];
     const newStruggling = Array.from(
       new Set([...(prev?.topics_struggling ?? []), ...(extracted.struggling ?? [])])
     ).filter((t) => !newMastered.includes(t));
+
+    // Calculate streak
+    let newStreak = 1; // Default for first session or after a gap
+    if (prev?.last_session_at) {
+      const lastDate = new Date(prev.last_session_at);
+      const today = new Date();
+      const lastDate_normalized = new Date(lastDate.getFullYear(), lastDate.getMonth(), lastDate.getDate());
+      const today_normalized = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+      const daysDiff = (today_normalized.getTime() - lastDate_normalized.getTime()) / (1000 * 60 * 60 * 24);
+
+      if (daysDiff === 0) {
+        // Same day session — keep streak
+        newStreak = prev.streak_days ?? 1;
+      } else if (daysDiff === 1) {
+        // Consecutive day — increment streak
+        newStreak = (prev.streak_days ?? 1) + 1;
+      }
+      // else: gap > 1 day or negative — reset to 1 (already set above)
+    }
 
     await db
       .from("student_subject_progress")
@@ -227,6 +244,7 @@ async function updateLearningMemory(params: {
           topics_struggling: newStruggling,
           session_count: (prev?.session_count ?? 0) + 1,
           last_session_at: new Date().toISOString(),
+          streak_days: newStreak,
           updated_at: new Date().toISOString(),
         },
         { onConflict: "student_id,subject_id" }
