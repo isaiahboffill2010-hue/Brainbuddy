@@ -1,9 +1,10 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Send, Loader2 } from "lucide-react";
+import { AlertCircle, Send, Loader2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { UpgradeLimitModal } from "@/components/shared/UpgradeLimitModal";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 type Question = {
@@ -32,6 +33,13 @@ type SubjectProgress = {
 };
 
 type PracticeState = "idle" | "loading" | "practice" | "complete";
+
+type GeneratePracticeResponse = {
+  error?: string;
+  message?: string;
+  focusTopic?: string;
+  questions?: Question[];
+};
 
 // ── Subject metadata ───────────────────────────────────────────────────────────
 const subjectMeta: Record<string, { emoji: string; color: string; bg: string; border: string }> = {
@@ -75,6 +83,11 @@ export function PracticeClient({
   const [tutorText, setBrainBuddyText] = useState("");
   const [tutorLoading, setBrainBuddyLoading] = useState(false);
   const [tutorInput, setBrainBuddyInput] = useState("");
+  const [generateError, setGenerateError] = useState("");
+  const [limitModalOpen, setLimitModalOpen] = useState(false);
+  const [limitMessage, setLimitMessage] = useState(
+    "You used your free practice quiz. Upgrade to BrainBuddy Premium for unlimited practice quizzes and personalized tutoring."
+  );
 
   const tutorEndRef = useRef<HTMLDivElement>(null);
 
@@ -90,16 +103,38 @@ export function PracticeClient({
     if (!activeSubject) return;
     setPracticeState("loading");
     setBrainBuddyText("");
+    setGenerateError("");
     try {
       const res = await fetch("/api/practice/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ studentId: student.id, subjectId: activeSubject.id }),
       });
-      if (!res.ok) throw new Error("Failed to generate");
-      const data = await res.json();
-      setQuestions(data.questions ?? []);
-      setFocusTopic(data.focusTopic ?? "");
+
+      const data = (await res.json().catch(() => null)) as GeneratePracticeResponse | null;
+      if (!res.ok) {
+        const message =
+          data?.message ??
+          "BrainBuddy could not generate practice questions right now. Try again in a minute.";
+        if (data?.error === "quiz_limit_reached") {
+          setLimitMessage(message);
+          setLimitModalOpen(true);
+        } else {
+          setGenerateError(message);
+        }
+        setPracticeState("idle");
+        return;
+      }
+
+      const nextQuestions = Array.isArray(data?.questions) ? data.questions : [];
+      if (nextQuestions.length === 0) {
+        setGenerateError("BrainBuddy could not build questions for this subject yet. Try again.");
+        setPracticeState("idle");
+        return;
+      }
+
+      setQuestions(nextQuestions);
+      setFocusTopic(data?.focusTopic ?? "");
       setCurrentIdx(0);
       setSelectedChoice(null);
       setSubmitted(false);
@@ -107,6 +142,7 @@ export function PracticeClient({
       setBrainBuddyText("");
       setPracticeState("practice");
     } catch {
+      setGenerateError("BrainBuddy could not generate practice questions right now. Try again in a minute.");
       setPracticeState("idle");
     }
   }
@@ -201,6 +237,7 @@ export function PracticeClient({
     setSubmitted(false);
     setScore(0);
     setBrainBuddyText("");
+    setGenerateError("");
   }
 
   async function handleTutorSend() {
@@ -215,6 +252,7 @@ export function PracticeClient({
 
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
+    <>
     <div className="flex gap-4 h-[calc(100vh-120px)] animate-fade-in">
 
       {/* ── LEFT: Practice area ── */}
@@ -293,6 +331,13 @@ export function PracticeClient({
                       </span>
                     ))}
                   </div>
+                </div>
+              )}
+
+              {generateError && (
+                <div className="flex max-w-md items-start gap-2 rounded-2xl border border-[#FED7AA] bg-[#FFF7ED] px-4 py-3 text-left text-sm text-[#9A3412]">
+                  <AlertCircle className="mt-0.5 h-4 w-4 flex-shrink-0" />
+                  <p>{generateError}</p>
                 </div>
               )}
 
@@ -660,5 +705,11 @@ export function PracticeClient({
         )}
       </div>
     </div>
+    <UpgradeLimitModal
+      open={limitModalOpen}
+      onClose={() => setLimitModalOpen(false)}
+      message={limitMessage}
+    />
+    </>
   );
 }

@@ -75,10 +75,6 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Student not found" }, { status: 404 });
   }
 
-  if (!isPremium) {
-    await service.from("profiles").update({ quizzes_used: quizzesUsed + 1 }).eq("user_id", user.id);
-  }
-
   const subjectName = subject?.name ?? "General";
   const weakTopics = (progress?.topics_struggling ?? []).filter(Boolean);
   const recentNoteTopics = notes
@@ -112,19 +108,59 @@ Return ONLY this JSON (no other text):
 
 If there are no known weak topics, pick foundational topics for the subject and grade level.`;
 
-  const completion = await anthropic.messages.create({
-    model: "claude-haiku-4-5-20251001",
-    messages: [{ role: "user", content: prompt }],
-    max_tokens: 2000,
-  });
+  let raw = "{}";
+  try {
+    const completion = await anthropic.messages.create({
+      model: "claude-haiku-4-5-20251001",
+      messages: [{ role: "user", content: prompt }],
+      max_tokens: 2000,
+    });
 
-  const raw = completion.content[0]?.type === "text" ? completion.content[0].text : "{}";
+    raw = completion.content[0]?.type === "text" ? completion.content[0].text : "{}";
+  } catch (error) {
+    console.error("Practice question generation failed", error);
+    return NextResponse.json(
+      {
+        error: "practice_generation_failed",
+        message: "BrainBuddy could not generate practice questions right now. Try again in a minute.",
+      },
+      { status: 500 }
+    );
+  }
+
   const jsonMatch = raw.match(/\{[\s\S]*\}/);
   let parsed: { focusTopic?: string; questions?: unknown[] };
   try {
     parsed = JSON.parse(jsonMatch?.[0] ?? "{}");
   } catch {
-    return NextResponse.json({ error: "Failed to parse AI response" }, { status: 500 });
+    return NextResponse.json(
+      {
+        error: "practice_parse_failed",
+        message: "BrainBuddy had trouble building those questions. Try again.",
+      },
+      { status: 500 }
+    );
+  }
+
+  if (!Array.isArray(parsed.questions) || parsed.questions.length === 0) {
+    return NextResponse.json(
+      {
+        error: "practice_questions_empty",
+        message: "BrainBuddy did not return practice questions. Try again.",
+      },
+      { status: 500 }
+    );
+  }
+
+  if (!isPremium) {
+    const { error: usageError } = await service
+      .from("profiles")
+      .update({ quizzes_used: quizzesUsed + 1 })
+      .eq("user_id", user.id);
+
+    if (usageError) {
+      console.error("Failed to update practice quiz usage", usageError);
+    }
   }
 
   return NextResponse.json({
