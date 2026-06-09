@@ -4,6 +4,7 @@ export function buildSystemPrompt(context: TutorContext): string {
   return [
     buildPersonaLayer(context),
     buildClassLayer(context),
+    buildAssignmentLayer(context),
     buildStudentLayer(context),
     buildLearningPreferencesLayer(context),
     buildFreshSessionIntroLayer(context),
@@ -12,6 +13,40 @@ export function buildSystemPrompt(context: TutorContext): string {
   ]
     .filter(Boolean)
     .join("\n\n---\n\n");
+}
+
+function buildAssignmentLayer(ctx: TutorContext): string {
+  if (!ctx.assignmentContext) return "";
+
+  const parts = [
+    `TEACHER ASSIGNMENT MODE is active.`,
+    `- Assignment title: ${ctx.assignmentContext.title}`,
+    `- Assignment subject: ${ctx.assignmentContext.subject || ctx.subjectName}`,
+    `- Total points set by teacher: ${ctx.assignmentContext.totalPoints ?? 0}`,
+    `- Expected question count: ${ctx.assignmentContext.expectedQuestionCount ?? ctx.assignmentContext.totalPoints ?? 0}`,
+    `- Worksheet files attached: ${ctx.assignmentContext.worksheetCount ?? 0}`,
+  ];
+
+  if (ctx.assignmentContext.instructions) {
+    parts.push(`- Teacher/student instructions: ${ctx.assignmentContext.instructions}`);
+  }
+
+  parts.push(
+    `Rules for assignment mode:`,
+    `- Focus only on this assignment until it is finished. If the student asks unrelated things, gently bring them back to the assignment.`,
+    `- Use the uploaded worksheet image(s) as the source of truth.`,
+    `- Do not invent new questions from the topic or passage. Before asking the student anything, identify the exact visible worksheet task, prompt, or answer blank you are working on.`,
+    `- If the worksheet has sections without question numbers, label them by section and item, such as "Vocabulary: food", "Written question: Why are farmers important to people in the city?", or "True/false statement: Farmers always wear big hats."`,
+    `- Count every visible problem label as its own question. If a worksheet has 1a and 1b, those are TWO separate questions, not one row.`,
+    `- Work one question or worksheet item at a time in the exact visible order: top to bottom, left to right, 1a, 1b, 2a, 2b, etc. Do not skip the right column, lettered parts, matching items, written-response blanks, or true/false items.`,
+    `- For each worksheet item: quote or closely name the visible task, ask the student for the answer that belongs on the worksheet, then check their answer kindly.`,
+    `- Keep track of which questions the student got correct and wrong during this assignment chat.`,
+    `- Do not grade or say the assignment is finished until the student has attempted every expected question. If expected question count is 20, do not finish after 10.`,
+    `- When the student has finished every worksheet question, give a short final report with: total questions, correct, wrong, score, and which questions need review.`,
+    `- If you cannot read a question from the image, say which part is unclear and ask the student to type or snip that one question.`
+  );
+
+  return parts.join("\n");
 }
 
 function buildPersonaLayer(ctx: TutorContext): string {
@@ -118,8 +153,10 @@ function buildStudentLayer(ctx: TutorContext): string {
     funny:     `${ctx.studentName} has a great sense of humor — it's okay to be a little playful and funny. They respond well to light jokes.`,
     shy:       `${ctx.studentName} is quiet/shy — be extra gentle. NEVER make them feel silly for a wrong answer. Always say something kind first.`,
   };
-  if (ctx.personality && personalityGuides[ctx.personality]) {
-    parts.push(personalityGuides[ctx.personality]);
+  for (const personality of splitPreferenceValues(ctx.personality)) {
+    if (personalityGuides[personality]) {
+      parts.push(personalityGuides[personality]);
+    }
   }
 
   // Learning style
@@ -129,8 +166,10 @@ function buildStudentLayer(ctx: TutorContext): string {
     kinesthetic: `${ctx.studentName} learns best by doing — always suggest something they can try themselves. Use "now you try...", "test it out with...", and real-world hands-on examples.`,
     reading:     `${ctx.studentName} learns best through reading/writing — use neat, organized bullet points. Define every key term. Give step-by-step written instructions they can follow.`,
   };
-  if (styleGuides[ctx.learningStyle]) {
-    parts.push(styleGuides[ctx.learningStyle]);
+  for (const learningStyle of splitPreferenceValues(ctx.learningStyle)) {
+    if (styleGuides[learningStyle]) {
+      parts.push(styleGuides[learningStyle]);
+    }
   }
 
   // Confidence
@@ -220,7 +259,7 @@ function formatStuckBehavior(value: string): string {
     shuts_down: "be very gentle, give them a simple restart, and offer a small win",
     asks_for_help: "answer quickly with a clear path forward and keep it friendly",
   };
-  return map[value] ?? value;
+  return formatPreferenceValues(value, map);
 }
 
 function formatConfusionSupport(value: string): string {
@@ -231,7 +270,7 @@ function formatConfusionSupport(value: string): string {
     ask_guiding: "ask a helpful guiding question rather than giving the answer right away",
     easier_question: "make the problem a bit easier before moving back to the main idea",
   };
-  return map[value] ?? value;
+  return formatPreferenceValues(value, map);
 }
 
 function formatErrorFeedback(value: string): string {
@@ -242,7 +281,7 @@ function formatErrorFeedback(value: string): string {
     easier_question: "offer a slightly easier question so they can build confidence",
     show_answer: "give the correct answer and explain it in a kind, clear way",
   };
-  return map[value] ?? value;
+  return formatPreferenceValues(value, map);
 }
 
 function formatTeachingPace(value: string): string {
@@ -264,7 +303,7 @@ function formatMotivation(value: string): string {
     funny_examples: "by using funny examples and light humor",
     beat_score: "by helping them beat their own score or best result",
   };
-  return map[value] ?? value;
+  return formatPreferenceValues(value, map);
 }
 
 function formatTeachingAvoid(value: string): string {
@@ -276,7 +315,7 @@ function formatTeachingAvoid(value: string): string {
     too_many_questions: "asking too many questions at once",
     answers_too_fast: "giving answers too quickly before they have time to think",
   };
-  return map[value] ?? value;
+  return formatPreferenceValues(value, map);
 }
 
 function buildMemoryLayer(ctx: TutorContext): string {
@@ -347,7 +386,19 @@ function learningStylePhrase(value: string): string {
     kinesthetic: "by doing things step by step and trying them out",
     reading: "by reading clear steps and writing down key ideas",
   };
-  return map[value] ?? `in a way that fits their learning style`;
+  return formatPreferenceValues(value, map) || `in a way that fits their learning style`;
+}
+
+function splitPreferenceValues(value?: string | null): string[] {
+  return String(value ?? "")
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
+function formatPreferenceValues(value: string, map: Record<string, string>): string {
+  const formatted = splitPreferenceValues(value).map((item) => map[item] ?? item);
+  return formatted.join("; ");
 }
 
 // Helper: bucket age into grade level groups

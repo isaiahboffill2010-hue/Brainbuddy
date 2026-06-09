@@ -236,6 +236,215 @@ export interface Database {
         };
         Relationships: [];
       };
+      assignments: {
+        Row: {
+          id: string;
+          teacher_id: string;
+          class_id: string;
+          title: string;
+          subject: string;
+          grade_level: string | null;
+          instructions: string | null;
+          teacher_note: string | null;
+          source_type: "manual" | "ai_generated" | "uploaded_worksheet";
+          help_level: "hints_only" | "explain_then_ask" | "attempt_first" | "practice_mode" | "quiz_mode";
+          due_date: string | null;
+          total_points: number;
+          status: "draft" | "assigned" | "closed" | "archived";
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          teacher_id: string;
+          class_id: string;
+          title: string;
+          subject: string;
+          grade_level?: string | null;
+          instructions?: string | null;
+          teacher_note?: string | null;
+          source_type?: "manual" | "ai_generated" | "uploaded_worksheet";
+          help_level?: "hints_only" | "explain_then_ask" | "attempt_first" | "practice_mode" | "quiz_mode";
+          due_date?: string | null;
+          total_points?: number;
+          status?: "draft" | "assigned" | "closed" | "archived";
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          title?: string;
+          subject?: string;
+          grade_level?: string | null;
+          instructions?: string | null;
+          teacher_note?: string | null;
+          source_type?: "manual" | "ai_generated" | "uploaded_worksheet";
+          help_level?: "hints_only" | "explain_then_ask" | "attempt_first" | "practice_mode" | "quiz_mode";
+          due_date?: string | null;
+          total_points?: number;
+          status?: "draft" | "assigned" | "closed" | "archived";
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      assignment_questions: {
+        Row: {
+          id: string;
+          assignment_id: string;
+          question_number: number;
+          question_label: string;
+          question_text: string;
+          correct_answer: string;
+          explanation: string | null;
+          points: number;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          assignment_id: string;
+          question_number: number;
+          question_label: string;
+          question_text: string;
+          correct_answer: string;
+          explanation?: string | null;
+          points?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          question_number?: number;
+          question_label?: string;
+          question_text?: string;
+          correct_answer?: string;
+          explanation?: string | null;
+          points?: number;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      assignment_worksheets: {
+        Row: {
+          id: string;
+          assignment_id: string;
+          page_number: number;
+          file_name: string;
+          file_url: string;
+          storage_path: string;
+          file_type: string | null;
+          file_size: number;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          assignment_id: string;
+          page_number: number;
+          file_name: string;
+          file_url: string;
+          storage_path: string;
+          file_type?: string | null;
+          file_size?: number;
+          created_at?: string;
+        };
+        Update: {
+          page_number?: number;
+          file_name?: string;
+          file_url?: string;
+          storage_path?: string;
+          file_type?: string | null;
+          file_size?: number;
+        };
+        Relationships: [];
+      };
+      student_assignments: {
+        Row: {
+          id: string;
+          assignment_id: string;
+          student_id: string;
+          class_id: string;
+          status: "assigned" | "in_progress" | "completed" | "reviewed";
+          score: number;
+          percentage: number;
+          total_correct: number;
+          total_questions: number;
+          missed_questions: Json;
+          time_spent_seconds: number;
+          ai_summary: string | null;
+          started_at: string | null;
+          completed_at: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          assignment_id: string;
+          student_id: string;
+          class_id: string;
+          status?: "assigned" | "in_progress" | "completed" | "reviewed";
+          score?: number;
+          percentage?: number;
+          total_correct?: number;
+          total_questions?: number;
+          missed_questions?: Json;
+          time_spent_seconds?: number;
+          ai_summary?: string | null;
+          started_at?: string | null;
+          completed_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          status?: "assigned" | "in_progress" | "completed" | "reviewed";
+          score?: number;
+          percentage?: number;
+          total_correct?: number;
+          total_questions?: number;
+          missed_questions?: Json;
+          time_spent_seconds?: number;
+          ai_summary?: string | null;
+          started_at?: string | null;
+          completed_at?: string | null;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      student_answers: {
+        Row: {
+          id: string;
+          student_assignment_id: string;
+          assignment_question_id: string;
+          student_answer: string | null;
+          is_correct: boolean | null;
+          attempts: number;
+          hints_used: number;
+          time_spent_seconds: number;
+          ai_feedback: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          student_assignment_id: string;
+          assignment_question_id: string;
+          student_answer?: string | null;
+          is_correct?: boolean | null;
+          attempts?: number;
+          hints_used?: number;
+          time_spent_seconds?: number;
+          ai_feedback?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          student_answer?: string | null;
+          is_correct?: boolean | null;
+          attempts?: number;
+          hints_used?: number;
+          time_spent_seconds?: number;
+          ai_feedback?: string | null;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       learning_preferences: {
         Row: {
           id: string;

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import { BookOpen, LayoutDashboard, LogOut } from "lucide-react";
+import { BookOpen, ClipboardList, LayoutDashboard, LogOut } from "lucide-react";
 
 export function TeacherSidebar({ teacherName }: { teacherName: string }) {
   return (
@@ -24,6 +24,15 @@ export function TeacherSidebar({ teacherName }: { teacherName: string }) {
             <LayoutDashboard className="h-4 w-4" />
           </span>
           Dashboard
+        </Link>
+        <Link
+          href="/teacher/assignments"
+          className="flex items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-medium text-slate-300 hover:bg-white/5 hover:text-white"
+        >
+          <span className="h-8 w-8 rounded-xl bg-white/5 text-slate-300 flex items-center justify-center">
+            <ClipboardList className="h-4 w-4" />
+          </span>
+          Assignments
         </Link>
       </nav>
 

@@ -106,3 +106,74 @@ export async function PATCH(req: Request) {
 
   return NextResponse.json(data);
 }
+
+export async function DELETE(req: Request) {
+  const supabase = await createClient();
+  const service = createServiceClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const teacher = await getTeacherProfile(user.id);
+  if (!teacher) return NextResponse.json({ error: "Teacher account required" }, { status: 403 });
+
+  const body = await req.json().catch(() => ({}));
+  const classId = String(body.classId ?? "").trim();
+  if (!classId) return NextResponse.json({ error: "Class is required" }, { status: 400 });
+
+  const { data: classRow, error: classError } = await service
+    .from("teacher_classes")
+    .select("id")
+    .eq("id", classId)
+    .eq("teacher_profile_id", teacher.id)
+    .maybeSingle();
+
+  if (classError) return NextResponse.json({ error: classError.message }, { status: 500 });
+  if (!classRow) return NextResponse.json({ error: "Class not found" }, { status: 404 });
+
+  const { data: assignmentRows } = await service
+    .from("assignments")
+    .select("id")
+    .eq("class_id", classId)
+    .eq("teacher_id", teacher.id);
+
+  const assignmentIds = ((assignmentRows ?? []) as { id: string }[]).map((row) => row.id);
+  if (assignmentIds.length > 0) {
+    const { data: worksheetRows } = await service
+      .from("assignment_worksheets")
+      .select("storage_path")
+      .in("assignment_id", assignmentIds);
+
+    const storagePaths = ((worksheetRows ?? []) as { storage_path: string | null }[])
+      .map((row) => row.storage_path)
+      .filter((path): path is string => Boolean(path));
+
+    if (storagePaths.length > 0) {
+      await service.storage.from("homework").remove(storagePaths);
+    }
+
+    const { error: assignmentsError } = await service
+      .from("assignments")
+      .delete()
+      .eq("class_id", classId)
+      .eq("teacher_id", teacher.id);
+
+    if (assignmentsError) return NextResponse.json({ error: assignmentsError.message }, { status: 500 });
+  }
+
+  const { error: enrollmentError } = await service
+    .from("class_enrollments")
+    .delete()
+    .eq("class_id", classId);
+
+  if (enrollmentError) return NextResponse.json({ error: enrollmentError.message }, { status: 500 });
+
+  const { error: deleteError } = await service
+    .from("teacher_classes")
+    .delete()
+    .eq("id", classId)
+    .eq("teacher_profile_id", teacher.id);
+
+  if (deleteError) return NextResponse.json({ error: deleteError.message }, { status: 500 });
+
+  return NextResponse.json({ ok: true });
+}

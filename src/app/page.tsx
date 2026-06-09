@@ -4,11 +4,11 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight, CheckCircle2, Shield, Sparkles } from "lucide-react";
 
 const subjects = [
-  { emoji: "🔢", name: "Math" },
-  { emoji: "📚", name: "Reading" },
-  { emoji: "🔬", name: "Science" },
-  { emoji: "✏️", name: "Writing" },
-  { emoji: "📜", name: "History" },
+  { emoji: "", name: "Math" },
+  { emoji: "", name: "Reading" },
+  { emoji: "", name: "Science" },
+  { emoji: "", name: "Writing" },
+  { emoji: "", name: "History" },
 ];
 
 const highlights = [

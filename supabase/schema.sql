@@ -481,3 +481,213 @@ CREATE POLICY "class_enrollments: teacher or student read" ON class_enrollments 
 DROP POLICY IF EXISTS "class_enrollments: service role only insert" ON class_enrollments;
 CREATE POLICY "class_enrollments: service role only insert" ON class_enrollments FOR INSERT
   WITH CHECK (false);
+
+-- ============================================================
+-- TEACHER ASSIGNMENTS (additive)
+-- Manual, AI-generated, and worksheet-backed assignments.
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS assignments (
+  id             UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  teacher_id     UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  class_id       UUID NOT NULL REFERENCES teacher_classes(id) ON DELETE CASCADE,
+  title          TEXT NOT NULL,
+  subject        TEXT NOT NULL,
+  grade_level    TEXT,
+  instructions   TEXT,
+  teacher_note   TEXT,
+  source_type    TEXT NOT NULL DEFAULT 'manual' CHECK (source_type IN ('manual', 'ai_generated', 'uploaded_worksheet')),
+  help_level     TEXT NOT NULL DEFAULT 'attempt_first' CHECK (help_level IN ('hints_only', 'explain_then_ask', 'attempt_first', 'practice_mode', 'quiz_mode')),
+  due_date       DATE,
+  total_points   INT NOT NULL DEFAULT 0 CHECK (total_points >= 0),
+  status         TEXT NOT NULL DEFAULT 'draft' CHECK (status IN ('draft', 'assigned', 'closed', 'archived')),
+  created_at     TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at     TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS assignment_questions (
+  id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  assignment_id     UUID NOT NULL REFERENCES assignments(id) ON DELETE CASCADE,
+  question_number   INT NOT NULL,
+  question_label    TEXT NOT NULL,
+  question_text     TEXT NOT NULL,
+  correct_answer    TEXT NOT NULL,
+  explanation       TEXT,
+  points            INT NOT NULL DEFAULT 1 CHECK (points >= 0),
+  created_at        TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at        TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS assignment_worksheets (
+  id             UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  assignment_id  UUID NOT NULL REFERENCES assignments(id) ON DELETE CASCADE,
+  page_number    INT NOT NULL,
+  file_name      TEXT NOT NULL,
+  file_url       TEXT NOT NULL,
+  storage_path   TEXT NOT NULL,
+  file_type      TEXT,
+  file_size      INT NOT NULL DEFAULT 0 CHECK (file_size >= 0),
+  created_at     TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS student_assignments (
+  id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  assignment_id       UUID NOT NULL REFERENCES assignments(id) ON DELETE CASCADE,
+  student_id          UUID NOT NULL REFERENCES students(id) ON DELETE CASCADE,
+  class_id            UUID NOT NULL REFERENCES teacher_classes(id) ON DELETE CASCADE,
+  status              TEXT NOT NULL DEFAULT 'assigned' CHECK (status IN ('assigned', 'in_progress', 'completed', 'reviewed')),
+  score               INT NOT NULL DEFAULT 0 CHECK (score >= 0),
+  percentage          NUMERIC(5,2) NOT NULL DEFAULT 0 CHECK (percentage >= 0),
+  total_correct       INT NOT NULL DEFAULT 0 CHECK (total_correct >= 0),
+  total_questions     INT NOT NULL DEFAULT 0 CHECK (total_questions >= 0),
+  missed_questions    JSONB NOT NULL DEFAULT '[]'::jsonb,
+  time_spent_seconds  INT NOT NULL DEFAULT 0 CHECK (time_spent_seconds >= 0),
+  ai_summary          TEXT,
+  started_at          TIMESTAMPTZ,
+  completed_at        TIMESTAMPTZ,
+  created_at          TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at          TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  UNIQUE (assignment_id, student_id)
+);
+
+CREATE TABLE IF NOT EXISTS student_answers (
+  id                       UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  student_assignment_id    UUID NOT NULL REFERENCES student_assignments(id) ON DELETE CASCADE,
+  assignment_question_id   UUID NOT NULL REFERENCES assignment_questions(id) ON DELETE CASCADE,
+  student_answer           TEXT,
+  is_correct               BOOLEAN,
+  attempts                 INT NOT NULL DEFAULT 0 CHECK (attempts >= 0),
+  hints_used               INT NOT NULL DEFAULT 0 CHECK (hints_used >= 0),
+  time_spent_seconds       INT NOT NULL DEFAULT 0 CHECK (time_spent_seconds >= 0),
+  ai_feedback              TEXT,
+  created_at               TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at               TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  UNIQUE (student_assignment_id, assignment_question_id)
+);
+
+CREATE INDEX IF NOT EXISTS assignments_teacher_id_idx ON assignments(teacher_id);
+CREATE INDEX IF NOT EXISTS assignments_class_id_idx ON assignments(class_id);
+CREATE INDEX IF NOT EXISTS assignments_status_idx ON assignments(status);
+CREATE INDEX IF NOT EXISTS assignment_questions_assignment_id_idx ON assignment_questions(assignment_id);
+CREATE INDEX IF NOT EXISTS assignment_worksheets_assignment_id_idx ON assignment_worksheets(assignment_id);
+CREATE INDEX IF NOT EXISTS student_assignments_assignment_id_idx ON student_assignments(assignment_id);
+CREATE INDEX IF NOT EXISTS student_assignments_student_id_idx ON student_assignments(student_id);
+CREATE INDEX IF NOT EXISTS student_assignments_class_id_idx ON student_assignments(class_id);
+CREATE INDEX IF NOT EXISTS student_answers_student_assignment_id_idx ON student_answers(student_assignment_id);
+CREATE INDEX IF NOT EXISTS student_answers_assignment_question_id_idx ON student_answers(assignment_question_id);
+
+ALTER TABLE assignments ENABLE ROW LEVEL SECURITY;
+ALTER TABLE assignment_questions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE assignment_worksheets ENABLE ROW LEVEL SECURITY;
+ALTER TABLE student_assignments ENABLE ROW LEVEL SECURITY;
+ALTER TABLE student_answers ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "assignments: teacher or joined student read" ON assignments;
+CREATE POLICY "assignments: teacher or joined student read" ON assignments FOR SELECT
+  USING (
+    teacher_id IN (SELECT id FROM profiles WHERE user_id = auth.uid())
+    OR EXISTS (
+      SELECT 1
+      FROM class_enrollments ce
+      WHERE ce.class_id = assignments.class_id
+        AND is_my_student(ce.student_id)
+    )
+  );
+
+DROP POLICY IF EXISTS "assignments: teacher insert" ON assignments;
+CREATE POLICY "assignments: teacher insert" ON assignments FOR INSERT
+  WITH CHECK (
+    teacher_id IN (
+      SELECT id FROM profiles
+      WHERE user_id = auth.uid()
+        AND role = 'teacher'
+    )
+    AND class_id IN (
+      SELECT id FROM teacher_classes
+      WHERE teacher_profile_id IN (SELECT id FROM profiles WHERE user_id = auth.uid())
+    )
+  );
+
+DROP POLICY IF EXISTS "assignments: teacher update" ON assignments;
+CREATE POLICY "assignments: teacher update" ON assignments FOR UPDATE
+  USING (teacher_id IN (SELECT id FROM profiles WHERE user_id = auth.uid()))
+  WITH CHECK (teacher_id IN (SELECT id FROM profiles WHERE user_id = auth.uid()));
+
+DROP POLICY IF EXISTS "assignment_questions: assignment readers read" ON assignment_questions;
+CREATE POLICY "assignment_questions: assignment readers read" ON assignment_questions FOR SELECT
+  USING (
+    assignment_id IN (
+      SELECT id FROM assignments
+      WHERE teacher_id IN (SELECT id FROM profiles WHERE user_id = auth.uid())
+        OR EXISTS (
+          SELECT 1
+          FROM class_enrollments ce
+          WHERE ce.class_id = assignments.class_id
+            AND is_my_student(ce.student_id)
+        )
+    )
+  );
+
+DROP POLICY IF EXISTS "assignment_questions: teacher insert" ON assignment_questions;
+CREATE POLICY "assignment_questions: teacher insert" ON assignment_questions FOR INSERT
+  WITH CHECK (
+    assignment_id IN (
+      SELECT id FROM assignments
+      WHERE teacher_id IN (SELECT id FROM profiles WHERE user_id = auth.uid())
+    )
+  );
+
+DROP POLICY IF EXISTS "assignment_worksheets: assignment readers read" ON assignment_worksheets;
+CREATE POLICY "assignment_worksheets: assignment readers read" ON assignment_worksheets FOR SELECT
+  USING (
+    assignment_id IN (
+      SELECT id FROM assignments
+      WHERE teacher_id IN (SELECT id FROM profiles WHERE user_id = auth.uid())
+        OR EXISTS (
+          SELECT 1
+          FROM class_enrollments ce
+          WHERE ce.class_id = assignments.class_id
+            AND is_my_student(ce.student_id)
+        )
+    )
+  );
+
+DROP POLICY IF EXISTS "assignment_worksheets: teacher insert" ON assignment_worksheets;
+CREATE POLICY "assignment_worksheets: teacher insert" ON assignment_worksheets FOR INSERT
+  WITH CHECK (
+    assignment_id IN (
+      SELECT id FROM assignments
+      WHERE teacher_id IN (SELECT id FROM profiles WHERE user_id = auth.uid())
+    )
+  );
+
+DROP POLICY IF EXISTS "student_assignments: teacher or student read" ON student_assignments;
+CREATE POLICY "student_assignments: teacher or student read" ON student_assignments FOR SELECT
+  USING (
+    is_my_student(student_id)
+    OR assignment_id IN (
+      SELECT id FROM assignments
+      WHERE teacher_id IN (SELECT id FROM profiles WHERE user_id = auth.uid())
+    )
+  );
+
+DROP POLICY IF EXISTS "student_assignments: service role only write" ON student_assignments;
+CREATE POLICY "student_assignments: service role only write" ON student_assignments FOR INSERT
+  WITH CHECK (false);
+
+DROP POLICY IF EXISTS "student_answers: teacher or student read" ON student_answers;
+CREATE POLICY "student_answers: teacher or student read" ON student_answers FOR SELECT
+  USING (
+    student_assignment_id IN (
+      SELECT id FROM student_assignments
+      WHERE is_my_student(student_id)
+        OR assignment_id IN (
+          SELECT id FROM assignments
+          WHERE teacher_id IN (SELECT id FROM profiles WHERE user_id = auth.uid())
+        )
+    )
+  );
+
+DROP POLICY IF EXISTS "student_answers: service role only write" ON student_answers;
+CREATE POLICY "student_answers: service role only write" ON student_answers FOR INSERT
+  WITH CHECK (false);

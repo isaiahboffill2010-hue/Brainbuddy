@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import {
   Send, FileText, PlusCircle, Loader2, ImagePlus, X, BookOpen, Scissors, AlertCircle,
-  Target,
+  Calculator as CalculatorIcon, ClipboardList, GripHorizontal, Target,
 } from "lucide-react";
 import Image from "next/image";
 import { SnipCropModal } from "./SnipCropModal";
@@ -29,9 +29,31 @@ type Message = {
   workedExample?: WorkedExample | null;
 };
 
+type Point = { x: number; y: number };
+type DesmosGraphingCalculatorInstance = {
+  destroy: () => void;
+  resize?: () => void;
+};
+type DesmosApi = {
+  GraphingCalculator: (
+    element: HTMLElement,
+    options?: Record<string, boolean | string>
+  ) => DesmosGraphingCalculatorInstance;
+};
+
+declare global {
+  interface Window {
+    Desmos?: DesmosApi;
+    __brainBuddyDesmosPromise?: Promise<void>;
+  }
+}
+
 // ── Worked-example trigger logic ──────────────────────────────────────────────
 const EXAMPLE_REQUEST_RE =
   /\b(show me|example|worked?\s*(out|through|example)|walk\s*me\s*through|how\s*(do|does|did)|demonstrate|step\s*by\s*step|can\s*you\s*show)\b/i;
+const DESMOS_API_KEY = "5fefd66848464f41bd9545845c82f702";
+const DESMOS_SCRIPT_ID = "brainbuddy-desmos-api";
+const DESMOS_SCRIPT_URL = `https://www.desmos.com/api/v1.11/calculator.js?apiKey=${DESMOS_API_KEY}`;
 
 function shouldGenerateWorkedExample(
   text: string,
@@ -44,6 +66,24 @@ function shouldGenerateWorkedExample(
   return (isVisual && hasImage) || asksForExample;
 }
 type StudyNote = { id: string; topic: string | null; subject: string | null; note: string; created_at: string };
+type AssignmentWorksheet = {
+  page_number: number;
+  file_name: string;
+  file_url: string;
+};
+type StudentAssignment = {
+  id: string;
+  studentAssignmentId: string;
+  title: string;
+  subject: string;
+  instructions: string | null;
+  dueDate: string | null;
+  totalPoints: number;
+  expectedQuestionCount: number;
+  status: string;
+  assignedAt: string;
+  worksheets: AssignmentWorksheet[];
+};
 
 type SnipState =
   | { status: "idle" }
@@ -71,6 +111,12 @@ function timeAgo(dateStr: string) {
   if (diffH < 48) return "Yesterday";
   return `${Math.round(diffH / 24)}d ago`;
 }
+function formatDueDate(dateStr: string | null) {
+  if (!dateStr) return null;
+  const date = new Date(`${dateStr}T00:00:00`);
+  if (Number.isNaN(date.getTime())) return null;
+  return new Intl.DateTimeFormat(undefined, { month: "short", day: "numeric" }).format(date);
+}
 
 /** Convert a Blob to a base64 data URL (stays in memory, never touches disk). */
 function blobToDataUrl(blob: Blob): Promise<string> {
@@ -80,6 +126,40 @@ function blobToDataUrl(blob: Blob): Promise<string> {
     reader.onerror = () => reject(new Error("FileReader failed"));
     reader.readAsDataURL(blob);
   });
+}
+
+function loadDesmosApi(): Promise<void> {
+  if (window.Desmos?.GraphingCalculator) return Promise.resolve();
+  if (window.__brainBuddyDesmosPromise) return window.__brainBuddyDesmosPromise;
+
+  window.__brainBuddyDesmosPromise = new Promise((resolve, reject) => {
+    const fail = () => {
+      window.__brainBuddyDesmosPromise = undefined;
+      reject(new Error("Desmos API failed to load"));
+    };
+    const finish = () => {
+      if (window.Desmos?.GraphingCalculator) resolve();
+      else fail();
+    };
+
+    const existingScript = document.getElementById(DESMOS_SCRIPT_ID) as HTMLScriptElement | null;
+    if (existingScript) {
+      existingScript.addEventListener("load", finish, { once: true });
+      existingScript.addEventListener("error", fail, { once: true });
+      finish();
+      return;
+    }
+
+    const script = document.createElement("script");
+    script.id = DESMOS_SCRIPT_ID;
+    script.src = DESMOS_SCRIPT_URL;
+    script.async = true;
+    script.onload = finish;
+    script.onerror = fail;
+    document.head.appendChild(script);
+  });
+
+  return window.__brainBuddyDesmosPromise;
 }
 
 // ── Main Component ─────────────────────────────────────────────────────────────
@@ -112,6 +192,16 @@ export function TutorClient({
   const [notes, setNotes] = useState<StudyNote[]>([]);
   const [loadingNotes, setLoadingNotes] = useState(false);
   const [generatingExample, setGeneratingExample] = useState(false);
+  const [calculatorOpen, setCalculatorOpen] = useState(false);
+  const [calculatorPosition, setCalculatorPosition] = useState<Point>({ x: 0, y: 0 });
+  const [calculatorLoading, setCalculatorLoading] = useState(false);
+  const [calculatorError, setCalculatorError] = useState("");
+  const [assignmentsOpen, setAssignmentsOpen] = useState(false);
+  const [assignments, setAssignments] = useState<StudentAssignment[]>([]);
+  const [loadingAssignments, setLoadingAssignments] = useState(false);
+  const [assignmentsError, setAssignmentsError] = useState("");
+  const [assignmentsSetupPending, setAssignmentsSetupPending] = useState(false);
+  const [activeAssignment, setActiveAssignment] = useState<StudentAssignment | null>(null);
 
   // Free-limit modal state
   const [limitModalOpen, setLimitModalOpen] = useState(false);
@@ -125,6 +215,10 @@ export function TutorClient({
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const calculatorPanelRef = useRef<HTMLDivElement>(null);
+  const calculatorContainerRef = useRef<HTMLDivElement>(null);
+  const desmosCalculatorRef = useRef<DesmosGraphingCalculatorInstance | null>(null);
+  const calculatorDragRef = useRef<{ startX: number; startY: number; originX: number; originY: number } | null>(null);
 
   // Auto-scroll
   useEffect(() => {
@@ -145,6 +239,65 @@ export function TutorClient({
     const t = setTimeout(() => setSnip({ status: "idle" }), 4000);
     return () => clearTimeout(t);
   }, [snip]);
+
+  useEffect(() => {
+    if (!calculatorOpen) return;
+    const handleResize = () => {
+      setCalculatorPosition((pos) => clampCalculatorPosition(pos.x, pos.y));
+      desmosCalculatorRef.current?.resize?.();
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [calculatorOpen]);
+
+  useEffect(() => {
+    if (!calculatorOpen) return;
+
+    let cancelled = false;
+
+    async function initDesmosCalculator() {
+      if (!calculatorContainerRef.current || desmosCalculatorRef.current) return;
+      setCalculatorLoading(true);
+      setCalculatorError("");
+
+      try {
+        await loadDesmosApi();
+        if (cancelled || !calculatorContainerRef.current || !window.Desmos) return;
+
+        desmosCalculatorRef.current = window.Desmos.GraphingCalculator(calculatorContainerRef.current, {
+          autosize: true,
+          border: false,
+          expressions: true,
+          expressionsTopbar: true,
+          folders: true,
+          graphpaper: true,
+          images: true,
+          keypad: true,
+          pasteGraphLink: true,
+          pointsOfInterest: true,
+          settingsMenu: true,
+          sliders: true,
+          trace: true,
+          zoomButtons: true,
+        });
+      } catch {
+        if (!cancelled) {
+          setCalculatorError("Desmos could not load. Check your internet connection or school network settings.");
+        }
+      } finally {
+        if (!cancelled) setCalculatorLoading(false);
+      }
+    }
+
+    initDesmosCalculator();
+
+    return () => {
+      cancelled = true;
+      desmosCalculatorRef.current?.destroy();
+      desmosCalculatorRef.current = null;
+    };
+  }, [calculatorOpen]);
 
   const refreshJoinedClass = useCallback(async () => {
     const query = activeSubject?.id ? `?subjectId=${encodeURIComponent(activeSubject.id)}` : "";
@@ -196,10 +349,37 @@ export function TutorClient({
     }
   }, []);
 
+  const loadAssignments = useCallback(async (): Promise<StudentAssignment[]> => {
+    setLoadingAssignments(true);
+    setAssignmentsError("");
+    setAssignmentsSetupPending(false);
+    try {
+      const res = await fetch(`/api/assignments?studentId=${encodeURIComponent(student.id)}`, { cache: "no-store" });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(typeof data?.error === "string" ? data.error : "Could not load assignments");
+      if (data?.setupRequired) {
+        setAssignments([]);
+        setAssignmentsSetupPending(true);
+        return [];
+      } else {
+        const nextAssignments = Array.isArray(data) ? data : [];
+        setAssignments(nextAssignments);
+        return nextAssignments;
+      }
+    } catch (err) {
+      setAssignments([]);
+      setAssignmentsError(err instanceof Error ? err.message : "Could not load assignments");
+      return [];
+    } finally {
+      setLoadingAssignments(false);
+    }
+  }, [student.id]);
+
   const selectSession = useCallback(async (session: Session) => {
     setActiveSession(session);
     setStreamText("");
     setNotes([]);
+    setActiveAssignment(null);
     const subj = subjects.find((s) => s.id === session.subject_id) ?? null;
     if (subj) setActiveSubject(subj);
     await Promise.all([loadMessages(session.id), loadNotes(session.id)]);
@@ -244,18 +424,27 @@ export function TutorClient({
     imageDataUrl?: string | null;
     /** Local blob URL used only for immediate chat preview (revoked after send). */
     localPreview?: string | null;
+    worksheetUrls?: string[];
+    assignment?: StudentAssignment | null;
+    skipWorkedExample?: boolean;
   }) {
-    const { text, file, imageDataUrl, localPreview } = params;
-    if (!text.trim() && !file && !imageDataUrl) return;
+    const { text, file, imageDataUrl, localPreview, worksheetUrls = [], assignment, skipWorkedExample } = params;
+    if (!text.trim() && !file && !imageDataUrl && worksheetUrls.length === 0) return;
     if (streaming) return;
 
     const session = await getOrCreateSession();
     if (!session) return;
+    const assignmentForMessage = assignment ?? activeAssignment;
+    const assignmentWorksheetUrls = assignmentForMessage?.worksheets
+      .map((worksheet) => worksheet.file_url)
+      .filter(Boolean) ?? [];
+    const messageWorksheetUrls = worksheetUrls.length > 0 ? worksheetUrls : assignmentWorksheetUrls;
+    const worksheetPreview = messageWorksheetUrls[0];
 
     // Optimistic user message — local preview URL used here (not stored)
     setMessages((prev) => [
       ...prev,
-      { role: "user", content: text, image_url: localPreview ?? undefined },
+      { role: "user", content: text, image_url: localPreview ?? worksheetPreview ?? undefined },
     ]);
     setStreaming(true);
     setStreamText("");
@@ -274,8 +463,21 @@ export function TutorClient({
           message: text,
           // Persistent URL (file upload path) — gets saved to DB
           imageUrl: persistedImageUrl ?? undefined,
+          imageUrls: messageWorksheetUrls,
           // Ephemeral base64 (snip path) — used by OpenAI only, not saved to DB
           imageDataUrl: imageDataUrl ?? undefined,
+          assignmentContext: assignmentForMessage
+            ? {
+                assignmentId: assignmentForMessage.id,
+                studentAssignmentId: assignmentForMessage.studentAssignmentId,
+                title: assignmentForMessage.title,
+                subject: assignmentForMessage.subject,
+                instructions: assignmentForMessage.instructions,
+                totalPoints: assignmentForMessage.totalPoints,
+                expectedQuestionCount: assignmentForMessage.expectedQuestionCount,
+                worksheetCount: assignmentForMessage.worksheets.length,
+              }
+            : undefined,
         }),
       });
       if (res.status === 403) {
@@ -300,8 +502,8 @@ export function TutorClient({
       setStreamText("");
 
       // ── Worked-example generation (non-blocking) ──────────────────────────
-      const hasImage = !!(file || imageDataUrl);
-      if (shouldGenerateWorkedExample(text, hasImage, student.learning_style)) {
+      const hasImage = !!(file || imageDataUrl || messageWorksheetUrls.length > 0);
+      if (!skipWorkedExample && shouldGenerateWorkedExample(text, hasImage, student.learning_style)) {
         setGeneratingExample(true);
         fetch("/api/chat/worked-example", {
           method: "POST",
@@ -342,6 +544,21 @@ export function TutorClient({
           if (Array.isArray(updated)) setSessions(updated);
         }
       }, 4000);
+      if (assignmentForMessage) {
+        [3000, 9000, 15000].forEach((delay) => {
+          setTimeout(async () => {
+            const nextAssignments = await loadAssignments();
+            const stillActive = nextAssignments.some(
+              (item) => item.studentAssignmentId === assignmentForMessage.studentAssignmentId
+            );
+            if (!stillActive) {
+              setActiveAssignment((current) =>
+                current?.studentAssignmentId === assignmentForMessage.studentAssignmentId ? null : current
+              );
+            }
+          }, delay);
+        });
+      }
     } catch {
       setMessages((prev) => [
         ...prev,
@@ -470,7 +687,86 @@ export function TutorClient({
     setActiveSession(null);
     setMessages([]);
     setStreamText("");
+    setAssignmentsOpen(false);
+    setActiveAssignment(null);
     setTimeout(() => inputRef.current?.focus(), 50);
+  }
+
+  function toggleAssignments() {
+    const shouldOpen = !assignmentsOpen;
+    setAssignmentsOpen(shouldOpen);
+    if (shouldOpen) void loadAssignments();
+  }
+
+  async function selectAssignment(assignment: StudentAssignment) {
+    const worksheetUrls = assignment.worksheets.map((worksheet) => worksheet.file_url).filter(Boolean);
+    setActiveAssignment(assignment);
+    setAssignmentsOpen(false);
+    setInput("");
+
+    await sendMessageCore({
+      text:
+        `I am starting my teacher assignment: ${assignment.title}. ` +
+        `Please use the attached worksheet${worksheetUrls.length === 1 ? "" : "s"} and help me one question at a time, starting with question 1.`,
+      worksheetUrls,
+      assignment,
+      skipWorkedExample: true,
+    });
+  }
+
+  function getCalculatorPanelSize() {
+    const rect = calculatorPanelRef.current?.getBoundingClientRect();
+    return {
+      width: rect?.width ?? Math.min(window.innerWidth * 0.92, 760),
+      height: rect?.height ?? Math.min(window.innerHeight * 0.78, 560),
+    };
+  }
+
+  function clampCalculatorPosition(x: number, y: number): Point {
+    const { width, height } = getCalculatorPanelSize();
+    return {
+      x: Math.min(Math.max(8, x), Math.max(8, window.innerWidth - width - 8)),
+      y: Math.min(Math.max(8, y), Math.max(8, window.innerHeight - height - 8)),
+    };
+  }
+
+  function centerCalculator() {
+    const width = Math.min(window.innerWidth * 0.92, 760);
+    const height = Math.min(window.innerHeight * 0.78, 560);
+    setCalculatorPosition({
+      x: Math.max(8, (window.innerWidth - width) / 2),
+      y: Math.max(8, (window.innerHeight - height) / 2),
+    });
+    setCalculatorOpen(true);
+  }
+
+  function handleCalculatorDragStart(e: React.PointerEvent<HTMLDivElement>) {
+    e.preventDefault();
+    calculatorDragRef.current = {
+      startX: e.clientX,
+      startY: e.clientY,
+      originX: calculatorPosition.x,
+      originY: calculatorPosition.y,
+    };
+    e.currentTarget.setPointerCapture(e.pointerId);
+  }
+
+  function handleCalculatorDrag(e: React.PointerEvent<HTMLDivElement>) {
+    const drag = calculatorDragRef.current;
+    if (!drag) return;
+    setCalculatorPosition(
+      clampCalculatorPosition(
+        drag.originX + e.clientX - drag.startX,
+        drag.originY + e.clientY - drag.startY
+      )
+    );
+  }
+
+  function handleCalculatorDragEnd(e: React.PointerEvent<HTMLDivElement>) {
+    calculatorDragRef.current = null;
+    if (e.currentTarget.hasPointerCapture(e.pointerId)) {
+      e.currentTarget.releasePointerCapture(e.pointerId);
+    }
   }
 
   const currentMeta = getMeta(activeSubject?.name);
@@ -492,6 +788,58 @@ export function TutorClient({
         />
       )}
 
+      {calculatorOpen && (
+        <div
+          ref={calculatorPanelRef}
+          className="fixed z-[80] flex h-[min(78vh,560px)] w-[min(92vw,760px)] flex-col overflow-hidden rounded-3xl border border-[#E8EDF8] bg-white shadow-2xl shadow-slate-950/30"
+          style={{ left: calculatorPosition.x, top: calculatorPosition.y }}
+        >
+          <div
+            onPointerDown={handleCalculatorDragStart}
+            onPointerMove={handleCalculatorDrag}
+            onPointerUp={handleCalculatorDragEnd}
+            onPointerCancel={handleCalculatorDragEnd}
+            className="flex cursor-grab select-none items-center gap-3 border-b border-[#E8EDF8] bg-[#F7FAFF] px-4 py-3 active:cursor-grabbing"
+          >
+            <div className="flex h-9 w-9 items-center justify-center rounded-2xl bg-[#EEF3FF] text-[#4F7CFF]">
+              <CalculatorIcon className="h-4 w-4" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-sm font-bold text-[#1F2A44]">Desmos Graphing Calculator</p>
+              <p className="text-[10px] font-medium text-[#9AA4BA]">Expressions, graph paper, keypad, and sliders</p>
+            </div>
+            <GripHorizontal className="ml-auto h-4 w-4 text-[#9AA4BA]" />
+            <button
+              type="button"
+              onClick={() => setCalculatorOpen(false)}
+              onPointerDown={(e) => e.stopPropagation()}
+              className="flex h-8 w-8 items-center justify-center rounded-xl border border-[#E8EDF8] bg-white text-[#6B7A9A] transition-colors hover:border-[#C7D7FF] hover:bg-[#EEF3FF] hover:text-[#4F7CFF]"
+              aria-label="Close calculator"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+          <div className="relative min-h-0 flex-1 bg-white">
+            <div ref={calculatorContainerRef} className="h-full w-full" />
+            {calculatorLoading && (
+              <div className="absolute inset-0 flex items-center justify-center bg-white/80">
+                <div className="flex items-center gap-2 rounded-2xl border border-[#E8EDF8] bg-white px-4 py-3 text-sm font-semibold text-[#4F7CFF] shadow-sm">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Loading Desmos graphing calculator...
+                </div>
+              </div>
+            )}
+            {calculatorError && (
+              <div className="absolute inset-0 flex items-center justify-center bg-white p-6 text-center">
+                <div className="max-w-sm rounded-2xl border border-[#FED7AA] bg-[#FFF7ED] px-4 py-3 text-sm font-semibold text-[#9A3412]">
+                  {calculatorError}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       <div className="flex gap-4 h-[calc(100vh-120px)] animate-fade-in">
 
         {/* ── LEFT: Chat ── */}
@@ -510,6 +858,26 @@ export function TutorClient({
                   <span className="text-[10px] text-[#22C55E] font-medium">Online & ready to help</span>
                 </div>
               </div>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={centerCalculator}
+                  className="flex items-center gap-1.5 rounded-xl bg-[#EEF3FF] px-3 py-1.5 text-xs font-semibold text-[#4F7CFF] transition-colors hover:bg-[#C7D7FF]"
+                >
+                  <CalculatorIcon className="h-3.5 w-3.5" /> Calculator
+                </button>
+                <button
+                  type="button"
+                  onClick={toggleAssignments}
+                  className={`flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-semibold transition-colors ${
+                    assignmentsOpen
+                      ? "bg-[#4F7CFF] text-white"
+                      : "bg-[#EEF3FF] text-[#4F7CFF] hover:bg-[#C7D7FF]"
+                  }`}
+                >
+                  <ClipboardList className="h-3.5 w-3.5" /> Assignments
+                </button>
+              </div>
             </div>
             <button
               onClick={startNewSession}
@@ -518,6 +886,67 @@ export function TutorClient({
               <PlusCircle className="h-3.5 w-3.5" /> New chat
             </button>
           </div>
+
+          {assignmentsOpen && (
+            <div className="border-b border-[#E8EDF8] bg-[#F7FAFF] px-5 py-3 flex-shrink-0">
+              <div className="mb-2 flex items-center justify-between gap-3">
+                <div className="flex items-center gap-2">
+                  <div className="flex h-7 w-7 items-center justify-center rounded-xl bg-[#EEF3FF] text-[#4F7CFF]">
+                    <ClipboardList className="h-3.5 w-3.5" />
+                  </div>
+                  <p className="text-sm font-bold text-[#1F2A44]">Assignments</p>
+                </div>
+                {assignments.length > 0 && (
+                  <span className="rounded-full bg-[#EEF3FF] px-2 py-0.5 text-[10px] font-bold text-[#4F7CFF]">
+                    {assignments.length}
+                  </span>
+                )}
+              </div>
+
+              {loadingAssignments ? (
+                <div className="flex items-center gap-2 rounded-2xl border border-[#E8EDF8] bg-white px-3 py-3 text-xs font-semibold text-[#4F7CFF]">
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  Loading assignments...
+                </div>
+              ) : assignmentsSetupPending ? (
+                <div className="rounded-2xl border border-[#C7D7FF] bg-white px-3 py-3 text-xs font-semibold text-[#4F7CFF]">
+                  Assignments are being set up. Check back in a minute.
+                </div>
+              ) : assignmentsError ? (
+                <div className="rounded-2xl border border-red-100 bg-red-50 px-3 py-3 text-xs font-semibold text-red-600">
+                  {assignmentsError}
+                </div>
+              ) : assignments.length === 0 ? (
+                <div className="rounded-2xl border border-[#E8EDF8] bg-white px-3 py-3 text-xs font-semibold text-[#9AA4BA]">
+                  No assignments yet
+                </div>
+              ) : (
+                <div className="grid gap-2 sm:grid-cols-2">
+                  {assignments.map((assignment) => {
+                    const dueDate = formatDueDate(assignment.dueDate);
+                    return (
+                      <button
+                        key={assignment.studentAssignmentId}
+                        type="button"
+                        onClick={() => selectAssignment(assignment)}
+                        className="flex min-w-0 items-center gap-3 rounded-2xl border border-[#E8EDF8] bg-white px-3 py-3 text-left transition-colors hover:border-[#C7D7FF] hover:bg-[#EEF3FF]"
+                      >
+                        <span className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-[#EEF3FF] text-[#4F7CFF]">
+                          <ClipboardList className="h-4 w-4" />
+                        </span>
+                        <span className="min-w-0">
+                          <span className="block truncate text-sm font-bold text-[#1F2A44]">{assignment.title}</span>
+                          <span className="mt-0.5 block truncate text-[11px] font-medium text-[#9AA4BA]">
+                            {[assignment.subject, dueDate ? `Due ${dueDate}` : null].filter(Boolean).join(" - ")}
+                          </span>
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Subject pills */}
           <div className="flex items-center gap-2 px-5 py-2.5 border-b border-[#E8EDF8] flex-shrink-0 overflow-x-auto">

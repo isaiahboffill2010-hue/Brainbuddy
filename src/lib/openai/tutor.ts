@@ -19,9 +19,11 @@ export async function streamTutorResponse(params: {
   subjectName: string;
   userMessage: string;
   imageUrl?: string;
+  imageUrls?: string[];
+  assignmentContext?: TutorContext["assignmentContext"];
   supabase: Client;
 }): Promise<ReadableStream<Uint8Array>> {
-  const { sessionId, studentId, subjectId, subjectName, userMessage, imageUrl, supabase } = params;
+  const { sessionId, studentId, subjectId, subjectName, userMessage, imageUrl, imageUrls, assignmentContext, supabase } = params;
 
   const hasSubject = Boolean(subjectId);
 
@@ -66,6 +68,7 @@ export async function streamTutorResponse(params: {
           brainbuddyInstructions: classContext.brainbuddyInstructions,
         }
       : null,
+    assignmentContext: assignmentContext ?? null,
     isFreshSession,
   };
 
@@ -83,12 +86,27 @@ export async function streamTutorResponse(params: {
     content: string | ContentBlock[];
   };
 
+  function imageContentBlock(url: string): ContentBlock {
+    if (url.startsWith("data:")) {
+      const [header, data] = url.split(",");
+      const mediaType = (header.match(/data:(image\/\w+);/)?.[1] ?? "image/jpeg") as "image/jpeg" | "image/png" | "image/gif" | "image/webp";
+      return { type: "image", source: { type: "base64", media_type: mediaType, data } };
+    }
+
+    return { type: "image", source: { type: "url", url } };
+  }
+
+  const attachedImages = [
+    ...(imageUrls ?? []),
+    ...(imageUrl ? [imageUrl] : []),
+  ].filter(Boolean);
+
   // Build last user message content (with optional image)
   let lastUserContent: string | ContentBlock[];
-  if (imageUrl) {
-    if (imageUrl.startsWith("data:")) {
+  if (attachedImages.length > 0) {
+    if (attachedImages[0].startsWith("data:")) {
       // Base64 data URL — extract media type and data
-      const [header, data] = imageUrl.split(",");
+      const [header, data] = attachedImages[0].split(",");
       const mediaType = (header.match(/data:(image\/\w+);/)?.[1] ?? "image/jpeg") as "image/jpeg" | "image/png" | "image/gif" | "image/webp";
       lastUserContent = [
         { type: "image", source: { type: "base64", media_type: mediaType, data } },
@@ -96,12 +114,19 @@ export async function streamTutorResponse(params: {
       ];
     } else {
       lastUserContent = [
-        { type: "image", source: { type: "url", url: imageUrl } },
+        { type: "image", source: { type: "url", url: attachedImages[0] } },
         { type: "text", text: userMessage },
       ];
     }
   } else {
     lastUserContent = userMessage;
+  }
+
+  if (attachedImages.length > 1) {
+    lastUserContent = [
+      ...attachedImages.map(imageContentBlock),
+      { type: "text", text: userMessage },
+    ];
   }
 
   const messages: AnthropicMessage[] = [

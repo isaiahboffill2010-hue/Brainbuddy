@@ -32,6 +32,17 @@ export type ClassLearningContext = {
   brainbuddyInstructions?: string | null;
 };
 
+export type TutorAssignmentContext = {
+  assignmentId: string;
+  studentAssignmentId: string;
+  title: string;
+  subject?: string | null;
+  instructions?: string | null;
+  totalPoints?: number | null;
+  expectedQuestionCount?: number | null;
+  worksheetCount?: number;
+};
+
 // Chat
 export type ChatMessage = {
   id: string;
@@ -64,6 +75,7 @@ export type TutorContext = {
   motivation?: string | null;
   teachingAvoid?: string | null;
   classContext?: ClassLearningContext | null;
+  assignmentContext?: TutorAssignmentContext | null;
   isFreshSession?: boolean;
 };
 

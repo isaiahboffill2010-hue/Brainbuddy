@@ -30,7 +30,6 @@ export function TeacherClassForm({ subjects }: { subjects: SubjectOption[] }) {
   const [subjectId, setSubjectId] = useState("");
   const [period, setPeriod] = useState("");
   const [currentUnit, setCurrentUnit] = useState("");
-  const [learningGoal, setLearningGoal] = useState("");
   const [brainbuddyInstructions, setBrainbuddyInstructions] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -50,7 +49,6 @@ export function TeacherClassForm({ subjects }: { subjects: SubjectOption[] }) {
           subjectId,
           period,
           currentUnit,
-          learningGoal,
           brainbuddyInstructions,
         }),
       });
@@ -62,7 +60,6 @@ export function TeacherClassForm({ subjects }: { subjects: SubjectOption[] }) {
 
       setGradeLevel("");
       setCurrentUnit("");
-      setLearningGoal("");
       setBrainbuddyInstructions("");
       router.refresh();
     } catch (err) {
@@ -137,11 +134,6 @@ export function TeacherClassForm({ subjects }: { subjects: SubjectOption[] }) {
           <Label htmlFor="currentUnit">Current unit/topic</Label>
           <Input id="currentUnit" value={currentUnit} onChange={(e) => setCurrentUnit(e.target.value)} placeholder="Fractions" />
         </div>
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="learningGoal">What students are learning</Label>
-        <Textarea id="learningGoal" value={learningGoal} onChange={(e) => setLearningGoal(e.target.value)} placeholder="Adding fractions with unlike denominators" className="min-h-[72px]" />
       </div>
 
       <div className="space-y-2">

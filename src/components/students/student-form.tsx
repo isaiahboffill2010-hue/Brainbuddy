@@ -1,5 +1,5 @@
 "use client";
-import { useState, useRef } from "react";
+import { useState, useRef, type Dispatch, type SetStateAction } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -47,8 +47,24 @@ interface StudentFormProps {
   submitLabel?: string;
 }
 
+function parseSelectedValues(value: unknown): string[] {
+  return String(value ?? "")
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
+function toggleSelectedValue(value: string, setValues: Dispatch<SetStateAction<string[]>>) {
+  setValues((prev) =>
+    prev.includes(value)
+      ? prev.filter((item) => item !== value)
+      : [...prev, value]
+  );
+}
+
 export function StudentForm({ initialData, onSubmit, submitLabel = "Save" }: StudentFormProps) {
   const router = useRouter();
+  const initialLearningStyles = parseSelectedValues((initialData as any)?.learning_style);
   const [name, setName] = useState(initialData?.name ?? "");
   const [age, setAge] = useState(String(initialData?.age ?? ""));
   const [grade, setGrade] = useState(initialData?.grade ?? "");
@@ -58,21 +74,21 @@ export function StudentForm({ initialData, onSubmit, submitLabel = "Save" }: Stu
   );
   const avatarInputRef = useRef<HTMLInputElement>(null);
   const [learningStyles, setLearningStyles] = useState<string[]>(
-    ((initialData as any)?.learning_style ? String((initialData as any).learning_style).split(",") : ["visual"]) as string[]
+    initialLearningStyles.length > 0 ? initialLearningStyles : ["visual"]
   );
   const [confidence, setConfidence] = useState(initialData?.confidence_level ?? 5);
   const [interests, setInterests] = useState(initialData?.interests ?? "");
-  const [personality, setPersonality] = useState<string>(initialData?.personality ?? "");
+  const [personalities, setPersonalities] = useState<string[]>(parseSelectedValues(initialData?.personality));
   const [strugglesWith, setStrugglesWith] = useState(initialData?.struggles_with ?? "");
-  const [stuckBehavior, setStuckBehavior] = useState<string>((initialData as any)?.stuck_behavior ?? "");
-  const [confusionSupport, setConfusionSupport] = useState<string>((initialData as any)?.confusion_support ?? "");
-  const [errorFeedback, setErrorFeedback] = useState<string>((initialData as any)?.error_feedback ?? "");
+  const [stuckBehaviors, setStuckBehaviors] = useState<string[]>(parseSelectedValues((initialData as any)?.stuck_behavior));
+  const [confusionSupports, setConfusionSupports] = useState<string[]>(parseSelectedValues((initialData as any)?.confusion_support));
+  const [errorFeedbacks, setErrorFeedbacks] = useState<string[]>(parseSelectedValues((initialData as any)?.error_feedback));
   const [teachingPace, setTeachingPace] = useState<string>((initialData as any)?.teaching_pace ?? "normal");
   const [motivations, setMotivations] = useState<string[]>(
-    ((initialData as any)?.motivation ? String((initialData as any).motivation).split(",") : []) as string[]
+    parseSelectedValues((initialData as any)?.motivation)
   );
   const [avoidList, setAvoidList] = useState<string[]>(
-    ((initialData as any)?.teaching_avoid ? String((initialData as any).teaching_avoid).split(",") : []) as string[]
+    parseSelectedValues((initialData as any)?.teaching_avoid)
   );
   const [learningDescription, setLearningDescription] = useState(initialData?.learning_description ?? "");
   const [loading, setLoading] = useState(false);
@@ -91,11 +107,11 @@ export function StudentForm({ initialData, onSubmit, submitLabel = "Save" }: Stu
         learning_style: learningStyles.join(","),
         confidence_level: confidence,
         interests: interests.trim() || undefined,
-        personality: personality || undefined,
+        personality: personalities.length > 0 ? personalities.join(",") : undefined,
         struggles_with: strugglesWith.trim() || undefined,
-        stuck_behavior: stuckBehavior || undefined,
-        confusion_support: confusionSupport || undefined,
-        error_feedback: errorFeedback || undefined,
+        stuck_behavior: stuckBehaviors.length > 0 ? stuckBehaviors.join(",") : undefined,
+        confusion_support: confusionSupports.length > 0 ? confusionSupports.join(",") : undefined,
+        error_feedback: errorFeedbacks.length > 0 ? errorFeedbacks.join(",") : undefined,
         teaching_pace: teachingPace || undefined,
         motivation: motivations.length > 0 ? motivations.join(",") : undefined,
         teaching_avoid: avoidList.length > 0 ? avoidList.join(",") : undefined,
@@ -216,13 +232,7 @@ export function StudentForm({ initialData, onSubmit, submitLabel = "Save" }: Stu
               <button
                 key={style.value}
                 type="button"
-                onClick={() => {
-                  setLearningStyles((prev) =>
-                    prev.includes(style.value)
-                      ? prev.filter((v) => v !== style.value)
-                      : [...prev, style.value]
-                  );
-                }}
+                onClick={() => toggleSelectedValue(style.value, setLearningStyles)}
                 className={cn(
                   "flex flex-col items-start gap-1 rounded-xl border-2 p-3 text-left transition-all",
                   learningStyles.includes(style.value)
@@ -240,16 +250,16 @@ export function StudentForm({ initialData, onSubmit, submitLabel = "Save" }: Stu
 
       {/* Personality picker */}
       <div className="space-y-3">
-        <Label>What best describes {name || "this student"}? <span className="text-muted-foreground text-xs">(optional)</span></Label>
+        <Label>What best describes {name || "this student"}? <span className="text-muted-foreground text-xs">(optional, choose any)</span></Label>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           {PERSONALITY_OPTIONS.map((p) => (
             <button
               key={p.value}
               type="button"
-              onClick={() => setPersonality(personality === p.value ? "" : p.value)}
+              onClick={() => toggleSelectedValue(p.value, setPersonalities)}
               className={cn(
                 "flex flex-col items-start gap-1 rounded-xl border-2 p-3 text-left transition-all",
-                personality === p.value
+                personalities.includes(p.value)
                   ? "border-primary bg-primary/5"
                   : "border-border hover:border-muted-foreground/30"
               )}
@@ -267,7 +277,7 @@ export function StudentForm({ initialData, onSubmit, submitLabel = "Save" }: Stu
           <div className="flex items-center justify-between gap-4 mb-4">
             <div>
               <Label className="text-base">When the student gets stuck</Label>
-              <p className="text-sm text-slate-400">Choose how they usually respond.</p>
+              <p className="text-sm text-slate-400">Choose any responses that fit.</p>
             </div>
             <span className="text-xs text-slate-500">Optional</span>
           </div>
@@ -276,10 +286,10 @@ export function StudentForm({ initialData, onSubmit, submitLabel = "Save" }: Stu
               <button
                 key={option.value}
                 type="button"
-                onClick={() => setStuckBehavior(option.value)}
+                onClick={() => toggleSelectedValue(option.value, setStuckBehaviors)}
                 className={cn(
                   "flex flex-col items-start gap-1 rounded-xl border-2 p-3 text-left transition-all",
-                  stuckBehavior === option.value
+                  stuckBehaviors.includes(option.value)
                     ? "border-primary bg-primary/5"
                     : "border-border hover:border-muted-foreground/30"
                 )}
@@ -295,16 +305,16 @@ export function StudentForm({ initialData, onSubmit, submitLabel = "Save" }: Stu
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="rounded-3xl border border-white/10 bg-slate-950/80 p-4">
             <Label className="text-base">How should BrainBuddy help when the student is confused?</Label>
-            <p className="text-sm text-slate-400 mb-4">Pick the way that helps them learn best.</p>
+            <p className="text-sm text-slate-400 mb-4">Pick any ways that help them learn best.</p>
             <div className="grid gap-3">
               {CONFUSION_SUPPORT_OPTIONS.map((option) => (
                 <button
                   key={option.value}
                   type="button"
-                  onClick={() => setConfusionSupport(option.value)}
+                  onClick={() => toggleSelectedValue(option.value, setConfusionSupports)}
                   className={cn(
                     "flex flex-col items-start gap-1 rounded-xl border-2 p-3 text-left transition-all",
-                    confusionSupport === option.value
+                    confusionSupports.includes(option.value)
                       ? "border-primary bg-primary/5"
                       : "border-border hover:border-muted-foreground/30"
                   )}
@@ -319,16 +329,16 @@ export function StudentForm({ initialData, onSubmit, submitLabel = "Save" }: Stu
 
           <div className="rounded-3xl border border-white/10 bg-slate-950/80 p-4">
             <Label className="text-base">What should BrainBuddy do when the student gets something wrong?</Label>
-            <p className="text-sm text-slate-400 mb-4">Choose the feedback style that helps them feel safe.</p>
+            <p className="text-sm text-slate-400 mb-4">Choose any feedback styles that help them feel safe.</p>
             <div className="grid gap-3">
               {ERROR_FEEDBACK_OPTIONS.map((option) => (
                 <button
                   key={option.value}
                   type="button"
-                  onClick={() => setErrorFeedback(option.value)}
+                  onClick={() => toggleSelectedValue(option.value, setErrorFeedbacks)}
                   className={cn(
                     "flex flex-col items-start gap-1 rounded-xl border-2 p-3 text-left transition-all",
-                    errorFeedback === option.value
+                    errorFeedbacks.includes(option.value)
                       ? "border-primary bg-primary/5"
                       : "border-border hover:border-muted-foreground/30"
                   )}
@@ -376,13 +386,7 @@ export function StudentForm({ initialData, onSubmit, submitLabel = "Save" }: Stu
                   <button
                     key={option.value}
                     type="button"
-                    onClick={() => {
-                      setMotivations((prev) =>
-                        prev.includes(option.value)
-                          ? prev.filter((value) => value !== option.value)
-                          : [...prev, option.value]
-                      );
-                    }}
+                    onClick={() => toggleSelectedValue(option.value, setMotivations)}
                     className={cn(
                       "flex flex-col items-start gap-1 rounded-xl border-2 p-3 text-left transition-all",
                       motivations.includes(option.value)
@@ -406,13 +410,7 @@ export function StudentForm({ initialData, onSubmit, submitLabel = "Save" }: Stu
                   <button
                     key={option.value}
                     type="button"
-                    onClick={() => {
-                      setAvoidList((prev) =>
-                        prev.includes(option.value)
-                          ? prev.filter((value) => value !== option.value)
-                          : [...prev, option.value]
-                      );
-                    }}
+                    onClick={() => toggleSelectedValue(option.value, setAvoidList)}
                     className={cn(
                       "flex flex-col items-start gap-1 rounded-xl border-2 p-3 text-left transition-all",
                       avoidList.includes(option.value)
